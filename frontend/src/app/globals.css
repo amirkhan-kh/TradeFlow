@@ -1,0 +1,111 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand-50: #ecf8f2;
+  --color-brand-100: #d2efe0;
+  --color-brand-200: #a7dfc4;
+  --color-brand-300: #6fc8a1;
+  --color-brand-400: #3dae7f;
+  --color-brand-500: #1f9366;
+  --color-brand-600: #137852;
+  --color-brand-700: #0f6044;
+  --color-brand-800: #0e4c37;
+  --color-brand-900: #0c3f2e;
+  --color-brand-950: #062419;
+
+  --color-ink-50: #f5f8f7;
+  --color-ink-100: #eaf0ee;
+  --color-ink-200: #d8e1de;
+  --color-ink-300: #b6c4bf;
+  --color-ink-400: #8a9b95;
+  --color-ink-500: #66776f;
+  --color-ink-600: #4b5b55;
+  --color-ink-700: #364540;
+  --color-ink-800: #1f2d29;
+  --color-ink-900: #13201c;
+
+  --color-navy-500: #2a4a6b;
+  --color-navy-700: #18324d;
+  --color-navy-900: #0f2236;
+
+  --shadow-soft: 0 1px 2px rgb(16 40 32 / 0.04), 0 4px 16px -4px rgb(16 40 32 / 0.08);
+  --shadow-lift: 0 2px 4px rgb(16 40 32 / 0.04), 0 18px 40px -12px rgb(16 40 32 / 0.18);
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    @apply bg-ink-50 text-ink-900;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brand-500;
+  }
+  ::selection {
+    @apply bg-brand-200 text-brand-950;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-ink-200/70 bg-white shadow-soft;
+  }
+  .input {
+    @apply h-10 w-full rounded-xl border border-ink-200 bg-white px-3 text-sm text-ink-900 placeholder:text-ink-400 transition outline-none focus:border-brand-400 focus:ring-4 focus:ring-brand-100;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-semibold text-ink-600;
+  }
+}
+
+@keyframes shine {
+  0%,
+  60% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(400%);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+.animate-rise {
+  animation: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise,
+  .animate-float,
+  [class*="animate-[shine"] {
+    animation: none;
+  }
+}

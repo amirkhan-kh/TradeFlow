@@ -1,0 +1,56 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/releases
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+*.p12
+*.local
+
+# Next.js (frontend)
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
+.vercel
+
+# Backend build
+dist/
+build/
+coverage/
+uploads/
+
+# Databases
+*.sqlite
+*.sqlite3
+*.db
+pgdata/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Misc
+.cache/
+.turbo/
+.eslintcache

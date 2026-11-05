@@ -18,29 +18,23 @@ const NAV = [
 export function Header() {
   const { scrollY } = useScroll();
   const [scrolled, setScrolled] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
 
-  useMotionValueEvent(scrollY, "change", (v) => {
-    const prev = scrollY.getPrevious() ?? 0;
-    setScrolled(v > 12);
-    setHidden(!open && v > 480 && v > prev + 2);
-    if (v < prev - 2) setHidden(false);
-  });
+  useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 12));
 
   return (
     <>
       <ScrollProgress />
       <m.header
         initial={{ y: -24, opacity: 0 }}
-        animate={{ y: hidden ? -96 : 0, opacity: 1 }}
+        animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: EASE }}
         className="fixed inset-x-0 top-0 z-50 px-3 pt-3"
       >
         <div
-          className={`mx-auto flex max-w-7xl items-center justify-between rounded-[1.4rem] px-3 pl-4 transition-[height,background-color,box-shadow,border-color] duration-500 sm:pl-5 ${
-            scrolled ? "glass h-14" : "h-16 border border-white/50 bg-white/30 backdrop-blur-md"
+          className={`mx-auto flex h-16 max-w-7xl items-center justify-between rounded-[1.4rem] px-3 pl-4 transition-[background-color,box-shadow,border-color] duration-500 sm:pl-5 ${
+            scrolled ? "glass" : "border border-white/50 bg-white/30 backdrop-blur-md"
           }`}
         >
           <Logo />

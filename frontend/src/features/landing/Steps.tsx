@@ -19,7 +19,7 @@ export function Steps() {
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 24 });
 
   return (
-    <Section id="jarayon" eyebrow="Biz bilan ishlash bosqichlari" title="Hamkorlik qanday o'tadi?" fx={{ variant: "beams" }}>
+    <Section id="jarayon" eyebrow="Biz bilan ishlash bosqichlari" title="Hamkorlik qanday o'tadi?" fx={{ variant: "beams" }} backdrop={{ src: "/landing/steps-surreal.webp", className: "opacity-90" }}>
       <div ref={ref} className="relative">
         <div aria-hidden className="absolute top-14 right-[12.5%] left-[12.5%] hidden h-1 rounded-full bg-white/80 lg:block">
           <m.div

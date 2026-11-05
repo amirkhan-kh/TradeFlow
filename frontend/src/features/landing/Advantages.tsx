@@ -1,4 +1,5 @@
 import { Award, Layers, MessageCircle, MousePointerClick, Smartphone, Target } from "lucide-react";
+import Image from "next/image";
 import { SpotlightCard, Stagger, StaggerItem } from "@/shared/ui/motion";
 import { Section } from "./Section";
 import { ZoomIn } from "./ZoomIn";
@@ -33,6 +34,8 @@ export function Advantages() {
         <StaggerItem>
           <ZoomIn from={0.86} y={50} tilt={16} end="start 70%" className="h-full">
             <SpotlightCard glow="rgba(255,255,255,0.18)" className="flex h-full flex-col justify-between gap-4 overflow-hidden rounded-[1.75rem] bg-gradient-to-br from-[#2b4a63] via-[#1d3a52] to-[#13263a] p-7 text-white shadow-lift">
+              <Image src="/landing/photo-phone.webp" alt="" fill sizes="(min-width: 1024px) 26rem, (min-width: 768px) 50vw, 100vw" className="object-cover opacity-35 mix-blend-luminosity" />
+              <div aria-hidden className="absolute inset-0 bg-gradient-to-br from-[#2b4a63]/70 via-[#1d3a52]/80 to-[#13263a]/95" />
               <div aria-hidden className="absolute -top-16 -right-16 size-56 bg-[radial-gradient(closest-side,rgb(139_196_116/0.45),transparent)]" />
               <div aria-hidden className="absolute -bottom-20 -left-12 size-56 bg-[radial-gradient(closest-side,rgb(156_195_220/0.3),transparent)]" />
               <div className="relative flex items-center gap-3">

@@ -1,4 +1,5 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
+import Image from "next/image";
 import { Aurora } from "@/shared/ui/Aurora";
 import { DemoForm } from "./DemoForm";
 import { Fx } from "./Fx";
@@ -14,6 +15,8 @@ export function Contact() {
           className="glass grid overflow-hidden rounded-[2.75rem] p-2 shadow-[0_50px_120px_-40px_rgb(15_34_54/0.45)] sm:p-3 lg:grid-cols-[1fr_1.1fr]"
         >
           <div className="relative overflow-hidden rounded-[2.2rem] bg-[#0e1c2b] p-8 text-white sm:p-12">
+            <Image src="/landing/photo-team.webp" alt="" fill sizes="(min-width: 1024px) 40rem, 100vw" className="object-cover opacity-25 mix-blend-luminosity" />
+            <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0e1c2b]/60 via-[#0e1c2b]/80 to-[#0e1c2b]" />
             <Aurora dark />
             <div className="relative">
               <p className="glass-dark inline-flex rounded-full px-3.5 py-1.5 text-xs font-bold text-[#cfe3ef]">Bepul demo</p>

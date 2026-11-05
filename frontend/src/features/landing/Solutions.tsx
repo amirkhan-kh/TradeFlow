@@ -20,10 +20,11 @@ import { GroupBlock } from "./GroupBlock";
 import { Section } from "./Section";
 import { Drift, ZoomIn } from "./ZoomIn";
 
-const GROUPS: { title: string; tag: string; icon: LucideIcon; items: [LucideIcon, string, string][] }[] = [
+const GROUPS: { title: string; tag: string; icon: LucideIcon; image: string; items: [LucideIcon, string, string][] }[] = [
   {
     title: "Buyurtma va ombor",
     tag: "Operatsiyalar",
+    image: "/landing/photo-warehouse.webp",
     icon: Warehouse,
     items: [
       [ShoppingCart, "Buyurtmalar", "Agent buyurtma kiritadi — tizim qoldiqni avtomatik band qiladi. Yetkazish 25% gacha tezlashadi."],
@@ -35,6 +36,7 @@ const GROUPS: { title: string; tag: string; icon: LucideIcon; items: [LucideIcon
   {
     title: "Moliya va to'lovlar",
     tag: "Pul oqimi",
+    image: "/landing/photo-payments.webp",
     icon: HandCoins,
     items: [
       [HandCoins, "Debitorlik nazorati", "Har bir mijoz uchun kredit limiti. Limitdan oshsa — tizim yangi yuklashga ruxsat bermaydi."],
@@ -46,6 +48,7 @@ const GROUPS: { title: string; tag: string; icon: LucideIcon; items: [LucideIcon
   {
     title: "Avtomatlashtirish va tahlil",
     tag: "Aql",
+    image: "/landing/photo-analytics.webp",
     icon: TrendingUp,
     items: [
       [TrendingUp, "Talab prognozi", "Sotuv trendi asosida keyingi oy tushumi va har bir tovarning tugash sanasi."],
@@ -72,6 +75,7 @@ export function Solutions() {
           <GroupBlock
             key={g.title}
             flip={gi % 2 === 1}
+            image={g.image}
             panel={
               <>
                 <div className="flex items-center gap-4 lg:flex-col lg:items-start">

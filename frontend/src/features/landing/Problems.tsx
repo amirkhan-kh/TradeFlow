@@ -19,6 +19,7 @@ export function Problems() {
       title="Biznesingiz shu muammolarga duch kelyaptimi?"
       lead="Bu muammolar nafaqat vaqt va pulni oladi, balki biznesingiz o'sishini sekinlashtiradi."
       fx={{ variant: "lattice" }}
+      backdrop={{ src: "/landing/photo-paperwork.webp", className: "opacity-[0.13] mix-blend-multiply" }}
     >
       <Stagger className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {ITEMS.map(([Icon, title, text], i) => (

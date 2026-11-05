@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { Reveal } from "@/shared/ui/motion";
 import { Fx } from "./Fx";
 import { ZoomIn } from "./ZoomIn";
@@ -10,6 +11,7 @@ export function Section({
   children,
   className = "",
   fx,
+  backdrop,
 }: {
   id?: string;
   eyebrow: string;
@@ -18,9 +20,16 @@ export function Section({
   children: React.ReactNode;
   className?: string;
   fx?: React.ComponentProps<typeof Fx>;
+  /** Decorative image under the section, faded at the edges; `className` sets its opacity/blend. */
+  backdrop?: { src: string; className: string };
 }) {
   return (
     <section id={id} className={`relative isolate scroll-mt-24 py-20 sm:py-28 ${className}`}>
+      {backdrop && (
+        <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 [mask-image:radial-gradient(ellipse_75%_65%_at_50%_55%,#000_35%,transparent_100%)]">
+          <Image src={backdrop.src} alt="" fill sizes="100vw" className={`object-cover ${backdrop.className}`} />
+        </div>
+      )}
       {fx && <Fx {...fx} />}
       <ZoomIn className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="mx-auto mb-16 max-w-2xl text-center">

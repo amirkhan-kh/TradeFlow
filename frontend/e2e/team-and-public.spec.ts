@@ -41,7 +41,7 @@ test.describe("LEAD / PUB · leads and landing", () => {
 
   test("[PUB-01][S1] demo form → thank-you; lead visible to admin with status change persisting", async ({ page, apiAs, make }) => {
     const name = `O'g'iloy Demo ${make.tag()}`;
-    await page.goto("/#demo");
+    await page.goto("/uz#demo");
     await hydrated(page, "#demo form");
     await page.getByLabel("Ismingiz").fill(name);
     await page.getByLabel("Telefon").fill("+998 90 765 43 21");
@@ -55,7 +55,7 @@ test.describe("LEAD / PUB · leads and landing", () => {
   });
 
   test("[PUB-01][S3] empty required fields send nothing", async ({ page }) => {
-    await page.goto("/#demo");
+    await page.goto("/uz#demo");
     await hydrated(page, "#demo form");
     let posts = 0;
     page.on("request", (r) => r.url().includes("/public/leads") && posts++);
@@ -64,10 +64,10 @@ test.describe("LEAD / PUB · leads and landing", () => {
   });
 
   test("[PUB-06][S1] SEO: title, description, canonical, OG, one h1, images with alt, robots + sitemap", async ({ page, request }) => {
-    await page.goto("/");
+    await page.goto("/uz");
     await expect(page).toHaveTitle(/TradeFlow/);
     expect(await page.locator('meta[name="description"]').getAttribute("content")).toBeTruthy();
-    expect(await page.locator('link[rel="canonical"]').getAttribute("href")).toMatch(/^https?:\/\/[^/]+\/?$/);
+    expect(await page.locator('link[rel="canonical"]').getAttribute("href")).toMatch(/^https?:\/\/[^/]+\/uz$/);
     expect(await page.locator('meta[property="og:title"]').getAttribute("content")).toBeTruthy();
     await expect(page.locator("h1")).toHaveCount(1);
     expect(await page.locator("img:not([alt])").count()).toBe(0);
@@ -79,7 +79,7 @@ test.describe("LEAD / PUB · leads and landing", () => {
   });
 
   test("[PUB-05][S1] no dead anchors: every #hash link on the landing has a target", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("/uz");
     const hashes = await page.locator('a[href^="#"], a[href^="/#"]').evaluateAll((as) => [...new Set(as.map((a) => a.getAttribute("href")!.replace(/^\/?#/, "")))].filter(Boolean));
     for (const id of hashes) expect(await page.locator(`[id="${id}"]`).count(), `#${id}`).toBeGreaterThan(0);
   });

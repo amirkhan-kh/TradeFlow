@@ -6,6 +6,7 @@ import { useRef } from "react";
 import { LogoMark } from "@/shared/ui/Logo";
 import { EASE, m } from "@/shared/ui/motion";
 import { Section } from "./Section";
+import { useCopy } from "./SiteCopy";
 
 const NAV = [
   [LayoutDashboard, "Dashboard"],
@@ -14,13 +15,6 @@ const NAV = [
   [Truck, "Yetkazish"],
   [ClipboardCheck, "Audit"],
   [Wallet, "Moliya"],
-] as const;
-
-const KPIS = [
-  ["Faol omborlar", "5", Warehouse],
-  ["Oylik tushum", "361 mln", Wallet],
-  ["Yuklangan", "12.8 t", Boxes],
-  ["Faol auditlar", "2", ClipboardCheck],
 ] as const;
 
 const BARS = [42, 55, 48, 70, 64, 82, 90];
@@ -35,22 +29,33 @@ export function ProductPreview() {
   const y = useTransform(scrollYProgress, [0, 1], [90, 0]);
   const chipA = useTransform(pass, [0, 1], [120, -160]);
   const chipB = useTransform(pass, [0, 1], [60, -240]);
+  const t = useCopy();
+  const kpis = [
+    [t("Faol omborlar"), "5", Warehouse],
+    [t("Oylik tushum"), t("361 mln"), Wallet],
+    [t("Yuklangan"), t("12.8 t"), Boxes],
+    [t("Faol auditlar"), "2", ClipboardCheck],
+  ] as const;
 
   return (
-    <Section eyebrow="Ichkaridan ko'rinishi" title="Murakkab ma'lumot — sodda va tushunarli ekran" lead="Ko'zni charchatmaydigan ranglar, aniq raqamlar va bir qarashda tushuniladigan grafiklar.">
+    <Section
+      eyebrow={t("Ichkaridan ko'rinishi")}
+      title={t("Murakkab ma'lumot — sodda va tushunarli ekran")}
+      lead={t("Ko'zni charchatmaydigan ranglar, aniq raqamlar va bir qarashda tushuniladigan grafiklar.")}
+    >
       <div ref={ref} className="relative [perspective:1400px]">
         <div aria-hidden className="absolute inset-x-10 -bottom-16 top-16 rounded-3xl bg-gradient-to-r from-[#8bc474]/30 via-[#9cc3dc]/50 to-[#32536b]/35 blur-3xl" />
         <m.div style={{ y: chipA }} className="glass absolute -top-6 left-0 z-10 hidden rounded-xl px-4 py-3 md:block lg:-left-6">
           <p className="flex items-center gap-2 text-xs font-semibold text-red-600">
-            <BellRing className="size-3.5" /> Kam qoldiq
+            <BellRing className="size-3.5" /> {t("Kam qoldiq")}
           </p>
-          <p className="mt-0.5 text-sm font-bold text-ink-900">12 ta tovar 3 kunda tugaydi</p>
+          <p className="mt-0.5 text-sm font-bold text-ink-900">{t("12 ta tovar 3 kunda tugaydi")}</p>
         </m.div>
         <m.div style={{ y: chipB }} className="glass absolute right-0 bottom-10 z-10 hidden rounded-xl px-4 py-3 md:block lg:-right-6">
           <p className="flex items-center gap-2 text-xs font-semibold text-[#32536b]">
-            <CircleCheck className="size-3.5" /> Yangi buyurtma
+            <CircleCheck className="size-3.5" /> {t("Yangi buyurtma")}
           </p>
-          <p className="mt-0.5 text-sm font-bold text-ink-900">TF-001248 band qilindi</p>
+          <p className="mt-0.5 text-sm font-bold text-ink-900">{t("TF-001248 band qilindi")}</p>
         </m.div>
         <m.div style={{ rotateX, scale, y, transformOrigin: "center top" }} className="glass relative mx-auto max-w-5xl rounded-3xl p-2 sm:p-3">
           <div className="overflow-hidden rounded-2xl border border-white bg-white shadow-[0_40px_100px_-30px_rgb(16_40_32/0.35)] ring-1 ring-ink-200/60">
@@ -75,13 +80,13 @@ export function ProductPreview() {
                     transition={{ delay: 0.2 + i * 0.05, duration: 0.4, ease: EASE }}
                     className={`mb-0.5 flex items-center gap-2 rounded-lg px-2 py-1.5 text-xs font-medium ${i === 0 ? "bg-brand-50 text-brand-700" : "text-ink-500"}`}
                   >
-                    <Icon className="size-3.5" /> {label}
+                    <Icon className="size-3.5" /> {t(label)}
                   </m.div>
                 ))}
               </aside>
               <div className="space-y-3 bg-ink-50/50 p-4">
                 <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                  {KPIS.map(([l, v, Icon], i) => (
+                  {kpis.map(([l, v, Icon], i) => (
                     <m.div
                       key={l}
                       initial={{ opacity: 0, y: 12 }}
@@ -99,7 +104,7 @@ export function ProductPreview() {
                 </div>
                 <div className="grid gap-3 lg:grid-cols-2">
                   <div className="rounded-xl bg-white p-3 ring-1 ring-ink-100">
-                    <p className="text-xs font-bold text-ink-700">Tovar oqimi</p>
+                    <p className="text-xs font-bold text-ink-700">{t("Tovar oqimi")}</p>
                     <svg viewBox="0 0 260 80" className="mt-2 h-28 w-full" aria-hidden>
                       <defs>
                         <linearGradient id="pv" x1="0" x2="0" y1="0" y2="1">
@@ -123,7 +128,7 @@ export function ProductPreview() {
                     </svg>
                   </div>
                   <div className="rounded-xl bg-white p-3 ring-1 ring-ink-100">
-                    <p className="text-xs font-bold text-ink-700">Sotuv hajmi</p>
+                    <p className="text-xs font-bold text-ink-700">{t("Sotuv hajmi")}</p>
                     <div className="mt-2 flex h-28 items-end gap-2">
                       {BARS.map((h, i) => (
                         <div key={i} className="flex h-full flex-1 items-end gap-0.5">

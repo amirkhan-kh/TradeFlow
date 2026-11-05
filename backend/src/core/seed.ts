@@ -3,7 +3,7 @@ import type { PoolClient } from "pg";
 import { config } from "./config.js";
 import { pool, tx } from "./db.js";
 import { HttpError } from "./http.js";
-import { CITY_STREETS, FAMILIES, FIRST_NAMES, LAST_NAMES, LEADS, REGIONS, SHOP_NAMES, SHOP_TYPES, WAREHOUSES } from "./seed-data.js";
+import { CITY_STREETS, FAMILIES, FEMALE, FIRST_NAMES, LAST_NAMES, LEADS, REGIONS, SHOP_NAMES, SHOP_TYPES, WAREHOUSES } from "./seed-data.js";
 import * as users from "../modules/users/repository.js";
 import * as orders from "../modules/orders/repository.js";
 import { applyStatus } from "../modules/orders/service.js";
@@ -19,20 +19,32 @@ const digits = (n: number) => Array.from({ length: n }, (_, i) => (i === 0 ? int
 const phone = () => `+998 ${pick(["90", "91", "93", "94", "95", "97", "99", "33", "88"])} ${int(100, 999)} ${int(10, 99)} ${int(10, 99)}`;
 
 const DAYS = 365;
-const COUNTS = { managers: 6, agents: 80, couriers: 24, auditors: 8, clients: 460, leads: 380 };
+/** 402 staff + admin; ~8 outlets per agent. */
+const COUNTS = { managers: 14, agents: 220, couriers: 120, auditors: 48, clients: 1800, leads: 600 };
+/** Order volume and stock targets scale together, so the history stays mostly fulfilled. */
+const VOLUME = 2.5;
+
+/** History never runs ahead of the clock: today's events land in the past hours. */
+const notAfterNow = (d: Date) => (d.getTime() > Date.now() ? new Date(Date.now() - int(5, 180) * 60_000) : d);
 
 const day = (offset: number, hour = int(8, 18)) => {
   const d = new Date();
   d.setDate(d.getDate() + offset);
   d.setHours(hour, int(0, 59), 0, 0);
-  return d;
+  return offset > 0 ? d : notAfterNow(d);
 };
+
+function fullName() {
+  const first = pick(FIRST_NAMES);
+  const last = pick(LAST_NAMES);
+  return `${first} ${FEMALE.has(first) ? `${last}a` : last}`;
+}
 
 /** Unique "First Last" names, deterministic order. */
 function people(count: number, used: Set<string>) {
   const out: string[] = [];
   while (out.length < count) {
-    const name = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
+    const name = fullName();
     if (used.has(name)) continue;
     used.add(name);
     out.push(name);
@@ -140,7 +152,7 @@ async function seedClients(db: PoolClient, wh: Record<string, number>, agentsByR
     const segment = pick(["A", "A", "B", "B", "B", "C"]);
     list.push({
       name,
-      owner: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
+      owner: fullName(),
       phone: phone(),
       region: region.name,
       address: `${district}, ${pick(CITY_STREETS)} ko'chasi ${int(1, 180)}-uy`,
@@ -216,7 +228,7 @@ async function seedDemo(db: PoolClient, adminId: number) {
   const targets = Object.fromEntries(
     Object.entries(wh).map(([code, id]) => {
       const scale = code === "TSH-01" ? 1.6 : code === "TSH-02" ? 1.2 : 0.8;
-      return [id, products.map((p) => ({ id: p.id, target: Math.round((25 + 110 * p.popularity) * scale) }))];
+      return [id, products.map((p) => ({ id: p.id, target: Math.round((25 + 110 * p.popularity) * scale * VOLUME) }))];
     }),
   );
   const scarce = products.filter((_, i) => i % 37 === 0).map((p) => p.id);
@@ -233,7 +245,7 @@ async function seedDemo(db: PoolClient, adminId: number) {
 
     const growth = 0.55 + 0.45 * ((offset - START) / -START);
     const weekend = day(offset).getDay() === 0;
-    const count = weekend ? int(1, 4) : Math.round(int(12, 20) * growth);
+    const count = Math.round((weekend ? int(1, 4) : int(12, 20) * growth) * VOLUME);
 
     for (let k = 0; k < count; k++) {
       const client = clientPick();
@@ -253,7 +265,7 @@ async function seedDemo(db: PoolClient, adminId: number) {
       );
 
       const age = -offset;
-      const step = (h: number) => new Date(created.getTime() + h * 3600_000);
+      const step = (h: number) => new Date(Math.min(created.getTime() + h * 3600_000, Date.now()));
       try {
         await db.query("SAVEPOINT o");
         if (rand() < 0.04 && age > 1) {
@@ -300,11 +312,11 @@ async function seedDemo(db: PoolClient, adminId: number) {
       }
     }
 
-    // one planned audit every 4 weeks, rotating warehouses; recent ones stay "completed"
-    if ((offset - START) % 28 === 14) {
-      const idx = Math.floor((offset - START) / 28) % auditCodes.length;
+    // one planned audit every week, rotating warehouses and auditors; recent ones stay "completed"
+    if ((offset - START) % 7 === 3) {
+      const week = Math.floor((offset - START) / 7);
       const at = day(offset, 9);
-      const audit = await audits.insert(db, { warehouse_id: wh[auditCodes[idx]], auditor_id: auditors[idx % auditors.length], note: "Rejali inventarizatsiya", created_at: at });
+      const audit = await audits.insert(db, { warehouse_id: wh[auditCodes[week % auditCodes.length]], auditor_id: auditors[week % auditors.length], note: "Rejali inventarizatsiya", created_at: at });
       await db.query(
         `UPDATE audit_items SET counted = GREATEST(0, expected + CASE WHEN random() < 0.12 THEN floor(random() * 9)::int - 6 ELSE 0 END) WHERE audit_id=$1`,
         [audit.id],
@@ -331,7 +343,7 @@ async function seedDemo(db: PoolClient, adminId: number) {
     const [company, message] = pick(LEADS);
     const age = int(0, DAYS);
     const status = age < 7 ? pick(["new", "new", "contacted"]) : pick(["contacted", "won", "lost", "lost", "won", "new"]);
-    return { name: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`, phone: phone(), company: `${company}${rand() < 0.5 ? ` ${pick(REGIONS).name}` : ""}`, message, status, created: day(-age) };
+    return { name: fullName(), phone: phone(), company: `${company}${rand() < 0.5 ? ` ${pick(REGIONS).name}` : ""}`, message, status, created: day(-age) };
   });
   await db.query(
     `INSERT INTO leads (name, phone, company, message, status, created_at)

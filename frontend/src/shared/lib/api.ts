@@ -1,3 +1,4 @@
+import { activeLang } from "@/shared/i18n/active";
 import { tr } from "@/shared/i18n/translate";
 
 export class ApiError extends Error {
@@ -22,13 +23,16 @@ const TIMEOUT_MS = 30_000;
 export async function api<T>(path: string, init: RequestInit & { json?: unknown } = {}): Promise<T> {
   const { json, ...rest } = init;
   const timeout = AbortSignal.timeout(TIMEOUT_MS);
+  const headers = new Headers(rest.headers);
+  if (!headers.has("x-lang")) headers.set("x-lang", activeLang());
+  if (json !== undefined) headers.set("content-type", "application/json");
   let res: Response;
   try {
     res = await fetch(`/api/v1${path}`, {
       ...rest,
       signal: rest.signal ? AbortSignal.any([rest.signal, timeout]) : timeout,
       credentials: "include",
-      headers: json !== undefined ? { "content-type": "application/json", ...rest.headers } : rest.headers,
+      headers,
       body: json !== undefined ? JSON.stringify(json) : rest.body,
     });
   } catch (err) {

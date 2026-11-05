@@ -7,10 +7,12 @@ import { Button } from "@/shared/ui/Button";
 import { Field, Input, Textarea } from "@/shared/ui/Field";
 import { EASE, m } from "@/shared/ui/motion";
 import { Alert } from "@/shared/ui/States";
+import { useCopy } from "./SiteCopy";
 
 export function DemoForm() {
   const [state, setState] = useState<"idle" | "sending" | "done">("idle");
   const [error, setError] = useState<string>();
+  const t = useCopy();
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -32,8 +34,8 @@ export function DemoForm() {
         <m.span initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }} transition={{ type: "spring", stiffness: 300, damping: 14, delay: 0.1 }}>
           <CircleCheck className="size-14 text-brand-600" />
         </m.span>
-        <p className="text-lg font-bold text-ink-900">Rahmat! So&apos;rovingiz qabul qilindi.</p>
-        <p className="text-sm text-ink-600">Mutaxassisimiz 1 ish soati ichida siz bilan bog&apos;lanadi.</p>
+        <p className="text-lg font-bold text-ink-900">{t("Rahmat! So'rovingiz qabul qilindi.")}</p>
+        <p className="text-sm text-ink-600">{t("Mutaxassisimiz 1 ish soati ichida siz bilan bog'lanadi.")}</p>
       </m.div>
     );
   }
@@ -41,24 +43,24 @@ export function DemoForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Ismingiz">
-          <Input name="name" required minLength={2} autoComplete="name" placeholder="Ism Familiya" />
+        <Field label={t("Ismingiz")}>
+          <Input name="name" required minLength={2} autoComplete="name" placeholder={t("Ism Familiya")} />
         </Field>
-        <Field label="Telefon">
+        <Field label={t("Telefon")}>
           <Input name="phone" required minLength={7} type="tel" autoComplete="tel" placeholder="+998 90 123 45 67" />
         </Field>
       </div>
-      <Field label="Kompaniya">
-        <Input name="company" autoComplete="organization" placeholder="Kompaniya nomi" />
+      <Field label={t("Kompaniya")}>
+        <Input name="company" autoComplete="organization" placeholder={t("Kompaniya nomi")} />
       </Field>
-      <Field label="Izoh">
-        <Textarea name="message" placeholder="Agentlar soni, omborlar soni, qiziqtirgan modullar…" />
+      <Field label={t("Izoh")}>
+        <Textarea name="message" placeholder={t("Agentlar soni, omborlar soni, qiziqtirgan modullar…")} />
       </Field>
       {error && <Alert>{error}</Alert>}
       <Button type="submit" size="lg" className="w-full" disabled={state === "sending"}>
-        {state === "sending" ? "Yuborilmoqda…" : "Demoga yozilish"}
+        {state === "sending" ? t("Yuborilmoqda…") : t("Demoga yozilish")}
       </Button>
-      <p className="text-center text-xs text-ink-500">Formani to&apos;ldirib, shaxsiy ma&apos;lumotlarni qayta ishlashga rozilik bildirasiz.</p>
+      <p className="text-center text-xs text-ink-500">{t("Formani to'ldirib, shaxsiy ma'lumotlarni qayta ishlashga rozilik bildirasiz.")}</p>
     </form>
   );
 }

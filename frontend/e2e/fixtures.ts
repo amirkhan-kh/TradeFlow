@@ -5,8 +5,8 @@ import { Factory } from "./factories";
 interface Fixtures {
   /** Admin API client (same-origin through the Next.js rewrite). */
   api: APIRequestContext;
-  /** API client for any seeded role. */
-  apiAs: (user: RoleUser | null) => Promise<APIRequestContext>;
+  /** API client for any seeded role. Answers in Uzbek; pass `headers` (e.g. `{}`) to replace the default `x-lang`. */
+  apiAs: (user: RoleUser | null, headers?: Record<string, string>) => Promise<APIRequestContext>;
   make: Factory;
   uid: string;
 }
@@ -25,8 +25,12 @@ export const test = base.extend<Fixtures & Options>({
 
   apiAs: async ({ playwright, baseURL }, use) => {
     const made: APIRequestContext[] = [];
-    await use(async (user) => {
-      const ctx = await playwright.request.newContext({ baseURL: `${baseURL}/api/v1/`, storageState: user ? authFile(user) : { cookies: [], origins: [] } });
+    await use(async (user, headers = { "x-lang": "uz" }) => {
+      const ctx = await playwright.request.newContext({
+        baseURL: `${baseURL}/api/v1/`,
+        storageState: user ? authFile(user) : { cookies: [], origins: [] },
+        extraHTTPHeaders: headers,
+      });
       made.push(ctx);
       return ctx;
     });

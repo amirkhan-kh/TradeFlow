@@ -5,7 +5,7 @@ Bar on every public URL you touch (`/`, `/login`): Performance, Accessibility, B
 
 ## Checklist
 
-**SEO** — `export const metadata` per route: unique `title`, `description`, `alternates.canonical`, `openGraph` (title, description, image). `app/robots.ts` + `app/sitemap.ts`. One `h1`. Descriptive link text. `lang="uz"` on `<html>`.
+**SEO** — `export const metadata` per route: unique `title`, `description`, `alternates.canonical`, `openGraph` (title, description, image). `app/robots.ts` + `app/sitemap.ts`. One `h1`. Descriptive link text. `<html lang>` matches the page language (`Document`); language pages carry canonical + hreflang. Audit `/` (ru) and at least one Latin page (`/en` or `/uz`).
 
 **Performance** — Server components first; landing sections static. `next/image` with `width/height` or `fill` + `sizes`; hero image `priority`. `next/font` with `display: "swap"`, subset `latin` + `latin-ext`. No client JS for static sections; `motion`/`recharts` only in client leaves, lazy below the fold (`next/dynamic`). No layout shift: reserve space for images, fonts, charts. Inline SVG icons via `lucide-react` (tree-shaken).
 

@@ -3,11 +3,15 @@
 import { AnimatePresence, useMotionValueEvent, useScroll } from "motion/react";
 import { ArrowUpRight, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { sitePath } from "@/shared/i18n/config";
 import { ButtonLink } from "@/shared/ui/Button";
 import { Logo } from "@/shared/ui/Logo";
 import { EASE, m, Magnetic, ScrollProgress } from "@/shared/ui/motion";
+import type { SiteKey } from "./copy";
+import { useCopy, useSiteLang } from "./SiteCopy";
+import { SiteLangSwitch } from "./SiteLangSwitch";
 
-const NAV = [
+const NAV: [string, SiteKey][] = [
   ["#imkoniyatlar", "Imkoniyatlar"],
   ["#agentlar", "Aqlli agentlar"],
   ["#jarayon", "Qanday ishlaymiz"],
@@ -20,6 +24,8 @@ export function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [hovered, setHovered] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
+  const lang = useSiteLang();
+  const t = useCopy();
 
   useMotionValueEvent(scrollY, "change", (v) => setScrolled(v > 12));
 
@@ -37,8 +43,8 @@ export function Header() {
             scrolled ? "glass" : "border border-white/50 bg-white/30 backdrop-blur-md"
           }`}
         >
-          <Logo />
-          <nav aria-label="Asosiy" className="hidden items-center lg:flex" onMouseLeave={() => setHovered(null)}>
+          <Logo href={sitePath(lang)} label={t("TradeFlow bosh sahifa")} />
+          <nav aria-label={t("Asosiy")} className="hidden items-center lg:flex" onMouseLeave={() => setHovered(null)}>
             {NAV.map(([href, label]) => (
               <a
                 key={href}
@@ -54,17 +60,18 @@ export function Header() {
                     transition={{ type: "spring", stiffness: 420, damping: 34 }}
                   />
                 )}
-                {label}
+                {t(label)}
               </a>
             ))}
           </nav>
           <div className="flex items-center gap-2">
-            <ButtonLink href="#demo" variant="ghost" className="rounded-full! hover:bg-white/70 max-sm:hidden!">
-              Demo so&apos;rash
+            <SiteLangSwitch className="max-sm:hidden" />
+            <ButtonLink href="#demo" variant="ghost" className="rounded-full! hover:bg-white/70 max-xl:hidden!">
+              {t("Demo so'rash")}
             </ButtonLink>
             <Magnetic strength={0.15}>
               <ButtonLink href="/login" className="ring-beam group rounded-full! bg-[#16283a]! pr-3! hover:bg-[#1d3a52]!">
-                Kirish
+                {t("Kirish")}
                 <span className="grid size-6 place-items-center rounded-full bg-white/10 transition-transform duration-300 group-hover:rotate-45">
                   <ArrowUpRight className="size-3.5" />
                 </span>
@@ -73,7 +80,7 @@ export function Header() {
             <button
               className="grid size-10 place-items-center rounded-full border border-white/70 bg-white/70 backdrop-blur lg:hidden"
               onClick={() => setOpen((o) => !o)}
-              aria-label="Menyu"
+              aria-label={t("Menyu")}
               aria-expanded={open}
             >
               {open ? <X className="size-5" /> : <Menu className="size-5" />}
@@ -84,7 +91,7 @@ export function Header() {
         <AnimatePresence>
           {open && (
             <m.nav
-              aria-label="Mobil menyu"
+              aria-label={t("Mobil menyu")}
               initial={{ opacity: 0, y: -8, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.18 } }}
@@ -101,9 +108,10 @@ export function Header() {
                   transition={{ delay: 0.04 * i, duration: 0.3, ease: EASE }}
                   className="rounded-xl px-3 py-3 text-sm font-medium text-ink-700 hover:bg-white/80"
                 >
-                  {label}
+                  {t(label)}
                 </m.a>
               ))}
+              <SiteLangSwitch className="px-1 py-2 sm:hidden" />
             </m.nav>
           )}
         </AnimatePresence>

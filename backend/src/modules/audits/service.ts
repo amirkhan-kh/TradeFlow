@@ -1,10 +1,15 @@
 import { tx, type Db } from "../../core/db.js";
 import { conflict, HttpError, notFound } from "../../core/http.js";
 import * as stock from "../stock/repository.js";
+import { assertAssignee } from "../users/service.js";
 import * as repo from "./repository.js";
 
+/** Without an explicit auditor the manager who starts the audit runs it. */
 export function create(input: { warehouse_id: number; auditor_id?: number | null; note?: string }, userId: number) {
-  return tx((db) => repo.insert(db, { ...input, auditor_id: input.auditor_id ?? userId }));
+  return tx(async (db) => {
+    await assertAssignee(input.auditor_id, ["auditor"], db);
+    return repo.insert(db, { ...input, auditor_id: input.auditor_id ?? userId });
+  });
 }
 
 async function lockOpen(db: Db, id: number) {

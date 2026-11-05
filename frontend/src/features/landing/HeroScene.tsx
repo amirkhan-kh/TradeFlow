@@ -5,6 +5,7 @@ import { BadgeCheck, Bot, ShieldCheck, TrendingUp, Truck } from "lucide-react";
 import type { ReactNode } from "react";
 import { LogoMark } from "@/shared/ui/Logo";
 import { CountUp, m } from "@/shared/ui/motion";
+import { useCopy } from "./SiteCopy";
 
 const AREA = "M0 62 C 24 56, 40 60, 62 46 S 104 30, 128 36 S 176 14, 200 10";
 
@@ -39,6 +40,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
   const front = useTransform(progress, [0, 1], [90, 240]);
   const near = useTransform(progress, [0, 1], [0, -110]);
   const far = useTransform(progress, [0, 1], [0, -45]);
+  const t = useCopy();
 
   return (
     <div
@@ -61,7 +63,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
             <span className="size-2 rounded-full bg-ink-300" />
             <span className="size-2 rounded-full bg-ink-300" />
             <span className="size-2 rounded-full bg-ink-300" />
-            <span className="ml-2 text-[11px] font-medium text-ink-600">Jonli dashboard</span>
+            <span className="ml-2 text-[11px] font-medium text-ink-600">{t("Jonli dashboard")}</span>
             <span className="ml-auto flex items-center gap-1.5 rounded-full bg-white/80 px-2 py-0.5 text-[10px] font-bold text-ink-700">
               <span className="relative flex size-1.5">
                 <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand-400 opacity-75" />
@@ -72,16 +74,16 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
           </div>
           <div className="mt-4 grid grid-cols-2 gap-3">
             <div>
-              <p className="text-[11px] text-ink-600">Oylik tushum</p>
+              <p className="text-[11px] text-ink-600">{t("Oylik tushum")}</p>
               <p className="flex items-baseline gap-1.5 text-xl font-extrabold text-ink-900">
-                361 mln
+                {t("361 mln")}
                 <span className="inline-flex items-center gap-0.5 text-[11px] font-bold text-brand-700">
                   <TrendingUp className="size-3" /> 18%
                 </span>
               </p>
             </div>
             <div>
-              <p className="text-[11px] text-ink-600">Faol buyurtmalar</p>
+              <p className="text-[11px] text-ink-600">{t("Faol buyurtmalar")}</p>
               <p className="text-xl font-extrabold text-ink-900">1 248</p>
             </div>
           </div>
@@ -105,14 +107,14 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
 
         <m.div style={{ z: mid }} className="glass absolute right-0 bottom-[6%] w-[70%] rounded-xl p-3.5 sm:w-[64%] sm:p-4">
           <p className="flex items-center justify-between text-xs font-bold text-ink-900">
-            Buyurtmalar oqimi <span className="text-[10px] font-medium text-ink-600">bugun</span>
+            {t("Buyurtmalar oqimi")} <span className="text-[10px] font-medium text-ink-600">{t("bugun")}</span>
           </p>
           <ul className="mt-2.5 space-y-1.5">
             {ORDERS.map(([id, client, status, tone]) => (
               <li key={id} className="flex items-center gap-2 rounded-xl bg-white/70 px-2.5 py-1.5 text-[11px]">
                 <span className="font-mono font-semibold whitespace-nowrap text-ink-700">{id}</span>
                 <span className="hidden truncate text-ink-600 sm:inline">{client}</span>
-                <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${tone}`}>{status}</span>
+                <span className={`ml-auto shrink-0 rounded-full px-2 py-0.5 text-[10px] font-bold ${tone}`}>{t(status)}</span>
               </li>
             ))}
           </ul>
@@ -131,17 +133,17 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
             <BadgeCheck className="size-5" />
           </span>
           <div>
-            <p className="text-xs text-ink-600">Audit AU-00031</p>
-            <p className="text-sm font-bold text-ink-900">Tasdiqlandi</p>
+            <p className="text-xs text-ink-600">{t("Audit {n}", { n: "AU-00031" })}</p>
+            <p className="text-sm font-bold text-ink-900">{t("Tasdiqlandi")}</p>
           </div>
         </div>
       </Chip>
 
       <Chip y={far} z={mid} delay={0.6} className="top-[52%] -left-2 hidden sm:block">
         <p className="flex items-center gap-1.5 text-xs font-semibold text-[#32536b]">
-          <Bot className="size-3.5" /> Ombor agenti
+          <Bot className="size-3.5" /> {t("Ombor agenti")}
         </p>
-        <p className="mt-1 max-w-[11rem] text-xs leading-snug text-ink-700">Coca-Cola 1.5L — 3 kunlik zaxira qoldi</p>
+        <p className="mt-1 max-w-[11rem] text-xs leading-snug text-ink-700">{t("Coca-Cola 1.5L — 3 kunlik zaxira qoldi")}</p>
       </Chip>
 
       <Chip y={near} z={mid} delay={0.75} className="bottom-0 left-[2%] hidden sm:block">
@@ -150,7 +152,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
             <Truck className="size-5" />
           </span>
           <div>
-            <p className="text-xs text-ink-600">O&apos;z vaqtida yetkazish</p>
+            <p className="text-xs text-ink-600">{t("O'z vaqtida yetkazish")}</p>
             <p className="text-sm font-bold text-ink-900">
               <CountUp to={98.4} decimals={1} suffix="%" />
             </p>
@@ -162,7 +164,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
         className="glass animate-pop absolute -bottom-10 left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap text-ink-700 lg:flex"
         style={{ animationDelay: "0.85s" }}
       >
-        <ShieldCheck className="size-4 text-[#32536b]" /> Ma&apos;lumotlar shifrlangan
+        <ShieldCheck className="size-4 text-[#32536b]" /> {t("Ma'lumotlar shifrlangan")}
       </div>
     </div>
   );

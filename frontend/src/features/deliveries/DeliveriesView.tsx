@@ -37,7 +37,7 @@ interface Summary {
 
 export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string }) {
   const list = usePaged<Delivery, Summary>("/deliveries", initialStatus);
-  const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier");
+  const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier&status=active");
   const [error, setError] = useState<string>();
   const [picked, setPicked] = useState<Record<number, number | null>>({});
   const s = list.data?.summary;

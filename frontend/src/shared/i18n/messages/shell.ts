@@ -7,6 +7,12 @@ export const shell = {
   Ombor: { ru: "Склад", en: "Warehouse", ky: "Кампа" },
   "Logistika va moliya": { ru: "Логистика и финансы", en: "Logistics & finance", ky: "Логистика жана финансы" },
   Sozlamalar: { ru: "Настройки", en: "Settings", ky: "Жөндөөлөр" },
+  "TradeFlow bosh sahifa": { ru: "Главная страница TradeFlow", en: "TradeFlow home page", ky: "TradeFlow башкы бети" },
+  "Ombor, yuk mashinalari va yetkazib berish marshruti": {
+    ru: "Склад, грузовики и маршрут доставки",
+    en: "Warehouse, trucks and a delivery route",
+    ky: "Кампа, жүк ташуучу унаалар жана жеткирүү маршруту",
+  },
   Dashboard: { ru: "Дашборд", en: "Dashboard", ky: "Дашборд", cy: "Дашборд" },
   "Aqlli agentlar": { ru: "Умные агенты", en: "Smart agents", ky: "Акылдуу агенттер" },
   Buyurtmalar: { ru: "Заказы", en: "Orders", ky: "Буйрутмалар" },

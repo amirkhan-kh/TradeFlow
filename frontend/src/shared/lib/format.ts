@@ -1,5 +1,5 @@
 import type { Lang } from "@/shared/i18n/config";
-import { activeLang } from "@/shared/i18n/translate";
+import { activeLang } from "@/shared/i18n/active";
 
 const num = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 0 });
 

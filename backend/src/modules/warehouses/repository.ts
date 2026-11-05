@@ -1,4 +1,4 @@
-import { pool } from "../../core/db.js";
+import { pool, type Db } from "../../core/db.js";
 import type { PageQuery } from "../../core/http.js";
 
 export interface WarehouseInput {
@@ -27,13 +27,21 @@ const SELECT = `
     SELECT status, created_at FROM audits WHERE warehouse_id = w.id ORDER BY created_at DESC LIMIT 1
   ) a ON TRUE`;
 
-export async function list({ page, limit, q }: PageQuery) {
-  const where = `WHERE ($1::text IS NULL OR w.name ILIKE '%' || $1 || '%' OR w.city ILIKE '%' || $1 || '%' OR w.code ILIKE '%' || $1 || '%')`;
+export async function list({ page, limit, q, active }: PageQuery & { active?: boolean }) {
+  const where = `WHERE ($1::text IS NULL OR w.name ILIKE '%' || $1 || '%' OR w.city ILIKE '%' || $1 || '%' OR w.code ILIKE '%' || $1 || '%')
+    AND ($2::boolean IS NULL OR w.active = $2)`;
+  const params = [q || null, active ?? null];
   const [items, count] = await Promise.all([
-    pool.query(`${SELECT} ${where} ORDER BY w.id LIMIT $2 OFFSET $3`, [q || null, limit, (page - 1) * limit]),
-    pool.query(`SELECT COUNT(*) FROM warehouses w ${where}`, [q || null]),
+    pool.query(`${SELECT} ${where} ORDER BY w.id LIMIT $3 OFFSET $4`, [...params, limit, (page - 1) * limit]),
+    pool.query(`SELECT COUNT(*) FROM warehouses w ${where}`, params),
   ]);
   return { items: items.rows, total: count.rows[0].count, page, limit };
+}
+
+/** Closed warehouses keep their history but take no new orders or incoming stock. */
+export async function isActive(db: Db, id: number) {
+  const { rows } = await db.query<{ active: boolean }>(`SELECT active FROM warehouses WHERE id = $1`, [id]);
+  return rows[0]?.active === true;
 }
 
 export async function get(id: number) {

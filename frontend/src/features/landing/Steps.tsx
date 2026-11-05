@@ -5,6 +5,7 @@ import { GraduationCap, Headset, Rocket, ScanSearch } from "lucide-react";
 import { useRef } from "react";
 import { m, Stagger, StaggerItem } from "@/shared/ui/motion";
 import { Section } from "./Section";
+import { useCopy } from "./SiteCopy";
 
 const STEPS = [
   [ScanSearch, "Audit", "Mahsulot, biznes va distribyutsiya tuzilmasini o'rganamiz, yaxshilash bo'yicha tavsiyalar beramiz va tizimni sozlaymiz."],
@@ -17,9 +18,10 @@ export function Steps() {
   const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start 80%", "end 50%"] });
   const progress = useSpring(scrollYProgress, { stiffness: 100, damping: 24 });
+  const t = useCopy();
 
   return (
-    <Section id="jarayon" eyebrow="Biz bilan ishlash bosqichlari" title="Hamkorlik qanday o'tadi?" fx={{ variant: "beams" }} backdrop={{ src: "/landing/steps-surreal.webp", className: "opacity-90" }}>
+    <Section id="jarayon" eyebrow={t("Biz bilan ishlash bosqichlari")} title={t("Hamkorlik qanday o'tadi?")} fx={{ variant: "beams" }} backdrop={{ src: "/landing/steps-surreal.webp", className: "opacity-90" }}>
       <div ref={ref} className="relative">
         <div aria-hidden className="absolute top-14 right-[12.5%] left-[12.5%] hidden h-1 rounded-full bg-white/80 lg:block">
           <m.div
@@ -34,8 +36,8 @@ export function Steps() {
                 <Icon className="size-7" />
                 <span className="absolute -top-2 -right-2 grid size-7 place-items-center rounded-full bg-white text-xs font-extrabold text-[#32536b] shadow-soft ring-2 ring-brand-200">{i + 1}</span>
               </m.span>
-              <h3 className="mt-6 text-lg font-bold text-ink-900">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-ink-600">{text}</p>
+              <h3 className="mt-6 text-lg font-bold text-ink-900">{t(title)}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-ink-600">{t(text)}</p>
             </StaggerItem>
           ))}
         </Stagger>

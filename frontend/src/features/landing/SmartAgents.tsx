@@ -6,14 +6,17 @@ import Image from "next/image";
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { Aurora } from "@/shared/ui/Aurora";
 import { m, SpotlightCard } from "@/shared/ui/motion";
+import { Accent } from "./Accent";
+import type { SiteKey } from "./copy";
+import { useCopy } from "./SiteCopy";
 
-const AGENTS = [
+const AGENTS: [typeof Warehouse, SiteKey, SiteKey, SiteKey][] = [
   [Warehouse, "Ombor agenti", "Har bir tovarning kunlik sotuvini hisoblab, necha kunda tugashini aytadi va qancha buyurtma berishni tavsiya qiladi.", "Coca-Cola 1.5L — 3 kunlik zaxira. 101 dona buyurtma bering."],
   [HandCoins, "Moliya agenti", "Kredit limitidan oshgan mijozlarni topadi, undirish darajasini kuzatadi.", "Baraka Market limitdan 13.9 mln so'mga oshdi."],
   [ClipboardCheck, "Audit agenti", "Uzoq vaqt tekshirilmagan omborlarni va katta kamomadli auditlarni ko'rsatadi.", "Buxoro Ombori: hali audit o'tkazilmagan."],
   [TrendingUp, "Sotuv agenti", "Rejadan ortda qolgan agentlar va buyurtma bermay qo'ygan mijozlarni aniqlaydi, prognoz beradi.", "Keyingi oy prognozi: 458 mln so'm."],
   [Route, "Logistika agenti", "Kechikayotgan va muvaffaqiyatsiz yetkazishlarni darhol ko'rsatadi.", "3 ta yetkazish rejadan kechikmoqda."],
-] as const;
+];
 
 /** Backdrop artwork per agent (same order as AGENTS): file, art style, glow colour (r g b). */
 const ART = [
@@ -59,6 +62,7 @@ export function SmartAgents() {
   const [height, setHeight] = useState<number>();
   const [active, setActive] = useState(0);
   const distance = useMotionValue(0);
+  const t = useCopy();
 
   const { scrollYProgress: enter } = useScroll({ target: section, offset: ["start end", "start start"] });
   const { scrollYProgress: rail } = useScroll({ target: section, offset: ["start start", "end end"] });
@@ -173,29 +177,29 @@ export function SmartAgents() {
         >
           <m.div style={reduce ? undefined : { opacity: intro, x: introX }} className="flex flex-col justify-center motion-safe:w-[86vw] motion-safe:shrink-0 sm:motion-safe:w-[30rem] lg:motion-safe:mr-10">
             <p className="glass-dark inline-flex w-fit items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-wide text-[#cfe3ef]">
-              <Bot className="size-3.5" /> SalesDoctor&apos;dan bir qadam oldinda
+              <Bot className="size-3.5" /> {t("SalesDoctor'dan bir qadam oldinda")}
             </p>
             <h2 className="mt-5 text-4xl font-extrabold tracking-[-0.035em] text-balance sm:text-5xl sm:leading-[1.05]">
-              5 ta aqlli agent biznesingizni <span className="text-aurora-dark">24/7 kuzatadi</span>
+              <Accent text={t("5 ta aqlli agent biznesingizni {accent}")} accent={t("24/7 kuzatadi")} className="text-aurora-dark" />
             </h2>
-            <p className="mt-5 text-lg text-white/70">Hisobot kutish shart emas. Agentlar har safar ma&apos;lumotlarni tahlil qilib, aniq harakatni taklif qiladi.</p>
+            <p className="mt-5 text-lg text-white/70">{t("Hisobot kutish shart emas. Agentlar har safar ma'lumotlarni tahlil qilib, aniq harakatni taklif qiladi.")}</p>
             <div aria-hidden className="mt-10 h-1 w-48 overflow-hidden rounded-full bg-white/10 motion-reduce:hidden">
               <m.div className="h-full origin-left rounded-full bg-gradient-to-r from-[#9cc3dc] to-[#8bc474]" style={{ scaleX: rail }} />
             </div>
           </m.div>
 
           {AGENTS.map((agent, i) => (
-            <AgentCard key={agent[1]} agent={agent} index={i + 1} shift={x} layout={layout} />
+            <AgentCard key={agent[1]} agent={agent} index={i + 1} shift={x} layout={layout} t={t} />
           ))}
 
           <div className="hidden flex-col justify-center lg:motion-safe:ml-[max(2rem,calc(49vw-28.25rem))] lg:motion-safe:flex lg:motion-safe:w-[22rem] lg:motion-safe:shrink-0">
-            <p className="font-mono text-[11px] tracking-[0.3em] text-[#9cc3dc] uppercase">05 / 05 · barchasi faol</p>
-            <p className="mt-4 text-3xl font-bold tracking-tight text-balance">Agentlar tayyor. Navbat sizning ma&apos;lumotlaringizda.</p>
+            <p className="font-mono text-[11px] tracking-[0.3em] text-[#9cc3dc] uppercase">05 / 05 · {t("barchasi faol")}</p>
+            <p className="mt-4 text-3xl font-bold tracking-tight text-balance">{t("Agentlar tayyor. Navbat sizning ma'lumotlaringizda.")}</p>
             <a
               href="#demo"
               className="group mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-white px-5 py-2.5 text-sm font-bold text-[#0f2031] transition-colors hover:bg-[#e3f0f8]"
             >
-              Demo so&apos;rash <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+              {t("Demo so'rash")} <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
             </a>
           </div>
         </m.div>
@@ -209,11 +213,13 @@ function AgentCard({
   index,
   shift,
   layout,
+  t,
 }: {
   agent: (typeof AGENTS)[number];
   index: number;
   shift: MotionValue<number>;
   layout: RefObject<Layout>;
+  t: ReturnType<typeof useCopy>;
 }) {
   const shown = useTransform(shift, (v) => smooth(presence(layout.current, index, v)));
   const scale = useTransform(shown, [0, 1], [0.9, 1]);
@@ -233,14 +239,14 @@ function AgentCard({
             <span className="absolute inline-flex size-full animate-ping rounded-full bg-[#8bc474] opacity-60" />
             <span className="relative inline-flex size-2 rounded-full bg-[#8bc474]" />
           </span>
-          faol
+          {t("faol")}
         </span>
       </div>
-      <h3 className="relative mt-8 text-2xl font-bold tracking-tight">{name}</h3>
-      <p className="relative mt-3 text-sm leading-relaxed text-white/75">{text}</p>
+      <h3 className="relative mt-8 text-2xl font-bold tracking-tight">{t(name)}</h3>
+      <p className="relative mt-3 text-sm leading-relaxed text-white/75">{t(text)}</p>
       <p className="relative mt-auto pt-8">
         <span className="block rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 font-mono text-xs leading-relaxed text-[#d6e8f3]">
-          <span className="text-[#a6d48a]">›</span> {sample}
+          <span className="text-[#a6d48a]">›</span> {t(sample)}
         </span>
       </p>
     </SpotlightCard>

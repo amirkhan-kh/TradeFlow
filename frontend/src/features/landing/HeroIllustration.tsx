@@ -50,7 +50,8 @@ const kraft: Colors = { top: "#ecd2a6", right: "#cfa772", left: "#ddb886" };
 const greenBox: Colors = { top: "#3dae7f", right: "#0f6044", left: "#137852" };
 const navyBox: Colors = { top: "#2a4a6b", right: "#0f2236", left: "#18324d" };
 
-export function HeroIllustration() {
+/** `label` is the translated accessible name of the drawing. */
+export function HeroIllustration({ label }: { label: string }) {
   const wx = 40;
   const wy = 20;
   const ww = 170;
@@ -60,7 +61,7 @@ export function HeroIllustration() {
   const midY = wy + wd / 2;
 
   return (
-    <svg viewBox="0 0 600 440" className="h-auto w-full" role="img" aria-label="Ombor, yuk mashinalari va yetkazib berish marshruti">
+    <svg viewBox="0 0 600 440" className="h-auto w-full" role="img" aria-label={label}>
       <defs>
         <linearGradient id="pf" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#ecf8f2" />

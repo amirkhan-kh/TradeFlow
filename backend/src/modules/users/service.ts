@@ -1,7 +1,8 @@
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-import { tx } from "../../core/db.js";
-import { conflict, notFound } from "../../core/http.js";
+import type { Role } from "../../core/auth.js";
+import { pool, tx, type Db } from "../../core/db.js";
+import { conflict, HttpError, notFound } from "../../core/http.js";
 import { log } from "../activity/repository.js";
 import * as repo from "./repository.js";
 import type { UserInput } from "./repository.js";
@@ -25,6 +26,13 @@ export const profileFields = {
   phone: z.string().trim().max(40).optional(),
   email: z.email("Email noto'g'ri").optional().or(z.literal("").transform(() => undefined)),
 };
+
+/** Agents, couriers and auditors are assigned by id: it must be an active user in one of the expected roles. */
+export async function assertAssignee(id: number | null | undefined, roles: Role[], db: Db = pool) {
+  if (id == null) return;
+  const user = await repo.findById(id, db);
+  if (!user?.active || !roles.includes(user.role)) throw new HttpError(422, "Xodim topilmadi yoki bu vazifaga mos emas");
+}
 
 function guardLastAdmin(admins: number[], userId: number) {
   if (admins.length === 1 && admins[0] === userId) throw conflict("Kamida bitta faol administrator qolishi kerak");

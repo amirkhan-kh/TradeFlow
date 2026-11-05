@@ -31,11 +31,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
         <section className="relative hidden overflow-hidden bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950 p-12 text-white lg:flex lg:flex-col">
           <LoginBackdrop />
           <div className="relative">
-            <Logo light />
+            <Logo light label={t("TradeFlow bosh sahifa")} />
           </div>
           <div className="relative my-auto">
             <div className="mx-auto max-w-md rounded-2xl bg-white/95 p-4 shadow-2xl">
-              <HeroIllustration />
+              <HeroIllustration label={t("Ombor, yuk mashinalari va yetkazib berish marshruti")} />
             </div>
             <h2 className="mt-10 text-3xl font-extrabold tracking-tight">{t("Ombordan savdo nuqtasigacha — to'liq nazorat")}</h2>
             <ul className="mt-6 space-y-3 text-brand-100/90">

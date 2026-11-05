@@ -48,12 +48,16 @@ test.describe("I18N · dashboard shell", () => {
     }
   });
 
-  test("[I18N-01][S3] unknown language cookie falls back to Uzbek", async ({ page }) => {
-    await page.context().addCookies([setLang("de")]);
-    await page.goto("/dashboard");
-    await expect(page.getByRole("heading", { level: 1, name: "Dashboard" })).toBeVisible();
-    await expect(page.getByRole("link", { name: "Buyurtmalar" })).toBeVisible();
-    await expect(page.getByLabel("Til")).toHaveValue("uz");
+  test.describe(() => {
+    test.use({ extraHTTPHeaders: {} });
+
+    test("[I18N-01][S3] unknown language cookie falls back to Russian", async ({ page }) => {
+      await page.context().addCookies([setLang("de")]);
+      await page.goto("/dashboard");
+      await expect(page.getByRole("heading", { level: 1, name: "Дашборд" })).toBeVisible();
+      await expect(page.getByRole("link", { name: "Заказы" })).toBeVisible();
+      await expect(page.getByLabel("Язык")).toHaveValue("ru");
+    });
   });
 });
 
@@ -110,7 +114,7 @@ test.describe("I18N · API messages", () => {
   });
 
   test("[I18N-03][S2] Accept-Language works for API clients without the cookie; templated messages keep their values", async ({ apiAs }) => {
-    const anon = await apiAs(null);
+    const anon = await apiAs(null, {});
     const res = await anon.get("dashboard", { headers: { "accept-language": "en-GB,en;q=0.9" } });
     expect((await res.json()).error).toBe("Authorization required");
 
@@ -125,9 +129,85 @@ test.describe("I18N · API messages", () => {
     expect((await order.json()).error).toBe("Product #99999999 not found or inactive");
   });
 
-  test("[I18N-03][S3] unknown language falls back to Uzbek", async ({ apiAs }) => {
-    const anon = await apiAs(null);
+  test("[I18N-03][S3] unknown language falls back to Russian", async ({ apiAs }) => {
+    const anon = await apiAs(null, {});
     const res = await anon.get("dashboard", { headers: { cookie: "tf_lang=de", "accept-language": "de-DE" } });
-    expect((await res.json()).error).toBe("Avtorizatsiya talab qilinadi");
+    expect((await res.json()).error).toBe("Требуется авторизация");
+  });
+});
+
+/** Public site per language: URL, <html lang>, og:locale, start of the h1 and <title>, header "Features" link. */
+const SITE_PAGES: Record<Lang, { path: string; html: string; og: string; h1: string; title: string; features: string }> = {
+  ru: { path: "/", html: "ru-RU", og: "ru_RU", h1: "Управляйте крупной торговлей", title: "TradeFlow — система управления", features: "Возможности" },
+  uz: { path: "/uz", html: "uz-Latn-UZ", og: "uz_UZ", h1: "Yirik savdo va omborxona", title: "TradeFlow — savdo, ombor", features: "Imkoniyatlar" },
+  "uz-Cyrl": { path: "/uz-cyrl", html: "uz-Cyrl-UZ", og: "uz_UZ", h1: "Йирик савдо ва омборхона", title: "TradeFlow — савдо, омбор", features: "Имкониятлар" },
+  en: { path: "/en", html: "en-US", og: "en_US", h1: "Run large-scale trade", title: "TradeFlow — sales, warehouse", features: "Features" },
+  ky: { path: "/ky", html: "ky-KG", og: "ky_KG", h1: "Ири соода жана кампа", title: "TradeFlow — соода, кампа", features: "Мүмкүнчүлүктөр" },
+};
+
+const langCookie = async (page: import("@playwright/test").Page) => (await page.context().cookies()).find((c) => c.name === "tf_lang")?.value;
+const bodyFont = (page: import("@playwright/test").Page) => page.evaluate(() => getComputedStyle(document.body).fontFamily);
+
+test.describe("I18N · public site", () => {
+  test.use({ storageState: { cookies: [], origins: [] }, extraHTTPHeaders: {} });
+
+  test("[I18N-04][S1] every language has its own URL with translated copy and meta: html lang, title, og:locale, canonical, hreflang", async ({ page }) => {
+    for (const [lang, want] of Object.entries(SITE_PAGES)) {
+      await page.context().clearCookies();
+      await page.goto(want.path);
+      await expect(page.locator("html"), lang).toHaveAttribute("lang", want.html);
+      expect(await page.title(), lang).toContain(want.title);
+      await expect(page.locator('meta[property="og:locale"]')).toHaveAttribute("content", want.og);
+      expect(new URL((await page.locator('meta[property="og:url"]').getAttribute("content"))!).pathname, lang).toBe(want.path);
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(want.h1);
+      await expect(page.locator("header nav").first().getByRole("link", { name: want.features })).toBeVisible();
+      expect(new URL((await page.locator('link[rel="canonical"]').getAttribute("href"))!).pathname, lang).toBe(want.path);
+      await expect(page.locator('link[rel="alternate"][hreflang]')).toHaveCount(6);
+      expect(new URL((await page.locator('link[rel="alternate"][hreflang="x-default"]').getAttribute("href"))!).pathname).toBe("/");
+    }
+  });
+
+  test("[I18N-04][S2] picking a language opens its URL, / remembers it, /login follows it, footer switches back", async ({ page }) => {
+    await page.goto("/");
+    await hydrated(page, "header select");
+    await page.getByRole("combobox", { name: "Язык" }).selectOption("en");
+    await expect(page).toHaveURL(/\/en$/);
+    await expect(page.getByRole("heading", { level: 1 })).toContainText("Run large-scale trade");
+    expect(await langCookie(page)).toBe("en");
+
+    await page.goto("/");
+    await expect(page).toHaveURL(/\/en$/);
+    await page.goto("/login");
+    await expect(page.getByRole("heading", { level: 1, name: "Welcome to TradeFlow" })).toBeVisible();
+
+    await page.goto("/en");
+    await page.getByRole("contentinfo").getByRole("link", { name: "Русский" }).click();
+    await expect(page.locator("html")).toHaveAttribute("lang", "ru-RU");
+    expect(new URL(page.url()).pathname).toBe("/");
+    expect(await langCookie(page)).toBe("ru");
+  });
+
+  test("[I18N-04][S2] @mobile language picker sits in the mobile menu", async ({ page }) => {
+    await page.goto("/en");
+    await hydrated(page, "header button[aria-expanded]");
+    await page.getByRole("button", { name: "Menu" }).click();
+    await page.getByRole("combobox", { name: "Language" }).selectOption("ky");
+    await expect(page).toHaveURL(/\/ky$/);
+    await expect(page.locator("html")).toHaveAttribute("lang", "ky-KG");
+  });
+
+  test("[I18N-04][S3] /ru folds into /, unknown language URL is 404, Cyrillic pages use Manrope, sitemap lists every language", async ({ page, request }) => {
+    await page.goto("/ru");
+    expect(new URL(page.url()).pathname).toBe("/");
+    expect((await page.goto("/de"))!.status()).toBe(404);
+
+    await page.goto("/ky");
+    expect(await bodyFont(page)).toContain("Manrope");
+    await page.goto("/en");
+    expect(await bodyFont(page)).toContain("Plus Jakarta Sans");
+
+    const sitemap = await (await request.get("/sitemap.xml")).text();
+    for (const path of ["/uz", "/uz-cyrl", "/en", "/ky"]) expect(sitemap).toContain(`${path}</loc>`);
+    expect(sitemap).toContain('hreflang="uz-Cyrl"');
   });
 });

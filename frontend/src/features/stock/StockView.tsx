@@ -229,11 +229,11 @@ function MoveForm({ type, onDone }: { type: MoveType; onDone: () => void }) {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className={`grid gap-4 ${type === "transfer" ? "sm:grid-cols-2" : ""}`}>
         <Field label={type === "transfer" ? "Qaysi ombordan" : "Ombor"}>
-          <WarehouseSelect name="warehouse_id" required value={from} onChange={setFrom} />
+          <WarehouseSelect params={{ active: "true" }} name="warehouse_id" required value={from} onChange={setFrom} />
         </Field>
         {type === "transfer" && (
           <Field label="Qaysi omborga">
-            <WarehouseSelect name="to_warehouse_id" required value={to} onChange={setTo} />
+            <WarehouseSelect params={{ active: "true" }} name="to_warehouse_id" required value={to} onChange={setTo} />
           </Field>
         )}
       </div>

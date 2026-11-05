@@ -44,6 +44,10 @@ export const errorHandler: ErrorRequestHandler = (err, req, res, _next) => {
     res.status(409).json({ error: translate(lang, "Bunday yozuv allaqachon mavjud") });
     return;
   }
+  if (err?.code === "23503") {
+    res.status(422).json({ error: translate(lang, "Bog'langan yozuv topilmadi") });
+    return;
+  }
   console.error(err);
   res.status(500).json({ error: translate(lang, "Server xatosi") });
 };

@@ -7,6 +7,9 @@ export const authFile = (user: RoleUser) => `e2e/.auth/${user}.json`;
 
 export default async function globalSetup(config: FullConfig) {
   const baseURL = config.projects[0].use.baseURL!;
+  if (new URL(baseURL).port === "3001" && !process.env.E2E_ALLOW_MAIN_DB) {
+    throw new Error("E2E creates data: run it against the tradeflow-e2e stack (http://localhost:3101), not the main one on :3001.");
+  }
   await mkdir("e2e/.auth", { recursive: true });
 
   const probe = await request.newContext({ baseURL });

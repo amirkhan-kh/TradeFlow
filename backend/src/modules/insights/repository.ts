@@ -4,15 +4,15 @@ const rows = async <T>(sql: string) => (await pool.query(sql)).rows as T[];
 
 export const stockCover = () =>
   rows<{ product_id: number; name: string; warehouse_name: string; available: number; daily: number }>(`
+    WITH o AS (
+      SELECT product_id, warehouse_id, SUM(quantity) AS out_30 FROM stock_movements
+      WHERE type = 'out' AND created_at >= now() - interval '30 days'
+      GROUP BY product_id, warehouse_id HAVING SUM(quantity) > 0
+    )
     SELECT p.id AS product_id, p.name, w.name AS warehouse_name, (s.quantity - s.reserved) AS available,
-      COALESCE(o.out_30, 0) / 30.0 AS daily
-    FROM stock s JOIN products p ON p.id = s.product_id JOIN warehouses w ON w.id = s.warehouse_id
-    LEFT JOIN LATERAL (
-      SELECT SUM(m.quantity) AS out_30 FROM stock_movements m
-      WHERE m.type = 'out' AND m.product_id = s.product_id AND m.warehouse_id = s.warehouse_id
-        AND m.created_at >= now() - interval '30 days'
-    ) o ON TRUE
-    WHERE COALESCE(o.out_30, 0) > 0`);
+      o.out_30 / 30.0 AS daily
+    FROM o JOIN stock s ON s.product_id = o.product_id AND s.warehouse_id = o.warehouse_id
+    JOIN products p ON p.id = s.product_id JOIN warehouses w ON w.id = s.warehouse_id`);
 
 export const expiring = () =>
   rows<{ name: string; expires_at: string; units: number }>(`

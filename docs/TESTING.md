@@ -60,7 +60,7 @@ export default defineConfig({
   fullyParallel: false,
   workers: 1,
   reporter: [["list"], ["html", { open: "never" }]],
-  use: { baseURL: "http://localhost:3001", trace: "retain-on-failure", screenshot: "only-on-failure" },
+  use: { baseURL: "http://localhost:3101", trace: "retain-on-failure", screenshot: "only-on-failure" },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] } },
     { name: "mobile", use: { ...devices["Pixel 7"] }, grep: /@mobile/ },
@@ -69,7 +69,14 @@ export default defineConfig({
 ```
 
 Scripts in `frontend/package.json`: `"test:e2e": "playwright test"`, `"test:e2e:ui": "playwright test --ui"`.
-Stack: `docker compose up --build -d` (fresh: needs permit for `down -v`).
+Stack: tests create data, so they run on their **own** compose project — never on the main one (`:3001`), whose
+database holds the real seed. `global-setup` refuses `:3001` unless `E2E_ALLOW_MAIN_DB=1`.
+
+```bash
+WEB_PORT=3101 API_PORT=4101 docker compose -p tradeflow-e2e up -d --build     # first start seeds (~2 min)
+docker compose -p tradeflow-e2e exec backend npm run verify:data               # data invariants, exit 1 on any break
+docker compose -p tradeflow-e2e down -v                                        # throw the test data away
+```
 
 ## Writing rules
 
@@ -83,7 +90,7 @@ Stack: `docker compose up --build -d` (fresh: needs permit for `down -v`).
 
 ## Commands
 
-Env: `E2E_BASE_URL` (default `http://localhost:3001`) points the suite at any running build, e.g. a local
+Env: `E2E_BASE_URL` (default `http://localhost:3101`, the e2e stack) points the suite at any running build, e.g. a local
 `next start -p 3002` production build or a preview URL; `E2E_REPEAT` overrides `repeatEach` (release bar: `4`).
 Login forms are driven through `signIn()` / `hydrated()` in `e2e/helpers.ts`, which wait for React hydration so a
 click never lands on the server-rendered form before its handler exists.
@@ -127,13 +134,14 @@ Each screen gets its own copies: `WH-L1`, `PRD-L1`, …
 
 ### I18N — languages (`uz`, `uz-Cyrl`, `ru`, `en`, `ky`; P1)
 
-Tests keep using Uzbek labels: `uz` is the default and the dictionary key. Language-specific checks live in `e2e/i18n.spec.ts`.
+The default language is `ru`, but tests keep using Uzbek labels: Playwright sends `x-lang: uz` (`playwright.config.ts`, `apiAs`), which the frontend and the API honour after the `tf_lang` cookie. Tests that check the default drop it (`test.use({ extraHTTPHeaders: {} })`, `apiAs(user, {})`). Landing specs open `/uz`. Language-specific checks live in `e2e/i18n.spec.ts`.
 
 | ID | Function | S1 | S2 | S3 |
 |---|---|---|---|---|
-| I18N-01 | "Til" switcher in the shell | Russian → shell, overview, badges translated; `tf_lang` cookie persists across pages | All 5 languages: heading, nav, KPI, `<html lang>`; no Uzbek words left in shell/KPI | Unknown cookie value → Uzbek |
+| I18N-01 | "Til" switcher in the shell | Russian → shell, overview, badges translated; `tf_lang` cookie persists across pages | All 5 languages: heading, nav, KPI, `<html lang>`; no Uzbek words left in shell/KPI | Unknown cookie value → Russian (default) |
 | I18N-02 | `/login` in other languages | English switcher → English labels → sign in → English dashboard | `uz-Cyrl`: brand stays Latin (`TradeFlow'га`) | Wrong password → API error in the chosen language |
-| I18N-03 | API messages | `tf_lang` cookie → error text per language | `Accept-Language` / `x-lang`; templated message keeps its values | Unknown language → Uzbek |
+| I18N-03 | API messages | `tf_lang` cookie → error text per language | `Accept-Language` / `x-lang`; templated message keeps its values | Unknown language → Russian (default) |
+| I18N-04 | Public site per language (`/` = ru, `/uz`, `/uz-cyrl`, `/en`, `/ky`) | Each URL: translated h1 + header nav, `<html lang>`, `<title>`, `og:locale`, `og:url` + canonical = own URL, 6 hreflang links, `x-default` = `/` | Header picker → `/en`, cookie `en`; `/` then redirects to `/en`; `/login` in English; footer "Русский" → `/` + cookie `ru`. `@mobile`: picker inside the mobile menu | `/ru` → `/`; `/de` → 404; Cyrillic pages use Manrope, Latin pages Plus Jakarta Sans; sitemap lists every language with hreflang |
 
 ### PUB — landing `/` (P1–P3)
 
@@ -294,6 +302,7 @@ Tests keep using Uzbek labels: `uz` is the default and the dictionary key. Langu
 |---|---|---|---|---|
 | API-AUTH | `/auth/*` | login sets cookie | logout clears | bad creds 401 |
 | API-<MOD> | each `/api/v1/<module>` mutating route | 200/201 + body | boundary values accepted | 401 no cookie · 403 wrong role · 422 bad body · 409 rule/duplicate |
+| API-REF | assignees + closed warehouses | right-role active agent / courier saved | `?active=true` pickers hide closed warehouses | wrong role, blocked or unknown user → 422; order / stock-in / transfer into a closed warehouse → 422, stock unchanged |
 
 Invariants from `docs/ARCHITECTURE.md` (stock never negative, reserve ≤ quantity, credit limit, state machine, audit approve) each need at least one API S3 test that tries to break them.
 

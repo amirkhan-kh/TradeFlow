@@ -119,7 +119,7 @@ export function ClientsList({ initialStatus = "" }: { initialStatus?: string }) 
 }
 
 function ClientForm({ onDone }: { onDone: () => void }) {
-  const agents = useApi<{ items: { id: number; full_name: string; region: string }[] }>("/users?role=agent");
+  const agents = useApi<{ items: { id: number; full_name: string; region: string }[] }>("/users?role=agent&status=active");
   const form = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);

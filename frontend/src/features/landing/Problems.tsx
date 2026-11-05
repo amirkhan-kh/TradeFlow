@@ -1,5 +1,7 @@
 import { Boxes, FileText, HandCoins, Server, Truck, UserCheck } from "lucide-react";
+import type { Lang } from "@/shared/i18n/config";
 import { SpotlightCard, Stagger, StaggerItem } from "@/shared/ui/motion";
+import { siteT } from "./copy";
 import { Section } from "./Section";
 import { ZoomIn } from "./ZoomIn";
 
@@ -12,12 +14,13 @@ const ITEMS = [
   [Server, "Bir nechta tizim, yagona manzara yo'q", "Ombor, buxgalteriya va savdo alohida dasturlarda — ma'lumotlar bir-biriga mos kelmaydi."],
 ] as const;
 
-export function Problems() {
+export function Problems({ lang }: { lang: Lang }) {
+  const t = siteT(lang);
   return (
     <Section
-      eyebrow="O'sishga to'sqinlik qiluvchi muammolar"
-      title="Biznesingiz shu muammolarga duch kelyaptimi?"
-      lead="Bu muammolar nafaqat vaqt va pulni oladi, balki biznesingiz o'sishini sekinlashtiradi."
+      eyebrow={t("O'sishga to'sqinlik qiluvchi muammolar")}
+      title={t("Biznesingiz shu muammolarga duch kelyaptimi?")}
+      lead={t("Bu muammolar nafaqat vaqt va pulni oladi, balki biznesingiz o'sishini sekinlashtiradi.")}
       fx={{ variant: "lattice" }}
       backdrop={{ src: "/landing/photo-paperwork.webp", className: "opacity-[0.13] mix-blend-multiply" }}
     >
@@ -35,8 +38,8 @@ export function Problems() {
                     0{i + 1}
                   </span>
                 </div>
-                <h3 className="relative mt-6 text-lg font-bold text-ink-900">{title}</h3>
-                <p className="relative mt-2 text-sm leading-relaxed text-ink-600">{text}</p>
+                <h3 className="relative mt-6 text-lg font-bold text-ink-900">{t(title)}</h3>
+                <p className="relative mt-2 text-sm leading-relaxed text-ink-600">{t(text)}</p>
               </SpotlightCard>
             </ZoomIn>
           </StaggerItem>

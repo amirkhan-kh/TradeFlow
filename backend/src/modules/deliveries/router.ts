@@ -4,6 +4,7 @@ import { allow } from "../../core/auth.js";
 import { tx } from "../../core/db.js";
 import { idParam, notFound, pageOf, parse } from "../../core/http.js";
 import { applyStatus } from "../orders/service.js";
+import { assertAssignee } from "../users/service.js";
 import * as repo from "./repository.js";
 
 const schema = z.object({
@@ -25,6 +26,7 @@ deliveriesRouter.patch("/:id", allow("manager", "courier"), async (req, res) => 
   const input = parse(schema, req.body);
   const delivery = await repo.get(id);
   if (!delivery) throw notFound("Yetkazish topilmadi");
+  if (input.courier_id && input.courier_id !== delivery.courier_id) await assertAssignee(input.courier_id, ["courier"]);
   if (input.status === "delivered") {
     await tx((db) => applyStatus(db, delivery.order_id, { status: "delivered" }, req.user!.id));
   }

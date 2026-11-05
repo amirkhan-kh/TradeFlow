@@ -4,6 +4,7 @@ import { toCyrillic } from "./translit.js";
 
 export const LANGS = ["uz", "uz-Cyrl", "ru", "en", "ky"] as const;
 export type Lang = (typeof LANGS)[number];
+export const DEFAULT_LANG: Lang = "ru";
 
 /** Same cookie the web UI writes. */
 export const LANG_COOKIE = "tf_lang";
@@ -19,16 +20,18 @@ const ACCEPT: [RegExp, Lang][] = [
   [/^ky/, "ky"],
 ];
 
-/** Cookie (web UI) → `x-lang` header → `Accept-Language` (API clients) → `uz`. */
+/** Cookie (web UI) → `x-lang` header → `Accept-Language` (API clients) → `ru`. */
 export function langOf(req: Request): Lang {
-  const explicit = req.cookies?.[LANG_COOKIE] ?? req.headers["x-lang"];
-  if (isLang(explicit)) return explicit;
+  const cookie = req.cookies?.[LANG_COOKIE];
+  if (isLang(cookie)) return cookie;
+  const header = req.headers["x-lang"];
+  if (isLang(header)) return header;
   for (const part of (req.headers["accept-language"] ?? "").toLowerCase().split(",")) {
     const tag = part.split(";")[0].trim();
     const hit = ACCEPT.find(([re]) => re.test(tag));
     if (hit) return hit[1];
   }
-  return "uz";
+  return DEFAULT_LANG;
 }
 
 type Vars = Record<string, string>;

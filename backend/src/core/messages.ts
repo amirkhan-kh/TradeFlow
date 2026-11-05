@@ -14,6 +14,7 @@ export const MESSAGES: Record<string, Entry> = {
   Topilmadi: { ru: "Не найдено", en: "Not found", ky: "Табылган жок" },
   "Ma'lumotlar noto'g'ri": { ru: "Неверные данные", en: "Invalid data", ky: "Маалыматтар туура эмес" },
   "Bunday yozuv allaqachon mavjud": { ru: "Такая запись уже существует", en: "This record already exists", ky: "Мындай жазуу мурунтан эле бар" },
+  "Bog'langan yozuv topilmadi": { ru: "Связанная запись не найдена", en: "Linked record not found", ky: "Байланышкан жазуу табылган жок" },
   "Server xatosi": { ru: "Ошибка сервера", en: "Server error", ky: "Сервер катасы" },
   "Avtorizatsiya talab qilinadi": { ru: "Требуется авторизация", en: "Authorization required", ky: "Авторизация талап кылынат" },
   "Sessiya muddati tugagan": { ru: "Срок сессии истёк", en: "Session expired", ky: "Сессиянын мөөнөтү бүттү" },
@@ -35,6 +36,7 @@ export const MESSAGES: Record<string, Entry> = {
   // users
   "Kamida bitta faol administrator qolishi kerak": { ru: "Должен остаться хотя бы один активный администратор", en: "At least one active administrator must remain", ky: "Жок дегенде бир активдүү администратор калышы керек" },
   "Xodim topilmadi": { ru: "Сотрудник не найден", en: "Staff member not found", ky: "Кызматкер табылган жок" },
+  "Xodim topilmadi yoki bu vazifaga mos emas": { ru: "Сотрудник не найден или не подходит для этой задачи", en: "Staff member not found or not eligible for this assignment", ky: "Кызматкер табылган жок же бул тапшырмага ылайык эмес" },
   "O'z rolingizni o'zgartira olmaysiz": { ru: "Нельзя изменить собственную роль", en: "You cannot change your own role", ky: "Өз ролуңузду өзгөртө албайсыз" },
   "O'zingizni bloklay olmaysiz": { ru: "Нельзя заблокировать самого себя", en: "You cannot block yourself", ky: "Өзүңүздү бөгөттөй албайсыз" },
 
@@ -54,6 +56,7 @@ export const MESSAGES: Record<string, Entry> = {
 
   // warehouses, products, audits, leads
   "Ombor topilmadi": { ru: "Склад не найден", en: "Warehouse not found", ky: "Кампа табылган жок" },
+  "Ombor topilmadi yoki faol emas": { ru: "Склад не найден или неактивен", en: "Warehouse not found or inactive", ky: "Кампа табылган жок же активдүү эмес" },
   "Tovar topilmadi": { ru: "Товар не найден", en: "Product not found", ky: "Товар табылган жок" },
   "Audit topilmadi": { ru: "Аудит не найден", en: "Audit not found", ky: "Аудит табылган жок" },
   "Yakunlangan auditni o'zgartirib bo'lmaydi": { ru: "Завершённый аудит нельзя изменить", en: "A completed audit cannot be changed", ky: "Аяктаган аудитти өзгөртүүгө болбойт" },

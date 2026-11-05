@@ -4,10 +4,12 @@ import { AnimatePresence } from "motion/react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { EASE, m, Stagger, StaggerItem } from "@/shared/ui/motion";
+import type { SiteKey } from "./copy";
 import { Section } from "./Section";
+import { useCopy } from "./SiteCopy";
 import { ZoomIn } from "./ZoomIn";
 
-const FAQ = [
+const FAQ: [SiteKey, SiteKey][] = [
   ["TradeFlow kimlar uchun?", "Distribyutorlar, ulgurji savdo kompaniyalari, ishlab chiqaruvchilar va bir nechta omborga ega savdo tarmoqlari uchun."],
   ["Ma'lumotlarimiz qayerda saqlanadi?", "O'zingiz tanlagan serverda (O'zbekiston yoki Yevropa). Ma'lumotlar shifrlangan kanal orqali uzatiladi va har kuni zaxiralanadi."],
   ["Ishga tushirish qancha vaqt oladi?", "Odatda 1–2 hafta: audit, sozlash, ma'lumotlarni ko'chirish va xodimlarni o'qitish."],
@@ -17,9 +19,10 @@ const FAQ = [
 
 export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
+  const t = useCopy();
 
   return (
-    <Section eyebrow="Savol-javob" title="Ko'p beriladigan savollar" fx={{ variant: "lattice" }}>
+    <Section eyebrow={t("Savol-javob")} title={t("Ko'p beriladigan savollar")} fx={{ variant: "lattice" }}>
       <Stagger className="mx-auto max-w-3xl space-y-3">
         {FAQ.map(([q, a], i) => {
           const isOpen = open === i;
@@ -32,7 +35,7 @@ export function Faq() {
                     aria-expanded={isOpen}
                     className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-semibold text-ink-900"
                   >
-                    {q}
+                    {t(q)}
                     <m.span
                       animate={{ rotate: isOpen ? 45 : 0 }}
                       transition={{ duration: 0.25, ease: EASE }}
@@ -50,7 +53,7 @@ export function Faq() {
                         transition={{ duration: 0.35, ease: EASE }}
                         className="overflow-hidden"
                       >
-                        <p className="px-6 pb-5 text-sm leading-relaxed text-ink-600">{a}</p>
+                        <p className="px-6 pb-5 text-sm leading-relaxed text-ink-600">{t(a)}</p>
                       </m.div>
                     )}
                   </AnimatePresence>

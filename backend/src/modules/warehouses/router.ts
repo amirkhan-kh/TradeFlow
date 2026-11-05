@@ -17,7 +17,7 @@ const schema = z.object({
 export const warehousesRouter = Router();
 
 warehousesRouter.get("/", async (req, res) => {
-  res.json(await repo.list(pageOf(req)));
+  res.json(await repo.list({ ...pageOf(req), active: req.query.active === "true" ? true : undefined }));
 });
 
 warehousesRouter.get("/:id", async (req, res) => {

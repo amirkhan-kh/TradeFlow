@@ -6,6 +6,7 @@ import { HttpError, idParam, notFound, pageOf, parse } from "../../core/http.js"
 import { clientPayload, emit } from "../integrations/events.js";
 import { activeConfig } from "../integrations/service.js";
 import { companyByTin } from "../integrations/providers/didox.js";
+import { assertAssignee } from "../users/service.js";
 import * as repo from "./repository.js";
 
 const INN = /^(\d{9}|\d{14})$/;
@@ -48,13 +49,20 @@ clientsRouter.get("/:id", async (req, res) => {
 });
 
 clientsRouter.post("/", allow("manager", "agent"), async (req, res) => {
-  const client = await repo.insert(parse(schema, req.body));
+  const input = parse(schema, req.body);
+  await assertAssignee(input.agent_id, ["agent"]);
+  const client = await repo.insert(input);
   await emit(pool, "client.created", () => clientPayload(pool, client.id));
   res.status(201).json(client);
 });
 
 clientsRouter.put("/:id", allow("manager"), async (req, res) => {
-  const item = await repo.update(idParam(req), parse(schema, req.body));
+  const id = idParam(req);
+  const input = parse(schema, req.body);
+  const before = await repo.get(id);
+  if (!before) throw notFound("Mijoz topilmadi");
+  if (input.agent_id && input.agent_id !== before.agent_id) await assertAssignee(input.agent_id, ["agent"]);
+  const item = await repo.update(id, input);
   if (!item) throw notFound("Mijoz topilmadi");
   res.json(item);
 });

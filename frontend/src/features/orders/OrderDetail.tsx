@@ -41,7 +41,7 @@ const FLOW_LABEL = { new: "Yangi", confirmed: "Tasdiqlandi", shipped: "Yuklandi"
 
 export function OrderDetail({ id }: { id: string }) {
   const { data: o, error, loading, reload } = useApi<OrderFull>(`/orders/${id}`);
-  const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier");
+  const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier&status=active");
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string>();
   const [shipOpen, setShipOpen] = useState(false);

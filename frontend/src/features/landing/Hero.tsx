@@ -5,12 +5,14 @@ import { ArrowRight, Play, Sparkles } from "lucide-react";
 import { useRef } from "react";
 import { ButtonLink } from "@/shared/ui/Button";
 import { CountUp, m, Magnetic } from "@/shared/ui/motion";
+import type { SiteKey } from "./copy";
 import { HeroScene } from "./HeroScene";
+import { useCopy } from "./SiteCopy";
 
-const STATS = [
+const STATS: { to: number; prefix?: string; suffix: string; label: SiteKey }[] = [
   { to: 31, prefix: "−", suffix: "%", label: "ombor xarajatlari" },
   { to: 25, prefix: "+", suffix: "%", label: "tezroq yetkazish" },
-  { to: 5, suffix: " ta", label: "aqlli agent 24/7" },
+  { to: 5, suffix: "ta", label: "aqlli agent 24/7" },
   { to: 100, suffix: "%", label: "audit shaffofligi" },
 ];
 
@@ -26,6 +28,7 @@ const rise = (delay: number) => ({ animationDelay: `${delay}s` });
 export function Hero() {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
+  const t = useCopy();
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
   const textY = useTransform(scrollYProgress, [0, 1], [0, 140]);
   const textScale = useTransform(scrollYProgress, [0, 1], [1, 0.9]);
@@ -66,24 +69,25 @@ export function Hero() {
             style={rise(0)}
             className="glass group relative inline-flex animate-lift items-center gap-2 overflow-hidden rounded-full py-1 pr-3 pl-1 text-xs font-semibold text-ink-700"
           >
-            <span className="rounded-full bg-[#32536b] px-2 py-0.5 text-[10px] font-bold text-white">YANGI</span>
-            <Sparkles className="size-3.5 text-[#4f86ab]" /> 5 ta aqlli agent ishga tushdi
+            <span className="rounded-full bg-[#32536b] px-2 py-0.5 text-[10px] font-bold text-white">{t("YANGI")}</span>
+            <Sparkles className="size-3.5 text-[#4f86ab]" /> {t("5 ta aqlli agent ishga tushdi")}
             <ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
             <span className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 animate-[shine_3.5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/80 to-transparent" />
           </a>
 
           <h1 className="mt-7 text-[2.5rem] leading-[1.02] font-extrabold tracking-[-0.04em] text-ink-900 sm:text-6xl lg:text-[3.5rem] xl:text-[3.9rem]">
             <span style={rise(0.05)} className="block animate-lift">
-              Yirik savdo va omborxona tizimlarini
+              {t("Yirik savdo va omborxona tizimlarini")}
             </span>
             <span style={rise(0.18)} className="block animate-lift pb-1">
-              <span className="text-aurora">samarali boshqaring</span>
+              <span className="text-aurora">{t("samarali boshqaring")}</span>
             </span>
           </h1>
 
           <p style={rise(0.3)} className="mt-6 max-w-xl animate-lift text-lg leading-relaxed text-ink-600">
-            Buyurtma, ombor, audit, yetkazib berish va debitorlik — bitta platformada. Aqlli agentlar zaxira tugashini, qarz oshishini va kamomadlarni sizdan
-            oldin sezadi.
+            {t(
+              "Buyurtma, ombor, audit, yetkazib berish va debitorlik — bitta platformada. Aqlli agentlar zaxira tugashini, qarz oshishini va kamomadlarni sizdan oldin sezadi.",
+            )}
           </p>
 
           <div style={rise(0.42)} className="mt-9 flex animate-lift flex-wrap items-center gap-3">
@@ -93,25 +97,25 @@ export function Hero() {
                 size="lg"
                 className="ring-beam group rounded-full! bg-gradient-to-b from-[#3d6a8a] to-[#1d3a52] shadow-[0_18px_50px_-12px_rgb(50_83_107/0.7)] hover:from-[#32536b] hover:to-[#16304a]"
               >
-                Tizimni sinab ko&apos;rish <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
+                {t("Tizimni sinab ko'rish")} <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
               </ButtonLink>
             </Magnetic>
             <ButtonLink href="#demo" size="lg" variant="ghost" className="glass rounded-full! pl-2! text-ink-900! hover:bg-white/80!">
               <span className="grid size-8 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-600 text-white shadow-[0_6px_16px_-4px_rgb(31_147_102/0.6)]">
                 <Play className="size-3 fill-current" />
               </span>
-              Demoni ko&apos;rish
+              {t("Demoni ko'rish")}
             </ButtonLink>
           </div>
 
           <dl style={rise(0.54)} className="glass mt-12 grid max-w-xl animate-lift grid-cols-2 gap-y-5 rounded-2xl p-5 sm:grid-cols-4 sm:divide-x sm:divide-ink-900/10">
             {STATS.map((s) => (
               <div key={s.label} className="sm:px-4 sm:first:pl-1">
-                <dt className="sr-only">{s.label}</dt>
+                <dt className="sr-only">{t(s.label)}</dt>
                 <dd className="text-[1.7rem] font-extrabold tracking-tight text-ink-900">
-                  <CountUp to={s.to} prefix={s.prefix} suffix={s.suffix} />
+                  <CountUp to={s.to} prefix={s.prefix} suffix={s.suffix === "ta" ? (t("ta") && ` ${t("ta")}`) : s.suffix} />
                 </dd>
-                <dd className="mt-0.5 text-xs text-ink-600">{s.label}</dd>
+                <dd className="mt-0.5 text-xs text-ink-600">{t(s.label)}</dd>
               </div>
             ))}
           </dl>
@@ -126,7 +130,7 @@ export function Hero() {
 
       <a
         href="#imkoniyatlar"
-        aria-label="Imkoniyatlarga o'tish"
+        aria-label={t("Imkoniyatlarga o'tish")}
         className="glass absolute bottom-8 left-1/2 hidden h-11 w-7 -translate-x-1/2 justify-center rounded-full pt-2 lg:flex"
       >
         <span className="block h-2 w-1 animate-[cue_1.8s_ease-in-out_infinite] rounded-full bg-[#32536b]" />

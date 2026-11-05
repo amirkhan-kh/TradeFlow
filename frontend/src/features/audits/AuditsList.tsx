@@ -122,7 +122,7 @@ export function AuditsList() {
 function NewAudit() {
   const router = useRouter();
   const [warehouse, setWarehouse] = useState<WarehouseOption | null>(null);
-  const auditors = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=auditor");
+  const auditors = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=auditor&status=active");
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
 
@@ -142,7 +142,7 @@ function NewAudit() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Field label="Ombor">
-        <WarehouseSelect name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
+        <WarehouseSelect params={{ active: "true" }} name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
       </Field>
       <Field label="Auditor">
         <Select name="auditor_id" defaultValue="">

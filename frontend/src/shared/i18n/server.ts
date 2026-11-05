@@ -1,10 +1,13 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { DEFAULT_LANG, isLang, LANG_COOKIE, type Lang } from "./config";
 import { translate, type T } from "./translate";
 
+/** Cookie (the user's choice) → `x-lang` header (API clients, tests) → default. Same order as the backend. */
 export async function getLang(): Promise<Lang> {
-  const v = (await cookies()).get(LANG_COOKIE)?.value;
-  return isLang(v) ? v : DEFAULT_LANG;
+  const cookie = (await cookies()).get(LANG_COOKIE)?.value;
+  if (isLang(cookie)) return cookie;
+  const header = (await headers()).get("x-lang");
+  return isLang(header) ? header : DEFAULT_LANG;
 }
 
 export async function getI18n(): Promise<{ lang: Lang; t: T }> {

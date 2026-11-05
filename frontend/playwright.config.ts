@@ -1,7 +1,10 @@
 import { defineConfig, devices } from "@playwright/test";
 
-/** Frontend origin; the API is reached through its /api/v1 rewrite, exactly like production. */
-const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3001";
+/**
+ * Frontend origin; the API is reached through its /api/v1 rewrite, exactly like production.
+ * Default = the separate `tradeflow-e2e` compose stack: tests create data, so they never run against the main one.
+ */
+const baseURL = process.env.E2E_BASE_URL ?? "http://localhost:3101";
 
 export default defineConfig({
   testDir: "e2e",
@@ -13,7 +16,15 @@ export default defineConfig({
   timeout: 45_000,
   expect: { timeout: 10_000 },
   reporter: [["list"], ["html", { open: "never" }]],
-  use: { baseURL, trace: "retain-on-failure", screenshot: "only-on-failure", locale: "uz-UZ", timezoneId: "Asia/Tashkent" },
+  use: {
+    baseURL,
+    trace: "retain-on-failure",
+    screenshot: "only-on-failure",
+    locale: "uz-UZ",
+    timezoneId: "Asia/Tashkent",
+    /** Default language is Russian; specs select by Uzbek text, so pages and API answer in Uzbek unless a test sets `tf_lang`. */
+    extraHTTPHeaders: { "x-lang": "uz" },
+  },
   projects: [
     { name: "desktop", use: { ...devices["Desktop Chrome"] }, grepInvert: /@mobile/ },
     { name: "mobile", use: { ...devices["Pixel 7"] }, grep: /@mobile/ },

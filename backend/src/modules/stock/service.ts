@@ -1,6 +1,7 @@
 import { tx } from "../../core/db.js";
 import { HttpError } from "../../core/http.js";
 import { emit, stockPayload } from "../integrations/events.js";
+import * as warehouses from "../warehouses/repository.js";
 import * as repo from "./repository.js";
 
 export interface MoveInput {
@@ -23,6 +24,8 @@ export async function move(input: MoveInput, userId: number) {
   }
 
   return tx(async (db) => {
+    const target = input.type === "in" ? input.warehouse_id : input.type === "transfer" ? input.to_warehouse_id! : null;
+    if (target && !(await warehouses.isActive(db, target))) throw new HttpError(422, "Ombor topilmadi yoki faol emas");
     if (input.type === "in") await repo.add(db, input.warehouse_id, input.product_id, input.quantity);
     if (input.type === "out") await repo.remove(db, input.warehouse_id, input.product_id, input.quantity);
     if (input.type === "transfer") {

@@ -97,4 +97,35 @@ test.describe("API · auth, roles, validation", () => {
     const leads = await (await api.get("leads?limit=50")).json();
     expect(leads.items.some((l: { name: string }) => l.name === name)).toBe(true);
   });
+
+  test("[API-REF][S3] assignees must be active staff in the right role; closed warehouses take no orders or stock", async ({ api, make }) => {
+    const { warehouse, product, client } = await make.scene(10);
+    const [courier, agent, gone] = await Promise.all([make.user("courier"), make.user("agent"), make.user("agent")]);
+    expect((await api.post(`users/${gone.id}/status`, { data: { active: false } })).ok()).toBe(true);
+    const unknown = 99_999_999;
+
+    for (const agent_id of [courier.id, gone.id, unknown]) {
+      expect((await api.post("clients", { data: { name: `Agentsiz ${make.tag()}`, region: "Toshkent", agent_id } })).status(), `client agent ${agent_id}`).toBe(422);
+      expect((await api.post("orders", { data: { client_id: client.id, warehouse_id: warehouse.id, agent_id, items: [{ product_id: product.id, quantity: 1 }] } })).status()).toBe(422);
+    }
+    expect((await api.post("audits", { data: { warehouse_id: warehouse.id, auditor_id: courier.id } })).status()).toBe(422);
+    const own = await make.json(await api.post("clients", { data: { name: `Agentli ${make.tag()}`, region: "Toshkent", agent_id: agent.id } }));
+    expect(own.agent_id).toBe(agent.id);
+
+    const order = await make.order(client.id, warehouse.id, [{ product_id: product.id, quantity: 2 }]);
+    expect((await make.status(order.id, "confirmed")).status()).toBe(200);
+    expect((await make.status(order.id, "shipped", { courier_id: agent.id })).status()).toBe(422);
+    expect((await make.status(order.id, "shipped", { courier_id: courier.id })).status()).toBe(200);
+    const d = (await make.json<{ items: { id: number }[] }>(await api.get(`deliveries?q=${order.number}`))).items[0];
+    expect((await api.patch(`deliveries/${d.id}`, { data: { courier_id: unknown } })).status()).toBe(422);
+
+    const closed = await make.warehouse();
+    expect((await api.put(`warehouses/${closed.id}`, { data: { code: closed.code, name: closed.name, city: "Toshkent", capacity: 100, active: false } })).ok()).toBe(true);
+    expect((await api.post("orders", { data: { client_id: client.id, warehouse_id: closed.id, items: [{ product_id: product.id, quantity: 1 }] } })).status()).toBe(422);
+    expect((await api.post("stock/movements", { data: { type: "in", warehouse_id: closed.id, product_id: product.id, quantity: 5 } })).status()).toBe(422);
+    expect((await api.post("stock/movements", { data: { type: "transfer", warehouse_id: warehouse.id, to_warehouse_id: closed.id, product_id: product.id, quantity: 1 } })).status()).toBe(422);
+    expect((await make.stock(warehouse.id, product)).quantity).toBe(8);
+    const picker = await make.json<{ items: { id: number }[] }>(await api.get(`warehouses?active=true&q=${encodeURIComponent(String(closed.code))}`));
+    expect(picker.items).toEqual([]);
+  });
 });

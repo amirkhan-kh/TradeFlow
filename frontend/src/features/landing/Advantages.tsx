@@ -1,6 +1,8 @@
 import { Award, Layers, MessageCircle, MousePointerClick, Smartphone, Target } from "lucide-react";
 import Image from "next/image";
+import type { Lang } from "@/shared/i18n/config";
 import { SpotlightCard, Stagger, StaggerItem } from "@/shared/ui/motion";
+import { siteT } from "./copy";
 import { Section } from "./Section";
 import { ZoomIn } from "./ZoomIn";
 
@@ -12,9 +14,10 @@ const ITEMS = [
   [MessageCircle, "Mijozga raqamli yaqinlik", "Telegram-bot, mobil ilova va SMS — mijozlaringiz bilan doimiy aloqa."],
 ] as const;
 
-export function Advantages() {
+export function Advantages({ lang }: { lang: Lang }) {
+  const t = siteT(lang);
   return (
-    <Section eyebrow="Afzalliklar" title="Nega mijozlar TradeFlow'ni tanlaydi" fx={{ variant: "grid" }}>
+    <Section eyebrow={t("Afzalliklar")} title={t("Nega mijozlar TradeFlow'ni tanlaydi")} fx={{ variant: "grid" }}>
       <Stagger className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {ITEMS.map(([Icon, title, text]) => (
           <StaggerItem key={title}>
@@ -24,8 +27,8 @@ export function Advantages() {
                   <Icon className="size-5" />
                 </span>
                 <div className="relative">
-                  <h3 className="font-bold text-ink-900">{title}</h3>
-                  <p className="mt-1 text-sm leading-relaxed text-ink-600">{text}</p>
+                  <h3 className="font-bold text-ink-900">{t(title)}</h3>
+                  <p className="mt-1 text-sm leading-relaxed text-ink-600">{t(text)}</p>
                 </div>
               </SpotlightCard>
             </ZoomIn>
@@ -40,9 +43,9 @@ export function Advantages() {
               <div aria-hidden className="absolute -bottom-20 -left-12 size-56 bg-[radial-gradient(closest-side,rgb(156_195_220/0.3),transparent)]" />
               <div className="relative flex items-center gap-3">
                 <Smartphone className="size-6" />
-                <h3 className="font-bold">iOS va Android uchun mobil ilova</h3>
+                <h3 className="font-bold">{t("iOS va Android uchun mobil ilova")}</h3>
               </div>
-              <p className="relative text-sm text-white/75">Agentlar uchun oflayn buyurtma, marshrut va foto-hisobot.</p>
+              <p className="relative text-sm text-white/75">{t("Agentlar uchun oflayn buyurtma, marshrut va foto-hisobot.")}</p>
               <div className="relative flex gap-2 text-xs font-semibold">
                 <span className="rounded-lg bg-white/15 px-3 py-1.5 backdrop-blur">App Store</span>
                 <span className="rounded-lg bg-white/15 px-3 py-1.5 backdrop-blur">Google Play</span>

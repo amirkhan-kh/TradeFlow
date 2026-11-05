@@ -1,15 +1,15 @@
 /** Static catalog for the demo seed: warehouses, product families, regions, people. */
 
 export const WAREHOUSES = [
-  // code, name, city, address, capacity, manager
-  ["TSH-01", "Toshkent Markaziy", "Toshkent", "Yunusobod t., Amir Temur ko'chasi 108", 20000, "Jasur Karimov"],
-  ["TSH-02", "Sergeli Logistika Hub", "Toshkent", "Sergeli t., Yangi Sergeli 4", 14000, "Dilshod Rahimov"],
-  ["SMQ-01", "Samarqand Ombori", "Samarqand", "Registon ko'chasi 21", 9000, "Bekzod Aliyev"],
-  ["FRG-01", "Farg'ona Ombori", "Farg'ona", "Al-Farg'oniy ko'chasi 5", 8000, "Shoxrux Tursunov"],
-  ["AND-01", "Andijon Ombori", "Andijon", "Bobur shoh ko'chasi 44", 7000, "Islom Qodirov"],
-  ["NMG-01", "Namangan Ombori", "Namangan", "Uychi ko'chasi 9", 6500, "Murod Yo'ldoshev"],
-  ["BXR-01", "Buxoro Ombori", "Buxoro", "Navoiy shoh ko'chasi 12", 6000, "Akmal Sobirov"],
-  ["QSH-01", "Qarshi Ombori", "Qarshi", "Mustaqillik shoh ko'chasi 77", 5500, "Sanjar Hamroyev"],
+  // code, name, city, address, capacity (units, ~70% full at seeded stock levels), manager
+  ["TSH-01", "Toshkent Markaziy", "Toshkent", "Yunusobod t., Amir Temur ko'chasi 108", 350000, "Jasur Karimov"],
+  ["TSH-02", "Sergeli Logistika Hub", "Toshkent", "Sergeli t., Yangi Sergeli 4", 260000, "Dilshod Rahimov"],
+  ["SMQ-01", "Samarqand Ombori", "Samarqand", "Registon ko'chasi 21", 180000, "Bekzod Aliyev"],
+  ["FRG-01", "Farg'ona Ombori", "Farg'ona", "Al-Farg'oniy ko'chasi 5", 170000, "Shoxrux Tursunov"],
+  ["AND-01", "Andijon Ombori", "Andijon", "Bobur shoh ko'chasi 44", 160000, "Islom Qodirov"],
+  ["NMG-01", "Namangan Ombori", "Namangan", "Uychi ko'chasi 9", 160000, "Murod Yo'ldoshev"],
+  ["BXR-01", "Buxoro Ombori", "Buxoro", "Navoiy shoh ko'chasi 12", 150000, "Akmal Sobirov"],
+  ["QSH-01", "Qarshi Ombori", "Qarshi", "Mustaqillik shoh ko'chasi 77", 150000, "Sanjar Hamroyev"],
 ] as const;
 
 /** Region → serving warehouses, districts, share of clients (weights). */
@@ -27,8 +27,10 @@ export const REGIONS: { name: string; warehouses: string[]; districts: string[];
 export const SHOP_NAMES = ["Korzinka", "Makro", "Havas", "Baraka", "Oila", "Family", "Next", "Mega", "Yangi Hayot", "Chorsu", "Bahor", "Nur", "Zamzam", "Asl", "Diyor", "Safia", "Imkon", "Orzu", "Navro'z", "Ziyo", "Barakat", "Tong", "Saodat", "Iftixor", "Do'stlik", "Ishonch", "Sahovat", "Mehr", "Oltin Vodiy", "Bunyod"];
 export const SHOP_TYPES = ["Market", "Savdo", "Minimarket", "Supermarket", "do'koni", "Mart", "Plaza", "Express"];
 
-export const FIRST_NAMES = ["Alisher", "Kamola", "Rustam", "Dilnoza", "Sherzod", "Malika", "Anvar", "Gulnora", "Bobur", "Nodira", "Jasur", "Madina", "Otabek", "Zarina", "Sardor", "Nilufar", "Javohir", "Shahlo", "Ulug'bek", "Feruza", "Farrux", "Laylo", "Islom", "Sevara", "Akmal", "Dildora", "Behruz", "Munisa", "Temur", "Mohira"];
-export const LAST_NAMES = ["Karimov", "Toshev", "Nazarov", "Ismoilov", "Rasulov", "Yusupov", "Qodirov", "Ergashev", "Xolmatov", "Nematov", "Hamidov", "Soliyev", "Qosimov", "Saidov", "Mirzayev", "Usmonov", "Aliyev", "Rahimov", "Tursunov", "Sobirov", "Abdullayev", "Jo'rayev", "Hakimov", "Sultonov", "Raxmonov"];
+export const FIRST_NAMES = ["Alisher", "Kamola", "Rustam", "Dilnoza", "Sherzod", "Malika", "Anvar", "Gulnora", "Bobur", "Nodira", "Jasur", "Madina", "Otabek", "Zarina", "Sardor", "Nilufar", "Javohir", "Shahlo", "Ulug'bek", "Feruza", "Farrux", "Laylo", "Islom", "Sevara", "Akmal", "Dildora", "Behruz", "Munisa", "Temur", "Mohira", "Azizbek", "Gulchehra", "Doniyor", "Iroda", "Elyor", "Komila", "Jahongir", "Robiya", "Mirjalol", "Shoira", "Nodirbek", "Umida", "Sanjar", "Hilola", "Bekzod", "Zuhra", "Davron", "Mavluda", "Shohruh", "Yulduz"];
+/** Female first names take the feminine surname form (Karimov → Karimova). */
+export const FEMALE = new Set(["Kamola", "Dilnoza", "Malika", "Gulnora", "Nodira", "Madina", "Zarina", "Nilufar", "Shahlo", "Feruza", "Laylo", "Sevara", "Dildora", "Munisa", "Mohira", "Gulchehra", "Iroda", "Komila", "Robiya", "Shoira", "Umida", "Hilola", "Zuhra", "Mavluda", "Yulduz"]);
+export const LAST_NAMES = ["Karimov", "Toshev", "Nazarov", "Ismoilov", "Rasulov", "Yusupov", "Qodirov", "Ergashev", "Xolmatov", "Nematov", "Hamidov", "Soliyev", "Qosimov", "Saidov", "Mirzayev", "Usmonov", "Aliyev", "Rahimov", "Tursunov", "Sobirov", "Abdullayev", "Jo'rayev", "Hakimov", "Sultonov", "Raxmonov", "Valiyev", "Islomov", "Normatov", "Ibragimov", "Haydarov", "Botirov", "Ortiqov", "Fayziyev", "Sharipov", "Yo'ldoshev", "Zokirov", "Mamatov", "Xudoyberdiyev", "Eshonqulov", "Po'latov"];
 
 type Base = [label: string, unit: string, weightKg: number, price: number];
 /** Product families: every brand × every base becomes one SKU. */

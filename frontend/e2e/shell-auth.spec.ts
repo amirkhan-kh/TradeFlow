@@ -69,6 +69,7 @@ test.describe("AUTH · login", () => {
     await signIn(page, "admin", "admin123");
     await expect(page).toHaveURL(/\/dashboard\/orders$/);
 
+    await page.goto("about:blank");
     await page.context().clearCookies();
     await page.goto("/login?next=https://evil.example.com");
     await signIn(page, "admin", "admin123");
@@ -125,6 +126,7 @@ test.describe("G · shell", () => {
     await page.goto("/login");
     await signIn(page, u.username, u.password);
     await expect(page).toHaveURL(/\/dashboard$/);
+    await hydrated(page, 'button[aria-label="Chiqish"]');
     await page.getByRole("button", { name: "Chiqish" }).click();
     await expect(page).toHaveURL(/\/login$/);
     expect((await page.context().cookies()).find((c) => c.name === "tf_token")).toBeUndefined();
@@ -139,8 +141,14 @@ test.describe("G · shell", () => {
     const u = await make.user("manager");
     await page.context().clearCookies();
     await page.goto("/login");
+    const loaded = Promise.all([
+      page.waitForResponse((r) => /\/api\/v1\/dashboard$/.test(r.url())),
+      page.waitForResponse((r) => /\/api\/v1\/insights(\?|$)/.test(r.url())),
+    ]);
     await signIn(page, u.username, u.password);
     await expect(page).toHaveURL(/\/dashboard$/);
+    await loaded;
+    await hydrated(page, 'nav[aria-label="CRM"] a');
     await expect(page.getByText("Kunlik tushum — 30 kun")).toBeVisible();
     await expect(page.getByRole("status")).toHaveCount(0);
     expect((await api.post(`users/${u.id}/sessions/revoke`)).ok()).toBe(true);

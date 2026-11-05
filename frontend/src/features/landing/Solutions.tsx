@@ -15,12 +15,14 @@ import {
   Warehouse,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import type { Lang } from "@/shared/i18n/config";
 import { SpotlightCard } from "@/shared/ui/motion";
+import { siteT, type SiteKey } from "./copy";
 import { GroupBlock } from "./GroupBlock";
 import { Section } from "./Section";
 import { Drift, ZoomIn } from "./ZoomIn";
 
-const GROUPS: { title: string; tag: string; icon: LucideIcon; image: string; items: [LucideIcon, string, string][] }[] = [
+const GROUPS: { title: SiteKey; tag: SiteKey; icon: LucideIcon; image: string; items: [LucideIcon, SiteKey, SiteKey][] }[] = [
   {
     title: "Buyurtma va ombor",
     tag: "Operatsiyalar",
@@ -61,13 +63,14 @@ const GROUPS: { title: string; tag: string; icon: LucideIcon; image: string; ite
   },
 ];
 
-export function Solutions() {
+export function Solutions({ lang }: { lang: Lang }) {
+  const t = siteT(lang);
   return (
     <Section
       id="imkoniyatlar"
-      eyebrow="Avtomatlashtiring. Nazorat qiling. Rivojlaning."
-      title="TradeFlow: biznesingiz uchun kompleks yechim"
-      lead="Ombordan savdo nuqtasigacha bo'lgan butun distribyutsiya zanjiri bitta oynada."
+      eyebrow={t("Avtomatlashtiring. Nazorat qiling. Rivojlaning.")}
+      title={t("TradeFlow: biznesingiz uchun kompleks yechim")}
+      lead={t("Ombordan savdo nuqtasigacha bo'lgan butun distribyutsiya zanjiri bitta oynada.")}
       fx={{ variant: "mesh", side: "left" }}
     >
       <div className="space-y-16 lg:space-y-28">
@@ -83,12 +86,12 @@ export function Solutions() {
                     <g.icon className="size-6" />
                   </span>
                   <div>
-                    <span className="rounded-full bg-[#32536b] px-3 py-1 text-xs font-bold text-white shadow-[0_8px_20px_-8px_rgb(50_83_107/0.7)]">{g.tag}</span>
-                    <h3 className="mt-3 text-xl font-bold text-ink-900 lg:text-[1.75rem] lg:leading-tight lg:tracking-tight">{g.title}</h3>
+                    <span className="rounded-full bg-[#32536b] px-3 py-1 text-xs font-bold text-white shadow-[0_8px_20px_-8px_rgb(50_83_107/0.7)]">{t(g.tag)}</span>
+                    <h3 className="mt-3 text-xl font-bold text-ink-900 lg:text-[1.75rem] lg:leading-tight lg:tracking-tight">{t(g.title)}</h3>
                   </div>
                 </div>
                 <p className="mt-4 hidden text-sm text-ink-600 lg:block">
-                  {gi + 1}-yo&apos;nalish, {g.items.length} ta modul
+                  {t("{n}-yo'nalish, {m} ta modul", { n: gi + 1, m: g.items.length })}
                 </p>
               </>
             }
@@ -103,8 +106,8 @@ export function Solutions() {
                       <span className="relative grid size-12 place-items-center rounded-xl bg-gradient-to-br from-white to-[#eaf2f7] text-[#32536b] shadow-[inset_0_1px_0_white] ring-1 ring-[#32536b]/10 transition-all duration-300 group-hover:from-[#4f86ab] group-hover:to-[#1d3a52] group-hover:text-white group-hover:shadow-lg group-hover:shadow-[#32536b]/30">
                         <Icon className="size-5" />
                       </span>
-                      <h4 className="relative mt-5 font-bold text-ink-900">{title}</h4>
-                      <p className="relative mt-2 text-sm leading-relaxed text-ink-600">{text}</p>
+                      <h4 className="relative mt-5 font-bold text-ink-900">{t(title)}</h4>
+                      <p className="relative mt-2 text-sm leading-relaxed text-ink-600">{t(text)}</p>
                     </SpotlightCard>
                   </ZoomIn>
                 </Drift>

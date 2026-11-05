@@ -7,7 +7,7 @@ const LETTERS: Record<string, string> = {
 const IOTATED: Record<string, string> = { o: "ё", u: "ю", a: "я", e: "е" };
 
 /** Product and brand names stay in Latin script. */
-const KEEP = new Set(["Payme", "Click", "Telegram", "Excel", "Google", "Sheets", "Power", "Zapier", "Make", "Didox", "Uzum", "Market", "Eskiz", "iiko", "Trade", "Flow"]);
+const KEEP = new Set(["Payme", "Click", "Telegram", "Excel", "Google", "Sheets", "Power", "Zapier", "Make", "Didox", "Uzum", "Market", "Eskiz", "iiko", "Trade", "Flow", "Baraka", "Coca", "Cola"]);
 
 const isApos = (c: string | undefined) => c !== undefined && APOS.includes(c);
 const isLetter = (c: string | undefined) => c !== undefined && /[a-z]/i.test(c);

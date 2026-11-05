@@ -108,7 +108,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
         }`}
       >
         <div className="flex h-16 items-center justify-between px-5">
-          <Logo href="/dashboard" />
+          <Logo href="/dashboard" label={t("TradeFlow bosh sahifa")} />
           <button className="rounded-lg p-1.5 text-ink-500 lg:hidden" onClick={() => setOpen(false)} aria-label={t("Menyuni yopish")}>
             <X className="size-5" />
           </button>

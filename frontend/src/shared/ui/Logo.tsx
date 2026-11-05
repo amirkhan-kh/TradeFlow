@@ -10,9 +10,10 @@ export function LogoMark({ className = "size-9" }: { className?: string }) {
   );
 }
 
-export function Logo({ href = "/", light = false, className = "" }: { href?: string; light?: boolean; className?: string }) {
+/** `label` is the translated accessible name ("TradeFlow home page"). */
+export function Logo({ href = "/", label, light = false, className = "" }: { href?: string; label: string; light?: boolean; className?: string }) {
   return (
-    <Link href={href} className={`inline-flex items-center gap-2.5 ${className}`} aria-label="TradeFlow bosh sahifa">
+    <Link href={href} className={`inline-flex items-center gap-2.5 ${className}`} aria-label={label}>
       {light ? (
         <span className="grid size-10 place-items-center rounded-xl bg-white shadow-sm">
           <LogoMark className="size-7" />

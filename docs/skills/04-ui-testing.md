@@ -5,7 +5,7 @@ Rules and matrix: `docs/TESTING.md`. This skill = the procedure. Do not stop unt
 ## 0. Prepare (once per repo)
 
 1. `frontend/playwright.config.ts`, `frontend/e2e/{fixtures,global-setup,factories}.ts` exist? If not, create per `TESTING.md` → Setup (standing permit for test tasks).
-2. Stack up: `curl -fs http://localhost:4000/health && curl -fsI http://localhost:3001` — both OK, else start `docker compose up --build -d` (background) and poll.
+2. Stack up: `curl -fs http://localhost:4101/health && curl -fsI http://localhost:3101` — both OK, else start `WEB_PORT=3101 API_PORT=4101 docker compose -p tradeflow-e2e up -d --build` (background) and poll. Never test on the main `:3001` stack.
 3. Smoke: `npx playwright test -g "\[AUTH-01\]\[S1\]" --repeat-each=1` green before writing more.
 
 ## 1. Inventory the scope

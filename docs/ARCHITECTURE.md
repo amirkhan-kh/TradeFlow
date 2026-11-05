@@ -48,6 +48,7 @@ Auth: JWT in `tf_token` httpOnly cookie (or `Bearer`). `frontend/src/proxy.ts` r
 8. **Integrations outbox**: domain writes call `emit(db, event, build)` inside their transaction → one `integration_jobs` row per subscribed active integration. Worker (`integrations/worker.ts`, 5s tick, `SKIP LOCKED` lease) delivers with backoff 30s→1h, max 8 attempts → `failed` (manual retry). Never call a remote API inside a domain transaction.
 9. **Integration secrets**: `password`-type config fields are AES-256-GCM encrypted (`SECRET_KEY`, fallback `JWT_SECRET`) and returned as `********`; empty/masked value on update keeps the old secret. Inbound URLs authenticate by the 48-hex `token` (rotatable); inactive → 404.
 10. **Staff management**: at least one active admin always remains (active admins locked `ORDER BY id FOR UPDATE` before the target row); an admin cannot block self or change own role. Every login, failed login/lock, profile, password and staff change writes `activity_log` in the same transaction.
+11. **References**: an assigned agent / courier / auditor must be an active user in that role (`assertAssignee`, 422; an unchanged assignee on edit is kept even if later blocked). Deactivated warehouses keep history but take no new orders, stock-in or transfers in (422); pickers request `?active=true`. Unknown foreign key → 422, never 500. `npm run verify:data` (backend) checks these links plus the stock, reserve and balance ledgers.
 
 ## Integrations (providers)
 

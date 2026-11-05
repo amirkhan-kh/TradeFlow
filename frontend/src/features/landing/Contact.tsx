@@ -1,11 +1,15 @@
 import { Clock, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
+import type { Lang } from "@/shared/i18n/config";
 import { Aurora } from "@/shared/ui/Aurora";
+import { Accent } from "./Accent";
+import { siteT } from "./copy";
 import { DemoForm } from "./DemoForm";
 import { Fx } from "./Fx";
 import { ZoomIn } from "./ZoomIn";
 
-export function Contact() {
+export function Contact({ lang }: { lang: Lang }) {
+  const t = siteT(lang);
   return (
     <section id="demo" className="relative isolate scroll-mt-24 py-20 sm:py-28">
       <Fx variant="beams" />
@@ -19,17 +23,17 @@ export function Contact() {
             <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0e1c2b]/60 via-[#0e1c2b]/80 to-[#0e1c2b]" />
             <Aurora dark />
             <div className="relative">
-              <p className="glass-dark inline-flex rounded-full px-3.5 py-1.5 text-xs font-bold text-[#cfe3ef]">Bepul demo</p>
+              <p className="glass-dark inline-flex rounded-full px-3.5 py-1.5 text-xs font-bold text-[#cfe3ef]">{t("Bepul demo")}</p>
               <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.035em] sm:text-5xl sm:leading-[1.05]">
-                Onlayn namoyishga <span className="text-aurora-dark">yoziling</span>
+                <Accent text={t("Onlayn namoyishga {accent}")} accent={t("yoziling")} className="text-aurora-dark" />
               </h2>
-              <p className="mt-5 text-white/70">30 daqiqalik bepul namoyishda tizim imkoniyatlarini ko&apos;rsatamiz va biznesingizga mos yechimni taklif qilamiz.</p>
+              <p className="mt-5 text-white/70">{t("30 daqiqalik bepul namoyishda tizim imkoniyatlarini ko'rsatamiz va biznesingizga mos yechimni taklif qilamiz.")}</p>
               <ul className="mt-10 space-y-3 text-sm">
                 {[
                   [Phone, <a key="p" href="tel:+998555000305">+998 55 500 03 05</a>],
                   [Mail, <a key="m" href="mailto:info@tradeflow.uz">info@tradeflow.uz</a>],
-                  [MapPin, "Toshkent sh., Yunusobod tumani"],
-                  [Clock, "Du–Sha, 09:00–19:00"],
+                  [MapPin, t("Toshkent sh., Yunusobod tumani")],
+                  [Clock, t("Du–Sha, 09:00–19:00")],
                 ].map(([Icon, content], i) => {
                   const I = Icon as typeof Phone;
                   return (
@@ -42,7 +46,7 @@ export function Contact() {
             </div>
           </div>
           <div className="p-6 sm:p-12">
-            <h3 className="mb-6 text-2xl font-bold tracking-tight text-ink-900">Formani to&apos;ldiring</h3>
+            <h3 className="mb-6 text-2xl font-bold tracking-tight text-ink-900">{t("Formani to'ldiring")}</h3>
             <DemoForm />
           </div>
         </ZoomIn>

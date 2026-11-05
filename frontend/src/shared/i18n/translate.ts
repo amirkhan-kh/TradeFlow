@@ -1,33 +1,31 @@
-import { DEFAULT_LANG, type Lang } from "./config";
+import { activeLang } from "./active";
+import type { Lang } from "./config";
+import { fill, type Vars } from "./fill";
 import { messages, type MsgKey } from "./messages";
+import type { Messages } from "./messages/types";
 import { toCyrillic } from "./translit";
 
-export type Vars = Record<string, string | number>;
+export type { Vars };
 export type T = (key: MsgKey, vars?: Vars) => string;
 
-const cyrCache = new Map<string, string>();
+const cyrCache = new WeakMap<Messages, Map<string, string>>();
 
-function cyrillic(key: string): string {
-  let s = cyrCache.get(key);
+function cyrillic(dict: Messages, key: string): string {
+  let cache = cyrCache.get(dict);
+  if (!cache) cyrCache.set(dict, (cache = new Map()));
+  let s = cache.get(key);
   if (s === undefined) {
-    s = messages[key]?.cy ?? toCyrillic(key);
-    cyrCache.set(key, s);
+    s = dict[key]?.cy ?? toCyrillic(key);
+    cache.set(key, s);
   }
   return s;
 }
 
 /** Unknown keys (e.g. text that came from the API) fall back to the source text. */
-export function translate(lang: Lang, key: string, vars?: Vars): string {
-  let s = lang === "uz" ? key : lang === "uz-Cyrl" ? cyrillic(key) : (messages[key]?.[lang] ?? key);
-  if (vars) s = s.replace(/\{(\w+)\}/g, (m, k: string) => (vars[k] !== undefined ? String(vars[k]) : m));
-  return s;
+export function translateIn(dict: Messages, lang: Lang, key: string, vars?: Vars): string {
+  return fill(lang === "uz" ? key : lang === "uz-Cyrl" ? cyrillic(dict, key) : (dict[key]?.[lang] ?? key), vars);
 }
 
-let active: Lang = DEFAULT_LANG;
+export const translate = (lang: Lang, key: string, vars?: Vars) => translateIn(messages, lang, key, vars);
 
-/** Set by `I18nProvider` in the browser, read by code outside React (`api`, `format`). */
-export const setActiveLang = (lang: Lang) => {
-  active = lang;
-};
-export const activeLang = () => active;
-export const tr: T = (key, vars) => translate(active, key, vars);
+export const tr: T = (key, vars) => translate(activeLang(), key, vars);

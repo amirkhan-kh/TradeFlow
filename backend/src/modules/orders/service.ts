@@ -4,6 +4,8 @@ import { changeBalance } from "../clients/repository.js";
 import * as deliveries from "../deliveries/repository.js";
 import { emit, orderPayload } from "../integrations/events.js";
 import * as stock from "../stock/repository.js";
+import { assertAssignee } from "../users/service.js";
+import * as warehouses from "../warehouses/repository.js";
 import * as repo from "./repository.js";
 import type { OrderStatus } from "./repository.js";
 
@@ -26,6 +28,8 @@ export async function create(input: CreateOrderInput, userId: number) {
     );
     const client = rows[0];
     if (!client) throw notFound("Mijoz topilmadi");
+    if (!(await warehouses.isActive(db, input.warehouse_id))) throw new HttpError(422, "Ombor topilmadi yoki faol emas");
+    await assertAssignee(input.agent_id, ["agent"], db);
 
     const merged = new Map<number, number>();
     for (const i of input.items) merged.set(i.product_id, (merged.get(i.product_id) ?? 0) + i.quantity);
@@ -91,6 +95,7 @@ export async function applyStatus(db: Db, id: number, input: StatusInput, userId
     for (const l of lines) await stock.release(db, order.warehouse_id, l.product_id, l.quantity);
   }
   if (input.status === "shipped") {
+    await assertAssignee(input.courier_id, ["courier"], db);
     for (const l of lines) {
       await stock.consumeReserved(db, order.warehouse_id, l.product_id, l.quantity);
       await stock.recordMovement(db, {

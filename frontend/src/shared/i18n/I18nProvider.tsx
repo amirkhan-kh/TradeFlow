@@ -1,10 +1,11 @@
 "use client";
 
 import { createContext, use, useEffect, useMemo } from "react";
-import { LANG_COOKIE, LOCALE_TAGS, type Lang } from "./config";
-import { setActiveLang, translate, type T } from "./translate";
+import { DEFAULT_LANG, LANG_COOKIE, LOCALE_TAGS, type Lang } from "./config";
+import { setActiveLang } from "./active";
+import { translate, type T } from "./translate";
 
-const LangContext = createContext<Lang>("uz");
+const LangContext = createContext<Lang>(DEFAULT_LANG);
 
 export function I18nProvider({ lang, children }: { lang: Lang; children: React.ReactNode }) {
   // Browser only: on the server this module is shared between requests.

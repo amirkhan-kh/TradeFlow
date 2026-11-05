@@ -78,7 +78,7 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
           />
         </Field>
         <Field label="Ombor">
-          <WarehouseSelect name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
+          <WarehouseSelect params={{ active: "true" }} name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
         </Field>
       </div>
 

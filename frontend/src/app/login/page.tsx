@@ -25,7 +25,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           <Logo light />
         </div>
         <div className="relative my-auto">
-          <div className="mx-auto max-w-md rounded-3xl bg-white/95 p-4 shadow-2xl">
+          <div className="mx-auto max-w-md rounded-2xl bg-white/95 p-4 shadow-2xl">
             <HeroIllustration />
           </div>
           <h2 className="mt-10 text-3xl font-extrabold tracking-tight">Ombordan savdo nuqtasigacha — to&apos;liq nazorat</h2>

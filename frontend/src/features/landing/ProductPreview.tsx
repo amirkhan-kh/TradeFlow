@@ -39,21 +39,21 @@ export function ProductPreview() {
   return (
     <Section eyebrow="Ichkaridan ko'rinishi" title="Murakkab ma'lumot — sodda va tushunarli ekran" lead="Ko'zni charchatmaydigan ranglar, aniq raqamlar va bir qarashda tushuniladigan grafiklar.">
       <div ref={ref} className="relative [perspective:1400px]">
-        <div aria-hidden className="absolute inset-x-10 -bottom-16 top-16 rounded-[3rem] bg-gradient-to-r from-[#8bc474]/30 via-[#9cc3dc]/50 to-[#32536b]/35 blur-3xl" />
-        <m.div style={{ y: chipA }} className="glass absolute -top-6 left-0 z-10 hidden rounded-2xl px-4 py-3 md:block lg:-left-6">
+        <div aria-hidden className="absolute inset-x-10 -bottom-16 top-16 rounded-3xl bg-gradient-to-r from-[#8bc474]/30 via-[#9cc3dc]/50 to-[#32536b]/35 blur-3xl" />
+        <m.div style={{ y: chipA }} className="glass absolute -top-6 left-0 z-10 hidden rounded-xl px-4 py-3 md:block lg:-left-6">
           <p className="flex items-center gap-2 text-xs font-semibold text-red-600">
             <BellRing className="size-3.5" /> Kam qoldiq
           </p>
           <p className="mt-0.5 text-sm font-bold text-ink-900">12 ta tovar 3 kunda tugaydi</p>
         </m.div>
-        <m.div style={{ y: chipB }} className="glass absolute right-0 bottom-10 z-10 hidden rounded-2xl px-4 py-3 md:block lg:-right-6">
+        <m.div style={{ y: chipB }} className="glass absolute right-0 bottom-10 z-10 hidden rounded-xl px-4 py-3 md:block lg:-right-6">
           <p className="flex items-center gap-2 text-xs font-semibold text-[#32536b]">
             <CircleCheck className="size-3.5" /> Yangi buyurtma
           </p>
           <p className="mt-0.5 text-sm font-bold text-ink-900">TF-001248 band qilindi</p>
         </m.div>
-        <m.div style={{ rotateX, scale, y, transformOrigin: "center top" }} className="glass relative mx-auto max-w-5xl rounded-[2rem] p-2 sm:p-3">
-          <div className="overflow-hidden rounded-3xl border border-white bg-white shadow-[0_40px_100px_-30px_rgb(16_40_32/0.35)] ring-1 ring-ink-200/60">
+        <m.div style={{ rotateX, scale, y, transformOrigin: "center top" }} className="glass relative mx-auto max-w-5xl rounded-3xl p-2 sm:p-3">
+          <div className="overflow-hidden rounded-2xl border border-white bg-white shadow-[0_40px_100px_-30px_rgb(16_40_32/0.35)] ring-1 ring-ink-200/60">
             <div className="flex items-center gap-1.5 border-b border-ink-100 bg-ink-50 px-4 py-2.5">
               <span className="size-2.5 rounded-full bg-red-300" />
               <span className="size-2.5 rounded-full bg-amber-300" />

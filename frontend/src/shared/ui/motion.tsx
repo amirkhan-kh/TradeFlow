@@ -12,6 +12,7 @@ import {
   useScroll,
   useSpring,
   useTransform,
+  type MotionStyle,
   type MotionValue,
 } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
@@ -81,7 +82,19 @@ export function StaggerItem({ children, className, as = "div" }: { children: Rea
 }
 
 /** Card with cursor-following glow and gentle 3D tilt. */
-export function SpotlightCard({ children, className = "", tilt = true, glow = "rgba(139,196,116,0.22)" }: { children: ReactNode; className?: string; tilt?: boolean; glow?: string }) {
+export function SpotlightCard({
+  children,
+  className = "",
+  tilt = true,
+  glow = "rgba(139,196,116,0.22)",
+  style,
+}: {
+  children: ReactNode;
+  className?: string;
+  tilt?: boolean;
+  glow?: string;
+  style?: MotionStyle;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const x = useMotionValue(-200);
   const y = useMotionValue(-200);
@@ -93,7 +106,7 @@ export function SpotlightCard({ children, className = "", tilt = true, glow = "r
     <m.div
       ref={ref}
       className={`group relative ${className}`}
-      style={tilt ? { rotateX: rx, rotateY: ry, transformPerspective: 900 } : undefined}
+      style={tilt ? { rotateX: rx, rotateY: ry, transformPerspective: 900, ...style } : style}
       onPointerMove={(e) => {
         const r = ref.current!.getBoundingClientRect();
         const px = e.clientX - r.left;

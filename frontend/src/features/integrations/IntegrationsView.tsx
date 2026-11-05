@@ -130,7 +130,7 @@ export function IntegrationsView() {
 
   return (
     <div className="animate-rise">
-      <header className="relative mb-6 overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900 via-brand-800 to-navy-900 p-6 sm:p-8">
+      <header className="relative mb-6 overflow-hidden rounded-2xl bg-gradient-to-br from-brand-900 via-brand-800 to-navy-900 p-6 sm:p-8">
         <span className="pointer-events-none absolute -top-24 -left-16 size-72 rounded-full bg-brand-400/25 blur-3xl" aria-hidden />
         <span className="pointer-events-none absolute -right-10 -bottom-28 size-80 rounded-full bg-sky-400/20 blur-3xl" aria-hidden />
         <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">

@@ -161,7 +161,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
               href="/dashboard/profile"
               aria-label="Profilim"
               aria-current={pathname === "/dashboard/profile" ? "page" : undefined}
-              className="flex items-center gap-3 rounded-2xl py-1 pr-1 pl-3 transition hover:bg-ink-100"
+              className="flex items-center gap-3 rounded-xl py-1 pr-1 pl-3 transition hover:bg-ink-100"
             >
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-semibold text-ink-900">{user.full_name}</p>

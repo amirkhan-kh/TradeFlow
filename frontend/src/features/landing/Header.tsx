@@ -33,7 +33,7 @@ export function Header() {
         className="fixed inset-x-0 top-0 z-50 px-3 pt-3"
       >
         <div
-          className={`mx-auto flex h-16 max-w-7xl items-center justify-between rounded-[1.4rem] px-3 pl-4 transition-[background-color,box-shadow,border-color] duration-500 sm:pl-5 ${
+          className={`mx-auto flex h-16 max-w-7xl items-center justify-between rounded-2xl px-3 pl-4 transition-[background-color,box-shadow,border-color] duration-500 sm:pl-5 ${
             scrolled ? "glass" : "border border-white/50 bg-white/30 backdrop-blur-md"
           }`}
         >
@@ -89,7 +89,7 @@ export function Header() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -8, scale: 0.98, transition: { duration: 0.18 } }}
               transition={{ duration: 0.3, ease: EASE }}
-              className="glass mx-auto mt-2 flex max-w-7xl flex-col rounded-[1.4rem] p-2 lg:hidden"
+              className="glass mx-auto mt-2 flex max-w-7xl flex-col rounded-2xl p-2 lg:hidden"
             >
               {NAV.map(([href, label], i) => (
                 <m.a

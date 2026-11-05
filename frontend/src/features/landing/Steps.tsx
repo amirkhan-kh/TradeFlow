@@ -29,8 +29,8 @@ export function Steps() {
         </div>
         <Stagger as="ol" className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {STEPS.map(([Icon, title, text], i) => (
-            <StaggerItem as="li" key={title} className="group glass relative rounded-[1.75rem] px-5 pt-6 pb-7 text-center">
-              <m.span whileHover={{ y: -4, rotate: -4 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="relative mx-auto grid size-16 place-items-center rounded-2xl bg-gradient-to-br from-[#4f86ab] to-[#16283a] text-white shadow-[0_18px_36px_-12px_rgb(22_40_58/0.6),inset_0_1px_0_rgb(255_255_255/0.3)]">
+            <StaggerItem as="li" key={title} className="group glass relative rounded-2xl px-5 pt-6 pb-7 text-center">
+              <m.span whileHover={{ y: -4, rotate: -4 }} transition={{ type: "spring", stiffness: 300, damping: 15 }} className="relative mx-auto grid size-16 place-items-center rounded-xl bg-gradient-to-br from-[#4f86ab] to-[#16283a] text-white shadow-[0_18px_36px_-12px_rgb(22_40_58/0.6),inset_0_1px_0_rgb(255_255_255/0.3)]">
                 <Icon className="size-7" />
                 <span className="absolute -top-2 -right-2 grid size-7 place-items-center rounded-full bg-white text-xs font-extrabold text-[#32536b] shadow-soft ring-2 ring-brand-200">{i + 1}</span>
               </m.span>

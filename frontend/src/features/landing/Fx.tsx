@@ -69,7 +69,7 @@ export function Fx({ variant, side = "right" }: { variant: Variant; side?: "left
           </div>
           {SHARDS.map(([cls, delay]) => (
             <div key={cls} className={`absolute ${cls}`}>
-              <div className="glass size-full animate-hover-y rounded-2xl" style={{ animationDelay: delay }} />
+              <div className="glass size-full animate-hover-y rounded-xl" style={{ animationDelay: delay }} />
             </div>
           ))}
         </>

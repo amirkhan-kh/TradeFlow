@@ -17,7 +17,7 @@ const ORDERS = [
 function Chip({ className, y, z, delay, children }: { className: string; y: MotionValue<number>; z: MotionValue<number>; delay: number; children: ReactNode }) {
   return (
     <m.div style={{ y, z }} className={`absolute ${className}`}>
-      <div className="glass animate-pop rounded-2xl px-3.5 py-3 sm:px-4" style={{ animationDelay: `${delay}s` }}>
+      <div className="glass animate-pop rounded-xl px-3.5 py-3 sm:px-4" style={{ animationDelay: `${delay}s` }}>
         {children}
       </div>
     </m.div>
@@ -56,7 +56,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
       <div aria-hidden className="absolute inset-[6%] bg-[radial-gradient(closest-side,rgb(156_195_220/0.7),rgb(139_196_116/0.25)_60%,transparent)]" />
 
       <m.div style={{ rotateX, rotateY }} className="absolute inset-0 [transform-style:preserve-3d]">
-        <m.div style={{ z: back }} className="glass absolute inset-x-[4%] top-[14%] bottom-[24%] overflow-hidden rounded-[1.75rem] p-4 sm:p-5">
+        <m.div style={{ z: back }} className="glass absolute inset-x-[4%] top-[14%] bottom-[24%] overflow-hidden rounded-2xl p-4 sm:p-5">
           <div className="flex items-center gap-1.5">
             <span className="size-2 rounded-full bg-ink-300" />
             <span className="size-2 rounded-full bg-ink-300" />
@@ -103,7 +103,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
           <span aria-hidden className="pointer-events-none absolute inset-y-0 -left-1/2 w-1/3 animate-[shine_5s_ease-in-out_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
         </m.div>
 
-        <m.div style={{ z: mid }} className="glass absolute right-0 bottom-[6%] w-[70%] rounded-[1.5rem] p-3.5 sm:w-[64%] sm:p-4">
+        <m.div style={{ z: mid }} className="glass absolute right-0 bottom-[6%] w-[70%] rounded-xl p-3.5 sm:w-[64%] sm:p-4">
           <p className="flex items-center justify-between text-xs font-bold text-ink-900">
             Buyurtmalar oqimi <span className="text-[10px] font-medium text-ink-600">bugun</span>
           </p>
@@ -119,7 +119,7 @@ export function HeroScene({ progress }: { progress: MotionValue<number> }) {
         </m.div>
 
         <m.div style={{ z: front }} className="absolute top-[3%] left-[8%] animate-hover-y">
-          <div className="ring-beam grid size-16 place-items-center rounded-[1.4rem] border border-white/80 bg-gradient-to-br from-white/90 to-white/50 shadow-[0_24px_50px_-16px_rgb(15_34_54/0.45),inset_0_1px_0_white] backdrop-blur-md sm:size-20">
+          <div className="ring-beam grid size-16 place-items-center rounded-2xl border border-white/80 bg-gradient-to-br from-white/90 to-white/50 shadow-[0_24px_50px_-16px_rgb(15_34_54/0.45),inset_0_1px_0_white] backdrop-blur-md sm:size-20">
             <LogoMark className="size-[58%]" />
           </div>
         </m.div>

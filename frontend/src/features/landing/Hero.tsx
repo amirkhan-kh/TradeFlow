@@ -104,7 +104,7 @@ export function Hero() {
             </ButtonLink>
           </div>
 
-          <dl style={rise(0.54)} className="glass mt-12 grid max-w-xl animate-lift grid-cols-2 gap-y-5 rounded-3xl p-5 sm:grid-cols-4 sm:divide-x sm:divide-ink-900/10">
+          <dl style={rise(0.54)} className="glass mt-12 grid max-w-xl animate-lift grid-cols-2 gap-y-5 rounded-2xl p-5 sm:grid-cols-4 sm:divide-x sm:divide-ink-900/10">
             {STATS.map((s) => (
               <div key={s.label} className="sm:px-4 sm:first:pl-1">
                 <dt className="sr-only">{s.label}</dt>

@@ -12,9 +12,9 @@ export function Contact() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <ZoomIn
           from={0.84}
-          className="glass grid overflow-hidden rounded-[2.75rem] p-2 shadow-[0_50px_120px_-40px_rgb(15_34_54/0.45)] sm:p-3 lg:grid-cols-[1fr_1.1fr]"
+          className="glass grid overflow-hidden rounded-3xl p-2 shadow-[0_50px_120px_-40px_rgb(15_34_54/0.45)] sm:p-3 lg:grid-cols-[1fr_1.1fr]"
         >
-          <div className="relative overflow-hidden rounded-[2.2rem] bg-[#0e1c2b] p-8 text-white sm:p-12">
+          <div className="relative overflow-hidden rounded-2xl bg-[#0e1c2b] p-8 text-white sm:p-12">
             <Image src="/landing/photo-team.webp" alt="" fill sizes="(min-width: 1024px) 40rem, 100vw" className="object-cover opacity-25 mix-blend-luminosity" />
             <div aria-hidden className="absolute inset-0 bg-gradient-to-b from-[#0e1c2b]/60 via-[#0e1c2b]/80 to-[#0e1c2b]" />
             <Aurora dark />
@@ -33,7 +33,7 @@ export function Contact() {
                 ].map(([Icon, content], i) => {
                   const I = Icon as typeof Phone;
                   return (
-                    <li key={i} className="glass-dark flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors hover:bg-white/[0.08]">
+                    <li key={i} className="glass-dark flex items-center gap-3 rounded-xl px-4 py-3 transition-colors hover:bg-white/[0.08]">
                       <I className="size-5 text-[#9cc3dc]" /> {content as React.ReactNode}
                     </li>
                   );

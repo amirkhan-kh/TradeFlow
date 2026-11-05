@@ -32,7 +32,7 @@ export function Modal({
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className={`m-auto w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"} rounded-3xl bg-white p-0 shadow-lift backdrop:bg-ink-900/40 backdrop:backdrop-blur-sm`}
+      className={`m-auto w-[calc(100%-2rem)] ${wide ? "max-w-3xl" : "max-w-lg"} rounded-2xl bg-white p-0 shadow-lift backdrop:bg-ink-900/40 backdrop:backdrop-blur-sm`}
     >
       {open && (
         <div className="animate-rise p-6">

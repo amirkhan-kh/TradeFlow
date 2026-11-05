@@ -16,7 +16,7 @@ export function Skeleton({ className = "" }: { className?: string }) {
 export function Empty({ title = "Ma'lumot yo'q", hint }: { title?: string; hint?: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-14 text-center">
-      <div className="grid size-12 place-items-center rounded-2xl bg-brand-50 text-brand-600">
+      <div className="grid size-12 place-items-center rounded-xl bg-brand-50 text-brand-600">
         <Inbox className="size-6" />
       </div>
       <p className="font-semibold text-ink-800">{title}</p>
@@ -28,7 +28,7 @@ export function Empty({ title = "Ma'lumot yo'q", hint }: { title?: string; hint?
 export function ErrorState({ message, onRetry }: { message: string; onRetry?: () => void }) {
   return (
     <div role="alert" className="flex flex-col items-center gap-3 py-14 text-center">
-      <div className="grid size-12 place-items-center rounded-2xl bg-red-50 text-red-600">
+      <div className="grid size-12 place-items-center rounded-xl bg-red-50 text-red-600">
         <CircleAlert className="size-6" />
       </div>
       <p className="text-sm text-ink-700">{message}</p>

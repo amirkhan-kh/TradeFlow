@@ -48,8 +48,8 @@ export function Telegram() {
           <p className="mb-6 text-center text-sm font-semibold text-ink-500">Tizimlaringiz bilan oson integratsiya</p>
           <Marquee>
             {INTEGRATIONS.map(([file, name]) => (
-              <span key={name} className="glass flex items-center gap-2.5 rounded-2xl py-2 pr-5 pl-2 text-sm font-semibold whitespace-nowrap text-ink-700">
-                <span className="grid size-8 place-items-center overflow-hidden rounded-xl bg-white shadow-soft ring-1 ring-ink-100">
+              <span key={name} className="glass flex items-center gap-2.5 rounded-xl py-2 pr-5 pl-2 text-sm font-semibold whitespace-nowrap text-ink-700">
+                <span className="grid size-8 place-items-center overflow-hidden rounded-lg bg-white shadow-soft ring-1 ring-ink-100">
                   <Image src={`/logos/${file}`} alt="" width={22} height={22} className="size-[22px] object-contain" />
                 </span>
                 {name}
@@ -71,8 +71,8 @@ export function Telegram() {
             </Reveal>
             <Stagger as="ul" className="mt-8 grid gap-4 sm:grid-cols-2">
               {BOT.map(([Icon, title, text]) => (
-                <StaggerItem as="li" key={title} className="group glass flex gap-3 rounded-2xl p-3 transition-colors hover:bg-white/80">
-                  <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-sky-50 text-sky-600 transition-transform group-hover:scale-110">
+                <StaggerItem as="li" key={title} className="group glass flex gap-3 rounded-xl p-3 transition-colors hover:bg-white/80">
+                  <span className="grid size-11 shrink-0 place-items-center rounded-lg bg-sky-50 text-sky-600 transition-transform group-hover:scale-110">
                     <Icon className="size-5" />
                   </span>
                   <div>
@@ -95,9 +95,9 @@ export function Telegram() {
             <m.div
               whileHover={{ rotate: -1.5, y: -6 }}
               transition={{ type: "spring", stiffness: 200, damping: 18 }}
-              className="glass rounded-[2.9rem] p-2.5 shadow-[0_50px_100px_-30px_rgb(16_40_32/0.45)]"
+              className="glass rounded-[2.25rem] p-2.5 shadow-[0_50px_100px_-30px_rgb(16_40_32/0.45)]"
             >
-              <div className="rounded-[2.3rem] bg-gradient-to-b from-[#eaf3ee] to-[#dce9e2] p-4 ring-1 ring-ink-900/10">
+              <div className="rounded-[1.75rem] bg-gradient-to-b from-[#eaf3ee] to-[#dce9e2] p-4 ring-1 ring-ink-900/10">
                 <div className="mx-auto mb-3 h-1.5 w-20 rounded-full bg-ink-900/15" />
                 <div className="glass mb-4 flex items-center gap-3 rounded-2xl px-3 py-2">
                   <span className="grid size-9 place-items-center rounded-full bg-ink-50 ring-1 ring-ink-200">

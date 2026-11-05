@@ -165,11 +165,11 @@ export function ProfileView() {
 
   return (
     <div className="animate-rise space-y-6">
-      <header className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-900 via-brand-800 to-navy-900 p-6 sm:p-8">
+      <header className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-brand-900 via-brand-800 to-navy-900 p-6 sm:p-8">
         <span className="pointer-events-none absolute -top-20 -right-16 size-72 rounded-full bg-brand-400/25 blur-3xl" aria-hidden />
         <div className="relative flex flex-col gap-6 sm:flex-row sm:items-center">
           <span
-            className="grid size-20 shrink-0 place-items-center rounded-3xl text-2xl font-extrabold text-white shadow-lift ring-4 ring-white/20"
+            className="grid size-20 shrink-0 place-items-center rounded-2xl text-2xl font-extrabold text-white shadow-lift ring-4 ring-white/20"
             style={{ background: `linear-gradient(135deg, ${role.color}, ${role.color}aa)` }}
           >
             {initials(u.full_name)}

@@ -26,7 +26,7 @@ export function Faq() {
           return (
             <StaggerItem key={q}>
               <ZoomIn from={0.9} y={30} tilt={12} end="start 70%">
-                <div className={`glass rounded-[1.75rem] transition-colors duration-300 ${isOpen ? "bg-white/80" : "hover:bg-white/70"}`}>
+                <div className={`glass rounded-2xl transition-colors duration-300 ${isOpen ? "bg-white/80" : "hover:bg-white/70"}`}>
                   <button
                     onClick={() => setOpen(isOpen ? null : i)}
                     aria-expanded={isOpen}

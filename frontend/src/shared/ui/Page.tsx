@@ -93,7 +93,7 @@ export function Chips<T extends string>({
   counts?: Record<string, number>;
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5 rounded-2xl bg-ink-100/70 p-1">
+    <div className="flex flex-wrap gap-1.5 rounded-xl bg-ink-100/70 p-1">
       {options.map((o) => (
         <button
           key={o.value}

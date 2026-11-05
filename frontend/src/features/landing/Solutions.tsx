@@ -79,7 +79,7 @@ export function Solutions() {
             panel={
               <>
                 <div className="flex items-center gap-4 lg:flex-col lg:items-start">
-                  <span className="ring-beam grid size-16 shrink-0 place-items-center rounded-2xl bg-gradient-to-br from-[#3d6a8a] to-[#16283a] text-white shadow-[0_18px_36px_-14px_rgb(22_40_58/0.7),inset_0_1px_0_rgb(255_255_255/0.25)]">
+                  <span className="ring-beam grid size-16 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-[#3d6a8a] to-[#16283a] text-white shadow-[0_18px_36px_-14px_rgb(22_40_58/0.7),inset_0_1px_0_rgb(255_255_255/0.25)]">
                     <g.icon className="size-6" />
                   </span>
                   <div>
@@ -97,10 +97,10 @@ export function Solutions() {
               {g.items.map(([Icon, title, text], i) => (
                 <Drift key={title} distance={g.items.length % 3 === 0 ? [0, 36, 14][i % 3] : i % 2 ? 32 : 0}>
                   <ZoomIn from={0.86} y={50} tilt={16} end="start 70%" className="h-full">
-                    <SpotlightCard className="glass h-full overflow-hidden rounded-[1.75rem] p-6 transition-shadow hover:shadow-lift">
+                    <SpotlightCard className="glass h-full overflow-hidden rounded-2xl p-6 transition-shadow hover:shadow-lift">
                       <span aria-hidden className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-[#4f86ab]/70 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
                       <span aria-hidden className="absolute -right-10 -bottom-10 size-32 bg-[radial-gradient(closest-side,rgb(139_196_116/0.3),transparent)] opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-                      <span className="relative grid size-12 place-items-center rounded-2xl bg-gradient-to-br from-white to-[#eaf2f7] text-[#32536b] shadow-[inset_0_1px_0_white] ring-1 ring-[#32536b]/10 transition-all duration-300 group-hover:from-[#4f86ab] group-hover:to-[#1d3a52] group-hover:text-white group-hover:shadow-lg group-hover:shadow-[#32536b]/30">
+                      <span className="relative grid size-12 place-items-center rounded-xl bg-gradient-to-br from-white to-[#eaf2f7] text-[#32536b] shadow-[inset_0_1px_0_white] ring-1 ring-[#32536b]/10 transition-all duration-300 group-hover:from-[#4f86ab] group-hover:to-[#1d3a52] group-hover:text-white group-hover:shadow-lg group-hover:shadow-[#32536b]/30">
                         <Icon className="size-5" />
                       </span>
                       <h4 className="relative mt-5 font-bold text-ink-900">{title}</h4>

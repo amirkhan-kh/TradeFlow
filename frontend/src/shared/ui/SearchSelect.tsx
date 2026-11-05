@@ -2,6 +2,7 @@
 
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api, qs, type Page } from "@/shared/lib/api";
 
 interface Props<T extends { id: number }> {
@@ -22,7 +23,8 @@ interface Props<T extends { id: number }> {
 }
 
 /** Server-side searchable combobox: scales to any list size (only 20 rows are fetched per query). */
-export function SearchSelect<T extends { id: number }>({ path, params, value, onChange, display, hint, name, required, placeholder = "Qidiring va tanlang…", id, ...aria }: Props<T>) {
+export function SearchSelect<T extends { id: number }>({ path, params, value, onChange, display, hint, name, required, placeholder, id, ...aria }: Props<T>) {
+  const t = useT();
   const listId = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
@@ -36,7 +38,7 @@ export function SearchSelect<T extends { id: number }>({ path, params, value, on
   useEffect(() => {
     if (!open) return;
     let alive = true;
-    const t = setTimeout(() => {
+    const timer = setTimeout(() => {
       setLoading(true);
       setError(undefined);
       api<Page<T>>(`${path}${qs({ ...JSON.parse(paramsKey), q: query.trim(), limit: 20 })}`)
@@ -50,13 +52,13 @@ export function SearchSelect<T extends { id: number }>({ path, params, value, on
     }, 250);
     return () => {
       alive = false;
-      clearTimeout(t);
+      clearTimeout(timer);
     };
   }, [open, query, path, paramsKey]);
 
   useEffect(() => {
-    inputRef.current?.setCustomValidity(!value && query.trim() ? "Ro'yxatdan tanlang" : "");
-  }, [value, query]);
+    inputRef.current?.setCustomValidity(!value && query.trim() ? t("Ro'yxatdan tanlang") : "");
+  }, [value, query, t]);
 
   const choose = (item: T) => {
     onChange(item);
@@ -96,7 +98,7 @@ export function SearchSelect<T extends { id: number }>({ path, params, value, on
         aria-label={aria["aria-label"]}
         autoComplete="off"
         required={required}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t("Qidiring va tanlang…")}
         className="input pr-9"
         value={value ? display(value) : query}
         onChange={(e) => {
@@ -118,7 +120,7 @@ export function SearchSelect<T extends { id: number }>({ path, params, value, on
           {error ? (
             <li className="px-3 py-2 text-sm text-red-600">{error}</li>
           ) : items.length === 0 ? (
-            <li className="px-3 py-2 text-sm text-ink-500">{loading ? "Yuklanmoqda…" : "Hech narsa topilmadi"}</li>
+            <li className="px-3 py-2 text-sm text-ink-500">{loading ? t("Yuklanmoqda…") : t("Hech narsa topilmadi")}</li>
           ) : (
             items.map((item, i) => (
               <li
@@ -154,5 +156,6 @@ export interface WarehouseOption {
 
 /** Warehouse picker shared by order, stock-move, audit forms and the stock filter. */
 export function WarehouseSelect(props: Omit<Props<WarehouseOption>, "path" | "display" | "hint">) {
-  return <SearchSelect<WarehouseOption> path="/warehouses" placeholder="Ombor qidiring…" {...props} display={(w) => w.name} hint={(w) => `${w.code} · ${w.city}`} />;
+  const t = useT();
+  return <SearchSelect<WarehouseOption> path="/warehouses" placeholder={t("Ombor qidiring…")} {...props} display={(w) => w.name} hint={(w) => `${w.code} · ${w.city}`} />;
 }

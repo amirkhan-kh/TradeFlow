@@ -1,3 +1,5 @@
+import { tr } from "@/shared/i18n/translate";
+
 export class ApiError extends Error {
   constructor(
     public status: number,
@@ -31,13 +33,13 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
     });
   } catch (err) {
     if (rest.signal?.aborted) throw err;
-    throw new ApiError(0, timeout.aborted ? "Server javob bermadi — qayta urinib ko'ring" : "Tarmoq bilan aloqa yo'q — internetni tekshiring");
+    throw new ApiError(0, timeout.aborted ? tr("Server javob bermadi — qayta urinib ko'ring") : tr("Tarmoq bilan aloqa yo'q — internetni tekshiring"));
   }
 
   if (res.status === 401 && !path.startsWith("/auth/login")) {
     await fetch("/api/v1/auth/logout", { method: "POST", credentials: "include" });
     window.location.href = `/login?next=${encodeURIComponent(window.location.pathname)}`;
-    throw new ApiError(401, "Sessiya tugadi");
+    throw new ApiError(401, tr("Sessiya tugadi"));
   }
   if (res.status === 204) return undefined as T;
 
@@ -45,7 +47,7 @@ export async function api<T>(path: string, init: RequestInit & { json?: unknown 
   if (!res.ok) {
     const issue = body?.issues?.[0];
     const detail = issue ? `${issue.path?.join(".") ?? ""}: ${issue.message}` : "";
-    throw new ApiError(res.status, body?.error ? `${body.error}${detail ? ` (${detail})` : ""}` : "Xatolik yuz berdi");
+    throw new ApiError(res.status, body?.error ? `${body.error}${detail ? ` (${detail})` : ""}` : tr("Xatolik yuz berdi"));
   }
   return body as T;
 }

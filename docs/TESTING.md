@@ -125,6 +125,16 @@ Each screen gets its own copies: `WH-L1`, `PRD-L1`, …
 | G-05 | Session expiry | — valid session works | Token from another role sees only allowed actions | API 401 mid-session → redirect `/login?next=` |
 | G-06 | Modal (shared) | Opens with title, X "Yopish" closes | Esc and backdrop click close; reopen shows clean form | Submit error keeps modal open with `Alert` |
 
+### I18N — languages (`uz`, `uz-Cyrl`, `ru`, `en`, `ky`; P1)
+
+Tests keep using Uzbek labels: `uz` is the default and the dictionary key. Language-specific checks live in `e2e/i18n.spec.ts`.
+
+| ID | Function | S1 | S2 | S3 |
+|---|---|---|---|---|
+| I18N-01 | "Til" switcher in the shell | Russian → shell, overview, badges translated; `tf_lang` cookie persists across pages | All 5 languages: heading, nav, KPI, `<html lang>`; no Uzbek words left in shell/KPI | Unknown cookie value → Uzbek |
+| I18N-02 | `/login` in other languages | English switcher → English labels → sign in → English dashboard | `uz-Cyrl`: brand stays Latin (`TradeFlow'га`) | Wrong password → API error in the chosen language |
+| I18N-03 | API messages | `tf_lang` cookie → error text per language | `Accept-Language` / `x-lang`; templated message keeps its values | Unknown language → Uzbek |
+
 ### PUB — landing `/` (P1–P3)
 
 | ID | Function | S1 | S2 | S3 |

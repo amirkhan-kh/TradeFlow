@@ -33,7 +33,7 @@ export const create = (input: Input, userId: number) =>
 
 - **Validation** at the edge with zod; `z.coerce` for numbers from forms/query. Lists use `pageOf(req)` (`page`, `limit ≤ 200`, `q`, `status`) and return `{ items, total, page, limit }`.
 - **Authz** deny-by-default: every mutating route has `allow(...)`. Reads are secured by `requireAuth`. Public routes only under `/public/*`.
-- **Errors** (Uzbek messages, user-actionable): 404 `notFound`, 409 `conflict` (rule broken / duplicate — `23505` auto-maps), 422 zod / business validation, 401 no session, 403 role. Never leak SQL or stack.
+- **Errors** (Uzbek messages, user-actionable; `errorHandler` translates them via `core/i18n` — add every new message to `core/messages.ts` with `ru`, `en`, `ky`; `{name}` slots match the values filled into the thrown text. Language: `tf_lang` cookie → `x-lang` → `Accept-Language` → `uz`): 404 `notFound`, 409 `conflict` (rule broken / duplicate — `23505` auto-maps), 422 zod / business validation, 401 no session, 403 role. Never leak SQL or stack.
 - **Status codes**: 200 read/update · 201 create · 204 delete/no body · 409 · 422.
 - **Transactions**: any write touching > 1 row/table → `tx()`. Lock the guarding row. Stock and money changes are idempotent (`idempotency_key` or state check).
 - **SQL**: parameterized `$1…` only. No string-built `WHERE` from user input. Index any new filter/sort column used in lists.

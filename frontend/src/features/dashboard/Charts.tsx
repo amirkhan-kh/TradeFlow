@@ -15,7 +15,8 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { dayLabel, fmtCompact, fmtNum, monthLabel } from "@/shared/lib/format";
+import { useT } from "@/shared/i18n/I18nProvider";
+import { dayLabel, fmtCompact, fmtMoney, fmtNum, monthLabel } from "@/shared/lib/format";
 
 export const PALETTE = ["#137852", "#18324d", "#3dae7f", "#d4a24c", "#6fc8a1", "#2a4a6b", "#a7dfc4", "#8a9b95"];
 
@@ -26,6 +27,7 @@ const tooltipStyle = {
 };
 
 export function FlowChart({ data }: { data: { month: string; inbound: number; outbound: number }[] }) {
+  const t = useT();
   return (
     <ResponsiveContainer width="100%" height={260}>
       <AreaChart data={data} margin={{ top: 10, right: 8, left: -12, bottom: 0 }}>
@@ -42,32 +44,34 @@ export function FlowChart({ data }: { data: { month: string; inbound: number; ou
         <CartesianGrid strokeDasharray="3 3" stroke="#eaf0ee" vertical={false} />
         <XAxis dataKey="month" tickFormatter={monthLabel} tick={axis} axisLine={false} tickLine={false} />
         <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={fmtCompact} />
-        <Tooltip {...tooltipStyle} labelFormatter={(l) => monthLabel(String(l))} formatter={(v) => `${fmtNum(Number(v))} dona`} />
+        <Tooltip {...tooltipStyle} labelFormatter={(l) => monthLabel(String(l))} formatter={(v) => t("{n} dona", { n: fmtNum(Number(v)) })} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-        <Area type="monotone" dataKey="inbound" name="Kirim" stroke="#137852" strokeWidth={2.5} fill="url(#gIn)" />
-        <Area type="monotone" dataKey="outbound" name="Chiqim" stroke="#18324d" strokeWidth={2.5} fill="url(#gOut)" />
+        <Area type="monotone" dataKey="inbound" name={t("Kirim")} stroke="#137852" strokeWidth={2.5} fill="url(#gIn)" />
+        <Area type="monotone" dataKey="outbound" name={t("Chiqim")} stroke="#18324d" strokeWidth={2.5} fill="url(#gOut)" />
       </AreaChart>
     </ResponsiveContainer>
   );
 }
 
 export function SalesChart({ data }: { data: { month: string; revenue: number; collected: number }[] }) {
+  const t = useT();
   return (
     <ResponsiveContainer width="100%" height={260}>
       <BarChart data={data} margin={{ top: 10, right: 8, left: -12, bottom: 0 }} barGap={4}>
         <CartesianGrid strokeDasharray="3 3" stroke="#eaf0ee" vertical={false} />
         <XAxis dataKey="month" tickFormatter={monthLabel} tick={axis} axisLine={false} tickLine={false} />
         <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={fmtCompact} />
-        <Tooltip {...tooltipStyle} cursor={{ fill: "#ecf8f2" }} labelFormatter={(l) => monthLabel(String(l))} formatter={(v) => `${fmtNum(Number(v))} so'm`} />
+        <Tooltip {...tooltipStyle} cursor={{ fill: "#ecf8f2" }} labelFormatter={(l) => monthLabel(String(l))} formatter={(v) => fmtMoney(Number(v))} />
         <Legend iconType="circle" wrapperStyle={{ fontSize: 12 }} />
-        <Bar dataKey="revenue" name="Sotuv" fill="#18324d" radius={[6, 6, 0, 0]} maxBarSize={22} />
-        <Bar dataKey="collected" name="Undirilgan" fill="#3dae7f" radius={[6, 6, 0, 0]} maxBarSize={22} />
+        <Bar dataKey="revenue" name={t("Sotuv")} fill="#18324d" radius={[6, 6, 0, 0]} maxBarSize={22} />
+        <Bar dataKey="collected" name={t("Undirilgan")} fill="#3dae7f" radius={[6, 6, 0, 0]} maxBarSize={22} />
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
 export function DailyChart({ data }: { data: { day: string; revenue: number; orders: number }[] }) {
+  const t = useT();
   return (
     <ResponsiveContainer width="100%" height={230}>
       <AreaChart data={data} margin={{ top: 10, right: 8, left: -12, bottom: 0 }}>
@@ -80,8 +84,8 @@ export function DailyChart({ data }: { data: { day: string; revenue: number; ord
         <CartesianGrid strokeDasharray="3 3" stroke="#eaf0ee" vertical={false} />
         <XAxis dataKey="day" tickFormatter={dayLabel} tick={axis} axisLine={false} tickLine={false} interval={4} />
         <YAxis tick={axis} axisLine={false} tickLine={false} tickFormatter={fmtCompact} />
-        <Tooltip {...tooltipStyle} labelFormatter={(l) => dayLabel(String(l))} formatter={(v, n) => (n === "Tushum" ? `${fmtNum(Number(v))} so'm` : v)} />
-        <Area type="monotone" dataKey="revenue" name="Tushum" stroke="#137852" strokeWidth={2.5} fill="url(#gDay)" />
+        <Tooltip {...tooltipStyle} labelFormatter={(l) => dayLabel(String(l))} formatter={(v, _n, item) => (item.dataKey === "revenue" ? fmtMoney(Number(v)) : v)} />
+        <Area type="monotone" dataKey="revenue" name={t("Tushum")} stroke="#137852" strokeWidth={2.5} fill="url(#gDay)" />
       </AreaChart>
     </ResponsiveContainer>
   );
@@ -106,7 +110,7 @@ export function Donut({
             <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
           ))}
         </Pie>
-        <Tooltip {...tooltipStyle} formatter={(v) => (money ? `${fmtNum(Number(v))} so'm` : fmtNum(Number(v)))} />
+        <Tooltip {...tooltipStyle} formatter={(v) => (money ? fmtMoney(Number(v)) : fmtNum(Number(v)))} />
       </PieChart>
     </ResponsiveContainer>
   );

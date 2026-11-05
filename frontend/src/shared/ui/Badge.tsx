@@ -1,3 +1,4 @@
+import { useT } from "@/shared/i18n/I18nProvider";
 import { statusOf, type Tone } from "@/shared/lib/status";
 
 const tones: Record<Tone, string> = {
@@ -27,6 +28,7 @@ export function Badge({ tone = "gray", children }: { tone?: Tone; children: Reac
 }
 
 export function StatusBadge({ status }: { status: string }) {
+  const t = useT();
   const s = statusOf(status);
-  return <Badge tone={s.tone}>{s.label}</Badge>;
+  return <Badge tone={s.tone}>{t(s.label)}</Badge>;
 }

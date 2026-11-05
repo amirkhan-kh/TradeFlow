@@ -1,6 +1,6 @@
 # Frontend
 
-Next.js 16 App Router + TS + Tailwind v4. UI copy is **Uzbek (Latin)**. Read `frontend/AGENTS.md`: Next 16 has breaking changes — check `frontend/node_modules/next/dist/docs/` before using an API you remember from older Next (e.g. middleware is now `src/proxy.ts`).
+Next.js 16 App Router + TS + Tailwind v4. UI copy is written in **Uzbek (Latin)** and shown in 5 languages (`uz`, `uz-Cyrl`, `ru`, `en`, `ky`) — see "Languages" below. Read `frontend/AGENTS.md`: Next 16 has breaking changes — check `frontend/node_modules/next/dist/docs/` before using an API you remember from older Next (e.g. middleware is now `src/proxy.ts`).
 
 ```
 frontend/src/
@@ -31,6 +31,13 @@ frontend/src/
 - Public pages (`/`, `/login`): `metadata` (title, description, canonical, OG), `next/image`, `next/font`, no CLS → Lighthouse 100 (`docs/skills/03-lighthouse.md`).
 - Contrast ≥ 4.5:1, focus visible, keyboard reachable (Tab / Enter / Esc closes Modal).
 - No Next ↔ other framework swap. No client-side data lib (SWR/React Query) — `useApi` is the one.
+
+## Languages
+
+- `shared/i18n`: the Uzbek (Latin) text **is** the key. Wrap every UI string: `const t = useT(); t("Buyurtmalar")`, slots `t("bugun: {n}", { n })`. Server components: `const { t } = await getI18n()`. Code outside React (`api`, `format`): `tr()`.
+- New text → add it to `shared/i18n/messages/<area>.ts` with `ru`, `en`, `ky`. `uz-Cyrl` is transliterated automatically (`cy` overrides, e.g. loanwords like "Kuryer" → "Курьер"). Typecheck fails on a missing key.
+- Language = `tf_lang` cookie, chosen with `LangSwitch` ("Til") in the shell and on `/login`; changing it reloads the page. The backend reads the same cookie, so API errors come back in that language.
+- Data (product, client, warehouse, region names) is not translated. Money, dates, compact numbers follow the language via `shared/lib/format`.
 
 ## UI change checklist
 

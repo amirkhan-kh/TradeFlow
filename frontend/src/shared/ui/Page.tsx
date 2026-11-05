@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useT } from "@/shared/i18n/I18nProvider";
 
 export function PageHeader({
   title,
@@ -66,12 +67,14 @@ export function KpiCard({
 export function SearchInput({
   value,
   onChange,
-  placeholder = "Qidirish…",
+  placeholder: custom,
 }: {
   value: string;
   onChange: (v: string) => void;
   placeholder?: string;
 }) {
+  const t = useT();
+  const placeholder = custom ?? t("Qidirish…");
   return (
     <label className="relative block w-full sm:w-72">
       <span className="sr-only">{placeholder}</span>
@@ -122,18 +125,19 @@ export function Pagination({
   total: number;
   onChange: (p: number) => void;
 }) {
+  const t = useT();
   const pages = Math.max(1, Math.ceil(total / limit));
   return (
     <div className="flex items-center justify-between border-t border-ink-100 px-5 py-3 text-sm text-ink-500">
       <span>
-        Jami <b className="text-ink-800">{total}</b> ta
+        {t("Jami")} <b className="text-ink-800">{total}</b> {t("ta")}
       </span>
       <div className="flex items-center gap-1">
         <button
           disabled={page <= 1}
           onClick={() => onChange(page - 1)}
           className="rounded-lg p-1.5 hover:bg-ink-100 disabled:opacity-40"
-          aria-label="Oldingi sahifa"
+          aria-label={t("Oldingi sahifa")}
         >
           <ChevronLeft className="size-4" />
         </button>
@@ -144,7 +148,7 @@ export function Pagination({
           disabled={page >= pages}
           onClick={() => onChange(page + 1)}
           className="rounded-lg p-1.5 hover:bg-ink-100 disabled:opacity-40"
-          aria-label="Keyingi sahifa"
+          aria-label={t("Keyingi sahifa")}
         >
           <ChevronRight className="size-4" />
         </button>

@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff, Wand2 } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 
 const ALPHABET = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
@@ -46,6 +47,7 @@ export function PasswordInput({
   required?: boolean;
   showStrength?: boolean;
 }) {
+  const t = useT();
   const [visible, setVisible] = useState(false);
   const level = strength(value);
   return (
@@ -71,13 +73,13 @@ export function PasswordInput({
                 setVisible(true);
               }}
               className="rounded-lg p-2 text-ink-500 hover:bg-brand-50 hover:text-brand-700"
-              aria-label="Parol yaratish"
-              title="Kuchli parol yaratish"
+              aria-label={t("Parol yaratish")}
+              title={t("Kuchli parol yaratish")}
             >
               <Wand2 className="size-4" />
             </button>
           )}
-          <button type="button" onClick={() => setVisible((v) => !v)} className="rounded-lg p-2 text-ink-500 hover:bg-ink-100" aria-label={visible ? "Parolni yashirish" : "Parolni ko'rsatish"}>
+          <button type="button" onClick={() => setVisible((v) => !v)} className="rounded-lg p-2 text-ink-500 hover:bg-ink-100" aria-label={visible ? t("Parolni yashirish") : t("Parolni ko'rsatish")}>
             {visible ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
           </button>
         </div>
@@ -89,7 +91,7 @@ export function PasswordInput({
               <span key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-200 ${i < level ? LEVELS[level][1] : "bg-ink-100"}`} />
             ))}
           </div>
-          <span className="w-24 text-right text-xs font-medium text-ink-600">{LEVELS[level][0]}</span>
+          <span className="w-24 text-right text-xs font-medium text-ink-600">{t(LEVELS[level][0])}</span>
         </div>
       )}
     </div>

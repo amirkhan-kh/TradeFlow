@@ -5,7 +5,7 @@ import helmet from "helmet";
 import { config } from "./core/config.js";
 import { requireAuth } from "./core/auth.js";
 import { pool } from "./core/db.js";
-import { errorHandler } from "./core/http.js";
+import { errorHandler, notFound } from "./core/http.js";
 import { activityRouter } from "./modules/activity/router.js";
 import { agentsRouter } from "./modules/agents/router.js";
 import { auditsRouter } from "./modules/audits/router.js";
@@ -63,9 +63,7 @@ export function createApp() {
   api.use(secured);
 
   app.use("/api/v1", api);
-  app.use((_req, res) => {
-    res.status(404).json({ error: "Topilmadi" });
-  });
+  app.use((_req, _res, next) => next(notFound()));
   app.use(errorHandler);
   return app;
 }

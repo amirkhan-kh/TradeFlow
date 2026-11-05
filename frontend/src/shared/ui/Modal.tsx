@@ -2,6 +2,7 @@
 
 import { X } from "lucide-react";
 import { useEffect, useRef } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 
 export function Modal({
   open,
@@ -18,6 +19,7 @@ export function Modal({
   children: React.ReactNode;
   wide?: boolean;
 }) {
+  const t = useT();
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export function Modal({
               <h2 className="text-lg font-bold text-ink-900">{title}</h2>
               {description && <p className="mt-1 text-sm text-ink-500">{description}</p>}
             </div>
-            <button onClick={onClose} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700" aria-label="Yopish">
+            <button onClick={onClose} className="rounded-lg p-1.5 text-ink-400 hover:bg-ink-100 hover:text-ink-700" aria-label={t("Yopish")}>
               <X className="size-5" />
             </button>
           </div>

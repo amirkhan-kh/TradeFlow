@@ -1,6 +1,9 @@
+import type { MsgKey } from "@/shared/i18n/messages";
+
 export type Tone = "green" | "amber" | "red" | "blue" | "gray" | "violet";
 
-export const STATUS: Record<string, { label: string; tone: Tone }> = {
+/** Labels are i18n keys: render them through `t()`. */
+export const STATUS: Record<string, { label: MsgKey; tone: Tone }> = {
   // orders
   new: { label: "Yangi", tone: "blue" },
   confirmed: { label: "Tasdiqlangan", tone: "violet" },
@@ -39,4 +42,4 @@ export const STATUS: Record<string, { label: string; tone: Tone }> = {
   auditor: { label: "Auditor", tone: "gray" },
 };
 
-export const statusOf = (key: string) => STATUS[key] ?? { label: key, tone: "gray" as Tone };
+export const statusOf = (key: string) => STATUS[key] ?? { label: key as MsgKey, tone: "gray" as Tone };

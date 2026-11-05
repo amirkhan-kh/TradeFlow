@@ -2,15 +2,16 @@
 
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
-import { api, type Page } from "@/shared/lib/api";
+import { api } from "@/shared/lib/api";
 import { fmtDate, fmtNum } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
 import { usePaged } from "@/shared/lib/usePaged";
 import { StatusBadge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
-import { Field, Input, Select, Textarea } from "@/shared/ui/Field";
+import { Field, Input, Textarea } from "@/shared/ui/Field";
 import { Modal } from "@/shared/ui/Modal";
 import { Chips, PageHeader, Pagination, SearchInput, Table } from "@/shared/ui/Page";
+import { SearchSelect, WarehouseSelect, type WarehouseOption } from "@/shared/ui/SearchSelect";
 import { Alert, Empty, ErrorState, Loading } from "@/shared/ui/States";
 
 interface StockRow {
@@ -43,13 +44,16 @@ type MoveType = "in" | "out" | "transfer";
 
 export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?: string; initialLow?: boolean }) {
   const [tab, setTab] = useState<"stock" | "moves">("stock");
-  const [warehouse, setWarehouse] = useState(initialWarehouse ?? "");
+  // `undefined` = untouched, so the `?warehouse_id=` deep link stays in effect until the user picks.
+  const [picked, setPicked] = useState<WarehouseOption | null>();
   const [low, setLow] = useState(Boolean(initialLow));
   const [move, setMove] = useState<MoveType | null>(null);
-  const warehouses = useApi<Page<{ id: number; name: string }>>("/warehouses?limit=200");
+  const linked = useApi<WarehouseOption>(picked === undefined && initialWarehouse ? `/warehouses/${initialWarehouse}` : null);
+  const warehouse = picked === undefined ? (linked.data ?? null) : picked;
+  const warehouseId = picked === undefined ? initialWarehouse : picked ? String(picked.id) : undefined;
 
-  const stock = usePaged<StockRow>("/stock", "", { warehouse_id: warehouse || undefined, low: low ? "true" : undefined });
-  const moves = usePaged<Movement>("/stock/movements", "", { warehouse_id: warehouse || undefined });
+  const stock = usePaged<StockRow>("/stock", "", { warehouse_id: warehouseId || undefined, low: low ? "true" : undefined });
+  const moves = usePaged<Movement>("/stock/movements", "", { warehouse_id: warehouseId || undefined });
 
   return (
     <div className="animate-rise">
@@ -80,14 +84,9 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
             value={tab}
             onChange={setTab}
           />
-          <Select value={warehouse} onChange={(e) => setWarehouse(e.target.value)} className="lg:w-56" aria-label="Ombor">
-            <option value="">Barcha omborlar</option>
-            {warehouses.data?.items.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </Select>
+          <div className="lg:w-56">
+            <WarehouseSelect aria-label="Ombor" placeholder="Barcha omborlar" value={warehouse} onChange={setPicked} />
+          </div>
           {tab === "stock" && (
             <>
               <label className="flex items-center gap-2 text-sm font-medium text-ink-700">
@@ -193,7 +192,6 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
         {move && (
           <MoveForm
             type={move}
-            warehouses={warehouses.data?.items ?? []}
             onDone={() => {
               setMove(null);
               stock.reload();
@@ -206,8 +204,10 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
   );
 }
 
-function MoveForm({ type, warehouses, onDone }: { type: MoveType; warehouses: { id: number; name: string }[]; onDone: () => void }) {
-  const products = useApi<Page<{ id: number; name: string; sku: string }>>("/products?limit=200");
+function MoveForm({ type, onDone }: { type: MoveType; onDone: () => void }) {
+  const [from, setFrom] = useState<WarehouseOption | null>(null);
+  const [to, setTo] = useState<WarehouseOption | null>(null);
+  const [product, setProduct] = useState<{ id: number; name: string; sku: string } | null>(null);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
   const [key] = useState(() => `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`);
@@ -229,37 +229,16 @@ function MoveForm({ type, warehouses, onDone }: { type: MoveType; warehouses: { 
     <form onSubmit={onSubmit} className="space-y-4">
       <div className={`grid gap-4 ${type === "transfer" ? "sm:grid-cols-2" : ""}`}>
         <Field label={type === "transfer" ? "Qaysi ombordan" : "Ombor"}>
-          <Select name="warehouse_id" required defaultValue="">
-            <option value="">Tanlang…</option>
-            {warehouses.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </Select>
+          <WarehouseSelect name="warehouse_id" required value={from} onChange={setFrom} />
         </Field>
         {type === "transfer" && (
           <Field label="Qaysi omborga">
-            <Select name="to_warehouse_id" required defaultValue="">
-              <option value="">Tanlang…</option>
-              {warehouses.map((w) => (
-                <option key={w.id} value={w.id}>
-                  {w.name}
-                </option>
-              ))}
-            </Select>
+            <WarehouseSelect name="to_warehouse_id" required value={to} onChange={setTo} />
           </Field>
         )}
       </div>
       <Field label="Tovar">
-        <Select name="product_id" required defaultValue="">
-          <option value="">Tanlang…</option>
-          {products.data?.items.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name} ({p.sku})
-            </option>
-          ))}
-        </Select>
+        <SearchSelect path="/products" name="product_id" required value={product} onChange={setProduct} display={(p) => `${p.name} (${p.sku})`} />
       </Field>
       <Field label="Miqdor">
         <Input name="quantity" type="number" min={1} required />

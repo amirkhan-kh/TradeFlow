@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, HandCoins, MapPin, Phone, UserRound } from "lucide-react";
+import { ChevronLeft, FileText, HandCoins, Link2, MapPin, Phone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
@@ -10,6 +10,7 @@ import { Modal } from "@/shared/ui/Modal";
 import { Table } from "@/shared/ui/Page";
 import { Empty, ErrorState, Loading } from "@/shared/ui/States";
 import { METHODS, PaymentForm } from "../finance/PaymentForm";
+import { PaymentLinks } from "./PaymentLinks";
 
 interface ClientFull {
   id: number;
@@ -18,6 +19,7 @@ interface ClientFull {
   phone: string | null;
   region: string;
   address: string | null;
+  inn: string | null;
   segment: string;
   agent_name: string | null;
   credit_limit: number;
@@ -28,6 +30,7 @@ interface ClientFull {
 export function ClientDetail({ id }: { id: string }) {
   const { data: c, error, loading, reload } = useApi<ClientFull>(`/clients/${id}`);
   const [pay, setPay] = useState(false);
+  const [link, setLink] = useState(false);
 
   if (error) return <ErrorState message={error} onRetry={reload} />;
   if (loading && !c) return <Loading />;
@@ -46,7 +49,10 @@ export function ClientDetail({ id }: { id: string }) {
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-extrabold text-ink-900">{c.name}</h1>
           <span className="rounded-lg bg-brand-100 px-2 py-0.5 text-xs font-extrabold text-brand-800">{c.segment} segment</span>
-          <Button className="ml-auto" onClick={() => setPay(true)}>
+          <Button variant="secondary" className="ml-auto" onClick={() => setLink(true)}>
+            <Link2 className="size-4" /> Onlayn to&apos;lov havolasi
+          </Button>
+          <Button onClick={() => setPay(true)}>
             <HandCoins className="size-4" /> To&apos;lov qabul qilish
           </Button>
         </div>
@@ -62,6 +68,9 @@ export function ClientDetail({ id }: { id: string }) {
           </p>
           <p className="flex items-center gap-2 text-ink-700">
             <MapPin className="size-4 text-ink-400" /> {c.address ?? c.region}
+          </p>
+          <p className="flex items-center gap-2 text-ink-700">
+            <FileText className="size-4 text-ink-400" /> INN: {c.inn ?? "—"}
           </p>
           <p className="text-ink-500">
             Agent: <b className="text-ink-800">{c.agent_name ?? "—"}</b>
@@ -122,6 +131,9 @@ export function ClientDetail({ id }: { id: string }) {
             }}
           />
         )}
+      </Modal>
+      <Modal open={link} onClose={() => setLink(false)} title="Onlayn to'lov havolasi" description="Payme / Click havolasini mijozga SMS yoki Telegram orqali yuboring">
+        {link && <PaymentLinks clientId={c.id} debt={c.balance} />}
       </Modal>
     </div>
   );

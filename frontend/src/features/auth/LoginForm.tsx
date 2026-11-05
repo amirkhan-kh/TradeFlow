@@ -26,7 +26,7 @@ export function LoginForm({ next }: { next?: string }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form method="post" onSubmit={onSubmit} className="space-y-4">
       <label className="block">
         <span className="label">Login</span>
         <span className="relative block">

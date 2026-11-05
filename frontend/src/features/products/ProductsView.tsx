@@ -24,6 +24,9 @@ interface Product {
   min_stock: number;
   expires_at: string | null;
   active: boolean;
+  ikpu: string | null;
+  package_code: string | null;
+  vat_rate: number;
   stock: number;
   reserved: number;
 }
@@ -121,7 +124,7 @@ function ProductForm({ initial, onDone }: { initial: Partial<Product>; onDone: (
     try {
       await api(initial.id ? `/products/${initial.id}` : "/products", {
         method: initial.id ? "PUT" : "POST",
-        json: { ...f, expires_at: f.expires_at || null, active: f.active === "on" },
+        json: { ...f, expires_at: f.expires_at || null, active: f.active === "on", package_code: f.package_code || undefined },
       });
       onDone();
     } catch (err) {
@@ -158,6 +161,15 @@ function ProductForm({ initial, onDone }: { initial: Partial<Product>; onDone: (
       </Field>
       <Field label="Yaroqlilik muddati">
         <Input name="expires_at" type="date" defaultValue={initial.expires_at?.slice(0, 10) ?? ""} />
+      </Field>
+      <Field label="IKPU (MXIK) kodi">
+        <Input name="ikpu" inputMode="numeric" pattern="\d{17}" placeholder="17 ta raqam" defaultValue={initial.ikpu ?? ""} />
+      </Field>
+      <Field label="O'ram kodi">
+        <Input name="package_code" defaultValue={initial.package_code ?? ""} />
+      </Field>
+      <Field label="QQS, %">
+        <Input name="vat_rate" type="number" min={0} max={100} step="0.01" defaultValue={initial.vat_rate ?? 12} />
       </Field>
       <label className="flex items-center gap-2 self-end pb-2 text-sm font-medium text-ink-700">
         <input type="checkbox" name="active" defaultChecked={initial.active ?? true} className="size-4 accent-brand-600" /> Sotuvda

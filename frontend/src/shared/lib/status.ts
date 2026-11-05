@@ -27,6 +27,10 @@ export const STATUS: Record<string, { label: string; tone: Tone }> = {
   // payments
   cash: { label: "Naqd", tone: "green" },
   card: { label: "Karta", tone: "blue" },
+  // integrations
+  sent: { label: "Yuborildi", tone: "green" },
+  answered: { label: "Javob berildi", tone: "green" },
+  missed: { label: "O'tkazib yuborildi", tone: "red" },
   // roles
   admin: { label: "Administrator", tone: "green" },
   manager: { label: "Menejer", tone: "blue" },

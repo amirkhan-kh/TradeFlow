@@ -2,7 +2,7 @@
 
 import { Plus } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { api } from "@/shared/lib/api";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -120,8 +120,26 @@ export function ClientsList({ initialStatus = "" }: { initialStatus?: string }) 
 
 function ClientForm({ onDone }: { onDone: () => void }) {
   const agents = useApi<{ items: { id: number; full_name: string; region: string }[] }>("/users?role=agent");
+  const form = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
+  const [looking, setLooking] = useState(false);
+
+  async function lookup() {
+    const el = form.current!.elements as unknown as Record<"inn" | "name" | "owner_name" | "address", HTMLInputElement>;
+    setLooking(true);
+    setError(undefined);
+    try {
+      const r = await api<{ name: string | null; director: string | null; address: string | null }>(`/clients/lookup/${el.inn.value.trim()}`);
+      if (r.name) el.name.value = r.name;
+      if (r.director && !el.owner_name.value) el.owner_name.value = r.director;
+      if (r.address && !el.address.value) el.address.value = r.address;
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setLooking(false);
+    }
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -137,7 +155,15 @@ function ClientForm({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
+    <form ref={form} onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
+      <Field label="INN (STIR)" className="sm:col-span-2">
+        <div className="flex gap-2">
+          <Input name="inn" inputMode="numeric" pattern="\d{9}|\d{14}" placeholder="9 yoki 14 ta raqam" />
+          <Button variant="secondary" onClick={lookup} disabled={looking}>
+            Soliqdan to&apos;ldirish
+          </Button>
+        </div>
+      </Field>
       <Field label="Savdo nuqtasi nomi">
         <Input name="name" required />
       </Field>

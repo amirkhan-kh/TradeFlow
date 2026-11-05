@@ -1,6 +1,6 @@
 # TASKS
 
-`[ ]` `[~]` `[x]` `[!]` · 1 session = 1 line
+`[ ]` todo · `[~]` doing (one only) · `[x]` done + verified · `[!]` blocked + reason · 1 session = 1 line · handoff format in `docs/ORCHESTRATION.md`
 
 - [x] 0.1 Lock `STACK.md` (next + express + postgres).
 - [x] 1.1 Backend: auth, warehouses, products, stock, clients, orders, deliveries, payments, audits, agents, leads, dashboard.
@@ -9,7 +9,20 @@
 - [ ] 2.1 Telegram bot (orders + akt sverki for outlets).
 - [ ] 2.2 Mobile agent app (PWA) — route, visit, photo report.
 - [ ] 2.3 PIVOT report builder + Excel export.
-- [ ] 2.4 Roles UI (manager / agent / courier / auditor permissions).
-- [ ] 3.1 Lighthouse 100 on `/` and `/login`.
-- [ ] 3.2 Named tests (orders stock reservation, audit approve).
-- [ ] 3.3 Deploy (VPS) — remove default admin, HTTPS.
+- [x] 2.4 Roles UI + management: `/dashboard/staff` (create cabinet with login/password, role cards, edit, reset password, block/activate, revoke sessions, roles × permissions matrix), `/dashboard/profile` (own data, password change, my rights, activity), `/dashboard/activity` (audit log), login lockout.
+  - handoff: migration 004 (`users.email/last_login_at/password_changed_at/token_version`, `activity_log`). `requireAuth` now reads role/active/token_version from DB → role change, block, reset, revoke apply instantly. API smoke 51/51 ×3 (incl. concurrent admin demotion, lockout 429) + 2.5/2.6 smokes green. Roles stay the fixed 5 (no custom permission editor). UI rows `STF-*`, `PRF-*`, `ACT-*` go into 3.4c.
+- [x] 2.5 Integrations: Power BI, Google Sheets, SAP B1, 1C, Bitrix24, amoCRM, iiko, Spot2D, telephony, Telegram, webhook (Zapier/Make/n8n).
+  - handoff: API smoke 51/51 ×3 (local webhook, feeds, 1C, PBX, Spot2D, roles). Not verified against real SAP/Bitrix/amo/iiko/Spot2D accounts; Spot2D CSV columns need confirmation from Spot2D support. UI rows `INT-*` go into 3.4c.
+- [x] 2.6 Integrations: Payme, Click (merchant callbacks + payment links), Didox e-faktura (Soliq) + INN lookup, MoySklad import, Uzum Market stock sync, Eskiz SMS.
+  - handoff: migration 003 (payme/click methods, client `inn`, product `ikpu`/`package_code`/`vat_rate`, `payment_transactions`). API smoke 60/60 ×3 (Payme full JSON-RPC incl. expiry, Click sign flow, links, INN lookup errors, new fields, roles) + 2.5 smoke 51/51 ×3. Not verified against real Payme Sandbox, Click, Didox, MoySklad, Uzum, Eskiz accounts; Uzum v2 FBS stock paths and Didox create-response id field need confirmation. UI rows `PAY-*`, `INT-11..13` go into 3.4c.
+- [x] 2.7 Landing redesign (futuristic, glassmorphism, surreal, aurora; same palette) + agent skills installed (playwright-cli, strix, ui-skills, design).
+- [x] 2.8 Landing enrich: galaxy hero (dark space, stars, horizon arc, galaxy orb), header dark-over-hero, futuristic `Fx` backgrounds + card zoom/drift on all sections. LH `/`: desktop 100×3, mobile 100/100/99.
+- [x] 2.9 Landing rebalance: galaxy motifs removed, green → glow/accent with navy + sky lead, light glass console hero, `Fx` mesh/lattice, perspective card zoom, even card grids (Finance 4th card). LH `/` at normal load: mobile 100/99, desktop 100×2 (runs under load avg >100 dropped to ~70, machine noise).
+  - handoff: header→footer restyled; orb hero replaces the isometric truck scene on `/` (`HeroIllustration` still used by `/login`). Smooth wheel scroll, scroll zoom per section, pinned horizontal agents rail, reduced-motion fallbacks. `Aurora` blobs moved to CSS (also lighter on `/login`). Lighthouse `/` 5 runs: 100·100·100·100 on desktop 5/5 and mobile 4/5 (one mobile run Perf 99, TBT 120ms). `/login` mobile gives `NO_FCP`, which was already there: its whole mobile content sits in `animate-rise` (opacity 0 start); fix in 3.1.
+- [!] 3.1 Lighthouse 100 on `/` and `/login`. Not closed: mobile Performance below 100; runs were noisy (host load 10–77 from parallel sessions and other Docker projects).
+  - `/login`: desktop 100·100·100·100 (3/3); mobile A11y/BP/SEO 100, Perf 95–98 (Lantern LCP 2.3 s from the Next/React baseline JS; observed LCP 240 ms). Fixed: mobile `NO_FCP` (card no longer starts at `opacity: 0`), motion bundle no longer shipped to phones (`features/auth/LoginBackdrop.tsx` loads `LoginAurora` only ≥ 1024 px). `experimental.inlineCss` tried, no clear gain, not adopted.
+  - `/`: desktop 100 (A11y/BP/SEO 100 everywhere); mobile Perf 84–94 — LCP is the hero paragraph with `animate-lift` + `animation-delay` (landing owned by the parallel redesign session).
+- [x] 3.2 Named tests (orders stock reservation, audit approve) — covered by `ORD-04`, `AUD-01..04` and API invariant specs.
+- [ ] 3.3 Deploy — config ready (Vercel `frontend/` + VPS `docker-compose.prod.yml` + Caddy HTTPS, `docs/DEPLOY.md`); push/deploy not run (needs permit).
+- [~] 3.4a–e Playwright suite: 105 tests (API, invariants, perf budget, all 15 dashboard screens, auth/roles, landing, resilience: 500/abort/slow/hung requests). Clean run `E2E_REPEAT=4` → 420/420, 0 flaky, 0 skipped. After the later `/login` changes + parallel landing redesign: auth/shell/landing ×3 → 113/114 (G-04 test race fixed, then 10/10); last full ×4 → 400/420 under an overloaded Colima VM (`EAI_AGAIN db` DNS errors, 500s, perf budget misses) — rerun on a quiet machine before calling it done.
+  - handoff: bugs fixed on the way — courier/lead select snapped back until refetch (optimistic + `Alert`, lead PATCH error was unhandled); warehouse pickers truncated at `limit=200` (now `WarehouseSelect`, server search); proxy 500 `ECONNRESET` (backend `keepAliveTimeout` 65 s, Caddy keepalive 30 s); login form native GET could leak password pre-hydration (`method="post"`); `api()` 30 s timeout + Uzbek network error text. Seed: 530 products, 460 clients, 119 users, 4074 orders, 365 days.

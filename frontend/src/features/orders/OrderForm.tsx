@@ -1,19 +1,25 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
-import { useMemo, useState } from "react";
-import { api, type Page } from "@/shared/lib/api";
+import { useState } from "react";
+import { api } from "@/shared/lib/api";
 import { fmtMoney } from "@/shared/lib/format";
-import { useApi } from "@/shared/lib/useApi";
 import { Button } from "@/shared/ui/Button";
-import { Field, Input, Select, Textarea } from "@/shared/ui/Field";
+import { Field, Input, Textarea } from "@/shared/ui/Field";
+import { SearchSelect, WarehouseSelect, type WarehouseOption } from "@/shared/ui/SearchSelect";
 import { Alert } from "@/shared/ui/States";
 
 interface Option {
   id: number;
   name: string;
 }
+interface ClientOption extends Option {
+  region: string;
+  balance: number;
+  credit_limit: number;
+}
 interface ProductOption extends Option {
+  sku: string;
   price: number;
   stock: number;
   reserved: number;
@@ -21,20 +27,15 @@ interface ProductOption extends Option {
 }
 
 export function OrderForm({ onDone }: { onDone: () => void }) {
-  const clients = useApi<Page<Option & { region: string; balance: number; credit_limit: number }>>("/clients?limit=200");
-  const warehouses = useApi<Page<Option>>("/warehouses?limit=200");
-  const products = useApi<Page<ProductOption>>("/products?limit=200");
-
-  const [clientId, setClientId] = useState("");
-  const [lines, setLines] = useState([{ product_id: "", quantity: 1 }]);
+  const [warehouse, setWarehouse] = useState<WarehouseOption | null>(null);
+  const [client, setClient] = useState<ClientOption | null>(null);
+  const [lines, setLines] = useState<{ product: ProductOption | null; quantity: number }[]>([{ product: null, quantity: 1 }]);
   const [discount, setDiscount] = useState(0);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
 
-  const priceOf = useMemo(() => new Map(products.data?.items.map((p) => [p.id, p])), [products.data]);
-  const subtotal = lines.reduce((s, l) => s + (priceOf.get(Number(l.product_id))?.price ?? 0) * l.quantity, 0);
+  const subtotal = lines.reduce((s, l) => s + (l.product?.price ?? 0) * l.quantity, 0);
   const total = subtotal * (1 - discount / 100);
-  const client = clients.data?.items.find((c) => c.id === Number(clientId));
   const overLimit = client && client.credit_limit > 0 && client.balance + total > client.credit_limit;
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -46,11 +47,11 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
       await api("/orders", {
         method: "POST",
         json: {
-          client_id: clientId,
+          client_id: client?.id,
           warehouse_id: f.get("warehouse_id"),
           discount_pct: discount,
           note: f.get("note") || undefined,
-          items: lines.filter((l) => l.product_id).map((l) => ({ product_id: l.product_id, quantity: l.quantity })),
+          items: lines.filter((l) => l.product).map((l) => ({ product_id: l.product!.id, quantity: l.quantity })),
         },
       });
       onDone();
@@ -67,24 +68,17 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Mijoz (savdo nuqtasi)">
-          <Select required value={clientId} onChange={(e) => setClientId(e.target.value)}>
-            <option value="">Tanlang…</option>
-            {clients.data?.items.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} — {c.region}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect<ClientOption>
+            path="/clients"
+            required
+            value={client}
+            onChange={setClient}
+            display={(c) => `${c.name} — ${c.region}`}
+            hint={(c) => `Qarz ${fmtMoney(c.balance)} · limit ${c.credit_limit ? fmtMoney(c.credit_limit) : "cheksiz"}`}
+          />
         </Field>
         <Field label="Ombor">
-          <Select name="warehouse_id" required defaultValue="">
-            <option value="">Tanlang…</option>
-            {warehouses.data?.items.map((w) => (
-              <option key={w.id} value={w.id}>
-                {w.name}
-              </option>
-            ))}
-          </Select>
+          <WarehouseSelect name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
         </Field>
       </div>
 
@@ -92,17 +86,20 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
         <p className="label">Tovarlar</p>
         <div className="space-y-2">
           {lines.map((l, i) => {
-            const p = priceOf.get(Number(l.product_id));
+            const p = l.product;
             return (
               <div key={i} className="grid grid-cols-[1fr_90px_36px] gap-2">
-                <Select required value={l.product_id} onChange={(e) => update(i, { product_id: e.target.value })} aria-label="Tovar">
-                  <option value="">Tovar tanlang…</option>
-                  {products.data?.items.map((p) => (
-                    <option key={p.id} value={p.id}>
-                      {p.name} · {fmtMoney(p.price)} · bo&apos;sh {p.stock - p.reserved}
-                    </option>
-                  ))}
-                </Select>
+                <SearchSelect<ProductOption>
+                  path="/products"
+                  params={{ active: "true" }}
+                  required
+                  aria-label="Tovar"
+                  placeholder="Tovar qidiring…"
+                  value={p}
+                  onChange={(product) => update(i, { product })}
+                  display={(o) => o.name}
+                  hint={(o) => `${o.sku} · ${fmtMoney(o.price)} · bo'sh ${o.stock - o.reserved} ${o.unit}`}
+                />
                 <Input type="number" min={1} required value={l.quantity} onChange={(e) => update(i, { quantity: Number(e.target.value) })} aria-label="Miqdor" title={p?.unit} />
                 <button
                   type="button"
@@ -116,7 +113,7 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
             );
           })}
         </div>
-        <Button variant="ghost" size="sm" className="mt-2" onClick={() => setLines((ls) => [...ls, { product_id: "", quantity: 1 }])}>
+        <Button variant="ghost" size="sm" className="mt-2" onClick={() => setLines((ls) => [...ls, { product: null, quantity: 1 }])}>
           <Plus className="size-4" /> Qator qo&apos;shish
         </Button>
       </div>

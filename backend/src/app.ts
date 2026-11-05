@@ -6,6 +6,7 @@ import { config } from "./core/config.js";
 import { requireAuth } from "./core/auth.js";
 import { pool } from "./core/db.js";
 import { errorHandler } from "./core/http.js";
+import { activityRouter } from "./modules/activity/router.js";
 import { agentsRouter } from "./modules/agents/router.js";
 import { auditsRouter } from "./modules/audits/router.js";
 import { authRouter } from "./modules/auth/router.js";
@@ -13,6 +14,8 @@ import { clientsRouter } from "./modules/clients/router.js";
 import { dashboardRouter } from "./modules/dashboard/router.js";
 import { deliveriesRouter } from "./modules/deliveries/router.js";
 import { insightsRouter } from "./modules/insights/router.js";
+import { integrationsPublicRouter } from "./modules/integrations/public.js";
+import { integrationsRouter } from "./modules/integrations/router.js";
 import { leadsPublicRouter, leadsRouter } from "./modules/leads/router.js";
 import { ordersRouter } from "./modules/orders/router.js";
 import { paymentsRouter } from "./modules/payments/router.js";
@@ -24,6 +27,7 @@ import { warehousesRouter } from "./modules/warehouses/router.js";
 export function createApp() {
   const app = express();
   app.disable("x-powered-by");
+  app.set("trust proxy", "loopback, linklocal, uniquelocal");
   app.use(helmet());
   app.use(cors({ origin: config.corsOrigin, credentials: true }));
   app.use(express.json({ limit: "1mb" }));
@@ -37,6 +41,7 @@ export function createApp() {
   const api = Router();
   api.use("/auth", authRouter);
   api.use("/public/leads", leadsPublicRouter);
+  api.use("/public/integrations", integrationsPublicRouter);
 
   const secured = Router();
   secured.use(requireAuth);
@@ -53,6 +58,8 @@ export function createApp() {
   secured.use("/audits", auditsRouter);
   secured.use("/agents", agentsRouter);
   secured.use("/leads", leadsRouter);
+  secured.use("/integrations", integrationsRouter);
+  secured.use("/activity", activityRouter);
   api.use(secured);
 
   app.use("/api/v1", api);

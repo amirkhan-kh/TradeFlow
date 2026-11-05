@@ -2,8 +2,9 @@ import { Router } from "express";
 import { z } from "zod";
 import { allow } from "../../core/auth.js";
 import { pool, tx } from "../../core/db.js";
-import { notFound, pageOf, parse } from "../../core/http.js";
-import { changeBalance } from "../clients/repository.js";
+import { pageOf, parse } from "../../core/http.js";
+import { paymentLinks } from "../integrations/providers/checkout.js";
+import { record } from "./service.js";
 
 const schema = z.object({
   client_id: z.coerce.number().int().positive(),
@@ -39,17 +40,18 @@ paymentsRouter.get("/", async (req, res) => {
   res.json({ items: items.rows, total: count.rows[0].count, page, limit, summary: summary.rows[0] });
 });
 
+const linkSchema = z.object({
+  client_id: z.coerce.number().int().positive(),
+  amount: z.coerce.number().min(1000).max(1_000_000_000),
+  order_number: z.string().regex(/^TF-\d+$/).optional(),
+});
+
+/** Payme / Click checkout links for active payment integrations (send to the client by SMS/Telegram). */
+paymentsRouter.get("/links", allow("manager", "agent", "courier"), async (req, res) => {
+  res.json({ items: await paymentLinks(parse(linkSchema, req.query)) });
+});
+
 paymentsRouter.post("/", allow("manager", "agent", "courier"), async (req, res) => {
   const input = parse(schema, req.body);
-  const payment = await tx(async (db) => {
-    const { rowCount } = await db.query("SELECT 1 FROM clients WHERE id=$1 FOR UPDATE", [input.client_id]);
-    if (!rowCount) throw notFound("Mijoz topilmadi");
-    const { rows } = await db.query(
-      `INSERT INTO payments (client_id, order_id, amount, method, note, user_id) VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
-      [input.client_id, input.order_id ?? null, input.amount, input.method, input.note ?? null, req.user!.id],
-    );
-    await changeBalance(db, input.client_id, -input.amount);
-    return rows[0];
-  });
-  res.status(201).json(payment);
+  res.status(201).json(await tx((db) => record(db, input, req.user!.id)));
 });

@@ -1,11 +1,29 @@
 "use client";
 
 import { Bell, CircleCheck, FileText, Gift, Send, ShoppingCart } from "lucide-react";
+import Image from "next/image";
 import { buttonClass } from "@/shared/ui/Button";
 import { LogoMark } from "@/shared/ui/Logo";
 import { EASE, m, Marquee, Reveal, Stagger, StaggerItem } from "@/shared/ui/motion";
+import { Fx } from "./Fx";
+import { ZoomIn } from "./ZoomIn";
 
-const INTEGRATIONS = ["1C: Buxgalteriya", "Didox", "my.soliq.uz", "Payme", "Click", "Uzum Bank", "Telegram", "Excel", "REST API", "Google Sheets", "SMS gateway"];
+const INTEGRATIONS = [
+  ["onec.png", "1C: Buxgalteriya"],
+  ["didox.png", "Didox"],
+  ["payme.png", "Payme"],
+  ["click.png", "Click"],
+  ["uzum_market.png", "Uzum Market"],
+  ["telegram.png", "Telegram"],
+  ["google_sheets.svg", "Google Sheets"],
+  ["sap_b1.svg", "SAP Business One"],
+  ["bitrix24.png", "Bitrix24"],
+  ["amocrm.png", "amoCRM"],
+  ["iiko.png", "iiko"],
+  ["moysklad.png", "MoySklad"],
+  ["powerbi.png", "Power BI"],
+  ["eskiz.png", "Eskiz SMS"],
+] as const;
 
 const BOT = [
   [FileText, "Akt sverka", "Distribyutor va savdo nuqtasi o'rtasidagi moliyaviy hisobot"],
@@ -23,14 +41,18 @@ const bubble = (i: number, mine: boolean) => ({
 
 export function Telegram() {
   return (
-    <section id="telegram" className="scroll-mt-24 py-24 sm:py-28">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section id="telegram" className="relative isolate scroll-mt-24 py-20 sm:py-28">
+      <Fx variant="mesh" side="right" />
+      <ZoomIn className="mx-auto max-w-7xl px-4 sm:px-6">
         <Reveal className="mb-20">
           <p className="mb-6 text-center text-sm font-semibold text-ink-500">Tizimlaringiz bilan oson integratsiya</p>
           <Marquee>
-            {INTEGRATIONS.map((i) => (
-              <span key={i} className="rounded-2xl border border-ink-200/80 bg-white px-5 py-2.5 text-sm font-semibold whitespace-nowrap text-ink-700 shadow-soft">
-                {i}
+            {INTEGRATIONS.map(([file, name]) => (
+              <span key={name} className="glass flex items-center gap-2.5 rounded-2xl py-2 pr-5 pl-2 text-sm font-semibold whitespace-nowrap text-ink-700">
+                <span className="grid size-8 place-items-center overflow-hidden rounded-xl bg-white shadow-soft ring-1 ring-ink-100">
+                  <Image src={`/logos/${file}`} alt="" width={22} height={22} className="size-[22px] object-contain" />
+                </span>
+                {name}
               </span>
             ))}
           </Marquee>
@@ -49,7 +71,7 @@ export function Telegram() {
             </Reveal>
             <Stagger as="ul" className="mt-8 grid gap-4 sm:grid-cols-2">
               {BOT.map(([Icon, title, text]) => (
-                <StaggerItem as="li" key={title} className="group flex gap-3 rounded-2xl p-2 transition-colors hover:bg-white">
+                <StaggerItem as="li" key={title} className="group glass flex gap-3 rounded-2xl p-3 transition-colors hover:bg-white/80">
                   <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-sky-50 text-sky-600 transition-transform group-hover:scale-110">
                     <Icon className="size-5" />
                   </span>
@@ -61,59 +83,67 @@ export function Telegram() {
               ))}
             </Stagger>
             <Reveal delay={0.2}>
-              <a href="#demo" className={buttonClass("primary", "lg", "mt-8 rounded-2xl bg-sky-600 shadow-lg shadow-sky-600/25 hover:bg-sky-700")}>
+              <a href="#demo" className={buttonClass("primary", "lg", "mt-8 rounded-full! bg-sky-600 shadow-[0_18px_40px_-12px_rgb(2_132_199/0.55)] hover:bg-sky-700")}>
                 <Send className="size-4" /> Botni sinab ko&apos;rish
               </a>
             </Reveal>
           </div>
 
           <Reveal className="relative mx-auto w-full max-w-sm" y={40}>
-            <div className="absolute inset-0 -z-10 rounded-[3rem] bg-gradient-to-br from-[#8bc474]/40 to-sky-200 blur-3xl" />
-            <m.div whileHover={{ rotate: -1.5, y: -6 }} transition={{ type: "spring", stiffness: 200, damping: 18 }} className="rounded-[2.75rem] border-[10px] border-ink-900 bg-[#e6efe9] p-4 shadow-2xl">
-              <div className="mb-4 flex items-center gap-3 rounded-2xl bg-white px-3 py-2">
-                <span className="grid size-9 place-items-center rounded-full bg-ink-50 ring-1 ring-ink-200">
-                  <LogoMark className="size-6" />
-                </span>
-                <div>
-                  <p className="text-sm font-bold">TradeFlow Bot</p>
-                  <p className="text-xs text-brand-600">online</p>
+            <div className="absolute -inset-8 -z-10 rounded-[4rem] bg-gradient-to-br from-[#8bc474]/35 via-sky-200/60 to-[#32536b]/30 blur-3xl" />
+            <div aria-hidden className="absolute -top-10 -right-6 -z-10 size-28 rounded-full bg-sky-300/50 blur-2xl md:animate-drift" />
+            <m.div
+              whileHover={{ rotate: -1.5, y: -6 }}
+              transition={{ type: "spring", stiffness: 200, damping: 18 }}
+              className="glass rounded-[2.9rem] p-2.5 shadow-[0_50px_100px_-30px_rgb(16_40_32/0.45)]"
+            >
+              <div className="rounded-[2.3rem] bg-gradient-to-b from-[#eaf3ee] to-[#dce9e2] p-4 ring-1 ring-ink-900/10">
+                <div className="mx-auto mb-3 h-1.5 w-20 rounded-full bg-ink-900/15" />
+                <div className="glass mb-4 flex items-center gap-3 rounded-2xl px-3 py-2">
+                  <span className="grid size-9 place-items-center rounded-full bg-ink-50 ring-1 ring-ink-200">
+                    <LogoMark className="size-6" />
+                  </span>
+                  <div>
+                    <p className="text-sm font-bold">TradeFlow Bot</p>
+                    <p className="text-xs text-brand-600">online</p>
+                  </div>
                 </div>
-              </div>
-              <div className="min-h-80 space-y-2.5 text-sm">
-                <m.p {...bubble(0, true)} className="ml-auto w-fit rounded-2xl rounded-br-sm bg-[#32536b] px-3 py-2 text-white">
-                  /akt_sverka
-                </m.p>
-                <m.div {...bubble(1, false)} className="w-[85%] rounded-2xl rounded-bl-sm bg-white px-3 py-2.5 shadow-sm">
-                  <p className="font-bold">📄 Baraka Market — Oktabr</p>
-                  <p className="mt-1 text-ink-600">Yuklandi: 48 250 000 so&apos;m</p>
-                  <p className="text-ink-600">To&apos;landi: 36 000 000 so&apos;m</p>
-                  <p className="mt-1 font-bold text-red-600">Qoldiq: 12 250 000 so&apos;m</p>
-                </m.div>
-                <m.p {...bubble(2, true)} className="ml-auto w-fit rounded-2xl rounded-br-sm bg-[#32536b] px-3 py-2 text-white">
-                  Yangi buyurtma 🛒
-                </m.p>
-                <m.div {...bubble(3, false)} className="w-[85%] rounded-2xl rounded-bl-sm bg-white px-3 py-2.5 shadow-sm">
-                  <p className="flex items-center gap-1.5 font-bold">
-                    <CircleCheck className="size-4 text-brand-600" /> TF-001248 qabul qilindi
-                  </p>
-                  <p className="mt-1 text-ink-600">Yetkazish: ertaga 10:00–14:00</p>
-                </m.div>
-                <m.div
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: [0, 1, 1, 0] }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 2.6, duration: 2.4, times: [0, 0.1, 0.85, 1], ease: EASE }}
-                  className="flex w-fit gap-1 rounded-2xl rounded-bl-sm bg-white px-3 py-3 shadow-sm"
-                >
-                  {[0, 1, 2].map((d) => (
-                    <m.span key={d} className="size-1.5 rounded-full bg-ink-400" animate={{ y: [0, -3, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: d * 0.15 }} />
-                  ))}
-                </m.div>
+                <div className="min-h-80 space-y-2.5 text-sm">
+                  <m.p {...bubble(0, true)} className="ml-auto w-fit rounded-2xl rounded-br-sm bg-[#32536b] px-3 py-2 text-white">
+                    /akt_sverka
+                  </m.p>
+                  <m.div {...bubble(1, false)} className="w-[85%] rounded-2xl rounded-bl-sm bg-white px-3 py-2.5 shadow-sm">
+                    <p className="font-bold">📄 Baraka Market — Oktabr</p>
+                    <p className="mt-1 text-ink-600">Yuklandi: 48 250 000 so&apos;m</p>
+                    <p className="text-ink-600">To&apos;landi: 36 000 000 so&apos;m</p>
+                    <p className="mt-1 font-bold text-red-600">Qoldiq: 12 250 000 so&apos;m</p>
+                  </m.div>
+                  <m.p {...bubble(2, true)} className="ml-auto w-fit rounded-2xl rounded-br-sm bg-[#32536b] px-3 py-2 text-white">
+                    Yangi buyurtma 🛒
+                  </m.p>
+                  <m.div {...bubble(3, false)} className="w-[85%] rounded-2xl rounded-bl-sm bg-white px-3 py-2.5 shadow-sm">
+                    <p className="flex items-center gap-1.5 font-bold">
+                      <CircleCheck className="size-4 text-brand-600" /> TF-001248 qabul qilindi
+                    </p>
+                    <p className="mt-1 text-ink-600">Yetkazish: ertaga 10:00–14:00</p>
+                  </m.div>
+                  <m.div
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: [0, 1, 1, 0] }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 2.6, duration: 2.4, times: [0, 0.1, 0.85, 1], ease: EASE }}
+                    className="flex w-fit gap-1 rounded-2xl rounded-bl-sm bg-white px-3 py-3 shadow-sm"
+                  >
+                    {[0, 1, 2].map((d) => (
+                      <m.span key={d} className="size-1.5 rounded-full bg-ink-400" animate={{ y: [0, -3, 0] }} transition={{ duration: 0.8, repeat: Infinity, delay: d * 0.15 }} />
+                    ))}
+                  </m.div>
+                </div>
               </div>
             </m.div>
           </Reveal>
         </div>
-      </div>
+      </ZoomIn>
     </section>
   );
 }

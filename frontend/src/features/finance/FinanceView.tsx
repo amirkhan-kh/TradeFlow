@@ -26,7 +26,7 @@ interface Summary {
   summary: { month_total: number; today_total: number; receivables: number; overlimit: number };
 }
 
-const TONE = { cash: "green", card: "blue", transfer: "violet" } as const;
+const TONE = { cash: "green", card: "blue", transfer: "violet", payme: "blue", click: "blue" } as const;
 
 export function FinanceView() {
   const list = usePaged<Payment, Summary>("/payments");

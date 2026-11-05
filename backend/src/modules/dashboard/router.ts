@@ -26,21 +26,28 @@ dashboardRouter.get("/", async (_req, res) => {
         (SELECT COUNT(*) FROM clients) AS clients,
         (SELECT COUNT(*) FROM deliveries WHERE status IN ('pending','on_route')) AS active_deliveries,
         (SELECT COALESCE(SUM(amount),0) FROM payments WHERE created_at >= date_trunc('month', now())) AS collected_month`),
-      q(`SELECT to_char(m, 'YYYY-MM') AS month,
-          COALESCE(SUM(sm.quantity) FILTER (WHERE sm.type = 'in'), 0)::int AS inbound,
-          COALESCE(SUM(sm.quantity) FILTER (WHERE sm.type = 'out'), 0)::int AS outbound
+      q(`WITH agg AS (
+          SELECT date_trunc('month', created_at) AS m,
+            SUM(quantity) FILTER (WHERE type = 'in') AS inbound, SUM(quantity) FILTER (WHERE type = 'out') AS outbound
+          FROM stock_movements WHERE type IN ('in','out') AND created_at >= date_trunc('month', now()) - interval '6 months' GROUP BY 1)
+        SELECT to_char(m, 'YYYY-MM') AS month, COALESCE(agg.inbound, 0)::int AS inbound, COALESCE(agg.outbound, 0)::int AS outbound
         FROM generate_series(date_trunc('month', now()) - interval '6 months', date_trunc('month', now()), interval '1 month') m
-        LEFT JOIN stock_movements sm ON date_trunc('month', sm.created_at) = m
-        GROUP BY m ORDER BY m`),
-      q(`SELECT to_char(m, 'YYYY-MM') AS month,
-          COALESCE((SELECT SUM(total) FROM orders o WHERE ${SOLD} AND date_trunc('month', o.created_at) = m), 0) AS revenue,
-          COALESCE((SELECT SUM(amount) FROM payments p WHERE date_trunc('month', p.created_at) = m), 0) AS collected
+        LEFT JOIN agg USING (m) ORDER BY m`),
+      q(`WITH rev AS (
+          SELECT date_trunc('month', created_at) AS m, SUM(total) AS revenue FROM orders o
+          WHERE ${SOLD} AND created_at >= date_trunc('month', now()) - interval '6 months' GROUP BY 1),
+        col AS (
+          SELECT date_trunc('month', created_at) AS m, SUM(amount) AS collected FROM payments
+          WHERE created_at >= date_trunc('month', now()) - interval '6 months' GROUP BY 1)
+        SELECT to_char(m, 'YYYY-MM') AS month, COALESCE(rev.revenue, 0) AS revenue, COALESCE(col.collected, 0) AS collected
         FROM generate_series(date_trunc('month', now()) - interval '6 months', date_trunc('month', now()), interval '1 month') m
-        ORDER BY m`),
-      q(`SELECT to_char(d, 'YYYY-MM-DD') AS day,
-          COALESCE((SELECT SUM(total) FROM orders o WHERE ${SOLD} AND o.created_at::date = d::date), 0) AS revenue,
-          (SELECT COUNT(*) FROM orders o WHERE o.created_at::date = d::date)::int AS orders
-        FROM generate_series(current_date - 29, current_date, interval '1 day') d ORDER BY d`),
+        LEFT JOIN rev USING (m) LEFT JOIN col USING (m) ORDER BY m`),
+      q(`WITH agg AS (
+          SELECT created_at::date AS d, COALESCE(SUM(total) FILTER (WHERE ${SOLD}), 0) AS revenue, COUNT(*)::int AS orders
+          FROM orders o WHERE created_at >= current_date - 29 GROUP BY 1)
+        SELECT to_char(g, 'YYYY-MM-DD') AS day, COALESCE(agg.revenue, 0) AS revenue, COALESCE(agg.orders, 0) AS orders
+        FROM generate_series(current_date - 29, current_date, interval '1 day') g
+        LEFT JOIN agg ON agg.d = g::date ORDER BY g`),
       q(`SELECT p.id, p.name, p.category, SUM(i.quantity)::int AS units, SUM(i.quantity * i.price) AS revenue
         FROM order_items i JOIN orders o ON o.id = i.order_id JOIN products p ON p.id = i.product_id
         WHERE ${SOLD} AND o.created_at >= now() - interval '90 days'

@@ -5,6 +5,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { EASE, m, Stagger, StaggerItem } from "@/shared/ui/motion";
 import { Section } from "./Section";
+import { ZoomIn } from "./ZoomIn";
 
 const FAQ = [
   ["TradeFlow kimlar uchun?", "Distribyutorlar, ulgurji savdo kompaniyalari, ishlab chiqaruvchilar va bir nechta omborga ega savdo tarmoqlari uchun."],
@@ -18,41 +19,43 @@ export function Faq() {
   const [open, setOpen] = useState<number | null>(0);
 
   return (
-    <Section eyebrow="Savol-javob" title="Ko'p beriladigan savollar">
+    <Section eyebrow="Savol-javob" title="Ko'p beriladigan savollar" fx={{ variant: "lattice" }}>
       <Stagger className="mx-auto max-w-3xl space-y-3">
         {FAQ.map(([q, a], i) => {
           const isOpen = open === i;
           return (
             <StaggerItem key={q}>
-              <div className={`rounded-3xl border bg-white transition-all duration-300 ${isOpen ? "border-brand-200 shadow-lift" : "border-ink-200/70 shadow-soft"}`}>
-                <button
-                  onClick={() => setOpen(isOpen ? null : i)}
-                  aria-expanded={isOpen}
-                  className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-semibold text-ink-900"
-                >
-                  {q}
-                  <m.span
-                    animate={{ rotate: isOpen ? 45 : 0 }}
-                    transition={{ duration: 0.25, ease: EASE }}
-                    className={`grid size-8 shrink-0 place-items-center rounded-full transition-colors ${isOpen ? "bg-brand-600 text-white" : "bg-ink-100 text-ink-600"}`}
+              <ZoomIn from={0.9} y={30} tilt={12} end="start 70%">
+                <div className={`glass rounded-[1.75rem] transition-colors duration-300 ${isOpen ? "bg-white/80" : "hover:bg-white/70"}`}>
+                  <button
+                    onClick={() => setOpen(isOpen ? null : i)}
+                    aria-expanded={isOpen}
+                    className="flex w-full items-center justify-between gap-4 px-6 py-5 text-left font-semibold text-ink-900"
                   >
-                    <Plus className="size-4" />
-                  </m.span>
-                </button>
-                <AnimatePresence initial={false}>
-                  {isOpen && (
-                    <m.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0, transition: { duration: 0.2 } }}
-                      transition={{ duration: 0.35, ease: EASE }}
-                      className="overflow-hidden"
+                    {q}
+                    <m.span
+                      animate={{ rotate: isOpen ? 45 : 0 }}
+                      transition={{ duration: 0.25, ease: EASE }}
+                      className={`grid size-8 shrink-0 place-items-center rounded-full transition-colors ${isOpen ? "bg-[#32536b] text-white shadow-[0_8px_20px_-6px_rgb(50_83_107/0.6)]" : "bg-white text-ink-700 ring-1 ring-ink-200"}`}
                     >
-                      <p className="px-6 pb-5 text-sm leading-relaxed text-ink-600">{a}</p>
-                    </m.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      <Plus className="size-4" />
+                    </m.span>
+                  </button>
+                  <AnimatePresence initial={false}>
+                    {isOpen && (
+                      <m.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0, transition: { duration: 0.2 } }}
+                        transition={{ duration: 0.35, ease: EASE }}
+                        className="overflow-hidden"
+                      >
+                        <p className="px-6 pb-5 text-sm leading-relaxed text-ink-600">{a}</p>
+                      </m.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </ZoomIn>
             </StaggerItem>
           );
         })}

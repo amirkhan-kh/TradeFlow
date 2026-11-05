@@ -39,6 +39,7 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
   const list = usePaged<Delivery, Summary>("/deliveries", initialStatus);
   const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier");
   const [error, setError] = useState<string>();
+  const [picked, setPicked] = useState<Record<number, number | null>>({});
   const s = list.data?.summary;
 
   async function patch(id: number, body: Record<string, unknown>) {
@@ -48,7 +49,17 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
       list.reload();
     } catch (e) {
       setError((e as Error).message);
+      setPicked((p) => {
+        const rest = { ...p };
+        delete rest[id];
+        return rest;
+      });
     }
+  }
+
+  function assign(id: number, courierId: number | null) {
+    setPicked((p) => ({ ...p, [id]: courierId }));
+    patch(id, { courier_id: courierId });
   }
 
   return (
@@ -111,8 +122,8 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
                       <span className="text-ink-600">{d.courier_name ?? "—"}</span>
                     ) : (
                       <select
-                        value={d.courier_id ?? ""}
-                        onChange={(e) => patch(d.id, { courier_id: e.target.value ? Number(e.target.value) : null })}
+                        value={(d.id in picked ? picked[d.id] : d.courier_id) ?? ""}
+                        onChange={(e) => assign(d.id, e.target.value ? Number(e.target.value) : null)}
                         className="input h-8 w-40 py-0 text-xs"
                         aria-label="Kuryer"
                       >

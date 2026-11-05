@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { z } from "zod";
-import { pool } from "../../core/db.js";
+import { pool, tx } from "../../core/db.js";
 import { idParam, notFound, pageOf, parse } from "../../core/http.js";
+import { emit, leadPayload } from "../integrations/events.js";
 
 const createSchema = z.object({
   name: z.string().trim().min(2).max(80),
@@ -17,11 +18,15 @@ export const leadsPublicRouter = Router();
 
 leadsPublicRouter.post("/", async (req, res) => {
   const l = parse(createSchema, req.body);
-  const { rows } = await pool.query(
-    `INSERT INTO leads (name, phone, company, message) VALUES ($1,$2,$3,$4) RETURNING id`,
-    [l.name, l.phone, l.company ?? null, l.message ?? null],
-  );
-  res.status(201).json(rows[0]);
+  const lead = await tx(async (db) => {
+    const { rows } = await db.query<{ id: number }>(
+      `INSERT INTO leads (name, phone, company, message) VALUES ($1,$2,$3,$4) RETURNING id`,
+      [l.name, l.phone, l.company ?? null, l.message ?? null],
+    );
+    await emit(db, "lead.created", () => leadPayload(db, rows[0].id));
+    return rows[0];
+  });
+  res.status(201).json(lead);
 });
 
 export const leadsRouter = Router();

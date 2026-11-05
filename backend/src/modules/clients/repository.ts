@@ -7,12 +7,13 @@ export interface ClientInput {
   phone?: string;
   region: string;
   address?: string;
+  inn?: string;
   segment: "A" | "B" | "C";
   agent_id?: number | null;
   credit_limit: number;
 }
 
-const COLS = ["name", "owner_name", "phone", "region", "address", "segment", "agent_id", "credit_limit"] as const;
+const COLS = ["name", "owner_name", "phone", "region", "address", "inn", "segment", "agent_id", "credit_limit"] as const;
 const values = (c: ClientInput) => COLS.map((k) => c[k] ?? null);
 
 export async function list({ page, limit, q, status }: PageQuery) {

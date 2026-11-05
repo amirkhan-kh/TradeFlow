@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { api, type Page } from "@/shared/lib/api";
+import { api } from "@/shared/lib/api";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
 import { usePaged } from "@/shared/lib/usePaged";
@@ -12,6 +12,7 @@ import { StatusBadge } from "@/shared/ui/Badge";
 import { Button } from "@/shared/ui/Button";
 import { Field, Select, Textarea } from "@/shared/ui/Field";
 import { Modal } from "@/shared/ui/Modal";
+import { WarehouseSelect, type WarehouseOption } from "@/shared/ui/SearchSelect";
 import { Chips, PageHeader, Pagination, SearchInput, Table } from "@/shared/ui/Page";
 import { Alert, Empty, ErrorState, Loading } from "@/shared/ui/States";
 
@@ -120,7 +121,7 @@ export function AuditsList() {
 
 function NewAudit() {
   const router = useRouter();
-  const warehouses = useApi<Page<{ id: number; name: string }>>("/warehouses?limit=200");
+  const [warehouse, setWarehouse] = useState<WarehouseOption | null>(null);
   const auditors = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=auditor");
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -141,14 +142,7 @@ function NewAudit() {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <Field label="Ombor">
-        <Select name="warehouse_id" required defaultValue="">
-          <option value="">Tanlang…</option>
-          {warehouses.data?.items.map((w) => (
-            <option key={w.id} value={w.id}>
-              {w.name}
-            </option>
-          ))}
-        </Select>
+        <WarehouseSelect name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
       </Field>
       <Field label="Auditor">
         <Select name="auditor_id" defaultValue="">

@@ -15,12 +15,15 @@ const schema = z.object({
   min_stock: z.coerce.number().int().min(0).default(0),
   expires_at: z.iso.date().nullish(),
   active: z.boolean().default(true),
+  ikpu: z.string().trim().regex(/^\d{17}$/, "IKPU 17 ta raqam").optional().or(z.literal("").transform(() => undefined)),
+  package_code: z.string().trim().max(20).optional(),
+  vat_rate: z.coerce.number().min(0).max(100).default(12),
 });
 
 export const productsRouter = Router();
 
 productsRouter.get("/", async (req, res) => {
-  res.json(await repo.list(pageOf(req)));
+  res.json(await repo.list({ ...pageOf(req), active: req.query.active === "true" ? true : undefined }));
 });
 
 productsRouter.get("/categories", async (_req, res) => {

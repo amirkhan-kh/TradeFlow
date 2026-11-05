@@ -1,11 +1,12 @@
 "use client";
 
+import { useState } from "react";
 import { api } from "@/shared/lib/api";
 import { fmtDate } from "@/shared/lib/format";
 import { usePaged } from "@/shared/lib/usePaged";
 import { StatusBadge } from "@/shared/ui/Badge";
 import { Chips, PageHeader, Pagination, Table } from "@/shared/ui/Page";
-import { Empty, ErrorState, Loading } from "@/shared/ui/States";
+import { Alert, Empty, ErrorState, Loading } from "@/shared/ui/States";
 
 interface Lead {
   id: number;
@@ -26,10 +27,23 @@ const STATUSES = [
 
 export function LeadsView() {
   const list = usePaged<Lead>("/leads");
+  const [picked, setPicked] = useState<Record<number, string>>({});
+  const [error, setError] = useState<string>();
 
   async function setStatus(id: number, status: string) {
-    await api(`/leads/${id}`, { method: "PATCH", json: { status } });
-    list.reload();
+    setError(undefined);
+    setPicked((p) => ({ ...p, [id]: status }));
+    try {
+      await api(`/leads/${id}`, { method: "PATCH", json: { status } });
+      list.reload();
+    } catch (e) {
+      setError((e as Error).message);
+      setPicked((p) => {
+        const rest = { ...p };
+        delete rest[id];
+        return rest;
+      });
+    }
   }
 
   return (
@@ -38,6 +52,11 @@ export function LeadsView() {
       <div className="card">
         <div className="border-b border-ink-100 p-4">
           <Chips options={[{ value: "", label: "Barchasi" }, ...STATUSES]} value={list.status} onChange={list.setStatus} />
+          {error && (
+            <div className="mt-3">
+              <Alert>{error}</Alert>
+            </div>
+          )}
         </div>
         {list.error ? (
           <ErrorState message={list.error} onRetry={list.reload} />
@@ -65,7 +84,7 @@ export function LeadsView() {
                     <StatusBadge status={l.status} />
                   </td>
                   <td>
-                    <select value={l.status} onChange={(e) => setStatus(l.id, e.target.value)} className="input h-8 w-40 py-0 text-xs" aria-label="Holat">
+                    <select value={picked[l.id] ?? l.status} onChange={(e) => setStatus(l.id, e.target.value)} className="input h-8 w-40 py-0 text-xs" aria-label="Holat">
                       {STATUSES.map((s) => (
                         <option key={s.value} value={s.value}>
                           {s.label}

@@ -140,6 +140,7 @@ export function AgentsView() {
         </Table>
         <p className="px-5 py-3 text-xs text-ink-400">Rejalar summasi so&apos;mda: {data && fmtMoney(data.agents.reduce((s, a) => s + a.monthly_plan, 0))}</p>
       </section>
+      
     </div>
   );
 }

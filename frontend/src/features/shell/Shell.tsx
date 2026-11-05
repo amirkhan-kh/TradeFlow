@@ -4,14 +4,17 @@ import {
   Bot,
   Boxes,
   ClipboardCheck,
+  History,
   Inbox,
   LayoutDashboard,
   LogOut,
   Menu,
   Package,
+  Plug,
   ShoppingCart,
   Store,
   Truck,
+  UserCog,
   Users,
   Wallet,
   Warehouse,
@@ -20,7 +23,8 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { api } from "@/shared/lib/api";
+import { api, ME_CHANGED } from "@/shared/lib/api";
+import { initials } from "@/shared/lib/roles";
 import { statusOf } from "@/shared/lib/status";
 import { useApi } from "@/shared/lib/useApi";
 import { Logo } from "@/shared/ui/Logo";
@@ -58,6 +62,15 @@ const NAV = [
       ["/dashboard/finance", "Moliya", Wallet],
     ],
   },
+  {
+    title: "Sozlamalar",
+    admin: true,
+    items: [
+      ["/dashboard/staff", "Xodimlar va rollar", UserCog],
+      ["/dashboard/activity", "Faoliyat jurnali", History],
+      ["/dashboard/integrations", "Integratsiyalar", Plug],
+    ],
+  },
 ] as const;
 
 interface Me {
@@ -67,9 +80,13 @@ interface Me {
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const { data } = useApi<Me>("/auth/me");
+  const { data, reload } = useApi<Me>("/auth/me");
 
   useEffect(() => setOpen(false), [pathname]);
+  useEffect(() => {
+    window.addEventListener(ME_CHANGED, reload);
+    return () => window.removeEventListener(ME_CHANGED, reload);
+  }, [reload]);
 
   async function logout() {
     await api("/auth/logout", { method: "POST" });
@@ -82,8 +99,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-dvh lg:pl-64">
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-ink-200/70 bg-white transition-transform lg:translate-x-0 ${
-          open ? "translate-x-0 shadow-lift" : "-translate-x-full"
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-ink-200/70 bg-white transition-[translate,visibility] lg:visible lg:translate-x-0 ${
+          open ? "visible translate-x-0 shadow-lift" : "invisible -translate-x-full"
         }`}
       >
         <div className="flex h-16 items-center justify-between px-5">
@@ -93,7 +110,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
         <nav aria-label="CRM" className="flex-1 space-y-5 overflow-y-auto px-3 py-3">
-          {NAV.map((g) => (
+          {NAV.filter((g) => !("admin" in g) || user?.role === "admin").map((g) => (
             <div key={g.title}>
               <p className="mb-1.5 px-3 text-[11px] font-bold tracking-wider text-ink-400 uppercase">{g.title}</p>
               <ul className="space-y-0.5">
@@ -140,15 +157,20 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </p>
         <div className="ml-auto flex items-center gap-3">
           {user && (
-            <div className="flex items-center gap-3">
+            <Link
+              href="/dashboard/profile"
+              aria-label="Profilim"
+              aria-current={pathname === "/dashboard/profile" ? "page" : undefined}
+              className="flex items-center gap-3 rounded-2xl py-1 pr-1 pl-3 transition hover:bg-ink-100"
+            >
               <div className="hidden text-right sm:block">
                 <p className="text-sm font-semibold text-ink-900">{user.full_name}</p>
                 <p className="text-xs text-ink-500">{statusOf(user.role).label}</p>
               </div>
               <span className="grid size-9 place-items-center rounded-full bg-gradient-to-br from-brand-400 to-brand-700 text-sm font-bold text-white">
-                {user.full_name.slice(0, 1)}
+                {initials(user.full_name)}
               </span>
-            </div>
+            </Link>
           )}
           <button onClick={logout} className="rounded-xl p-2 text-ink-500 transition hover:bg-red-50 hover:text-red-600" aria-label="Chiqish" title="Chiqish">
             <LogOut className="size-5" />

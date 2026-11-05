@@ -2,6 +2,7 @@ import { tx, type Db } from "../../core/db.js";
 import { conflict, HttpError, notFound } from "../../core/http.js";
 import { changeBalance } from "../clients/repository.js";
 import * as deliveries from "../deliveries/repository.js";
+import { emit, orderPayload } from "../integrations/events.js";
 import * as stock from "../stock/repository.js";
 import * as repo from "./repository.js";
 import type { OrderStatus } from "./repository.js";
@@ -41,7 +42,7 @@ export async function create(input: CreateOrderInput, userId: number) {
       throw conflict("Mijozning kredit limiti oshib ketadi. Avval qarzni undiring.");
     }
 
-    return repo.insert(
+    const order = await repo.insert(
       db,
       {
         client_id: input.client_id,
@@ -54,6 +55,8 @@ export async function create(input: CreateOrderInput, userId: number) {
       },
       lines,
     );
+    await emit(db, "order.created", () => orderPayload(db, order.id));
+    return order;
   });
 }
 
@@ -108,6 +111,7 @@ export async function applyStatus(db: Db, id: number, input: StatusInput, userId
   }
 
   await repo.setStatus(db, id, input.status, at);
+  await emit(db, "order.status_changed", () => orderPayload(db, id, order.status));
   return { ...order, status: input.status };
 }
 

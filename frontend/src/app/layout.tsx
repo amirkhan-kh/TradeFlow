@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { SITE_URL } from "@/shared/lib/site";
 import "./globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
@@ -9,6 +10,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
     default: "TradeFlow — savdo, ombor va yetkazib berishni boshqarish tizimi",
     template: "%s · TradeFlow",
@@ -21,7 +23,10 @@ export const metadata: Metadata = {
     description: "Buyurtmalar, ombor, audit, logistika va moliya — bitta tizimda.",
     type: "website",
     locale: "uz_UZ",
+    url: "/",
+    siteName: "TradeFlow",
   },
+  twitter: { card: "summary_large_image" },
 };
 
 export const viewport: Viewport = {

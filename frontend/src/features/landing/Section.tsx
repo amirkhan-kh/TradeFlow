@@ -1,4 +1,6 @@
 import { Reveal } from "@/shared/ui/motion";
+import { Fx } from "./Fx";
+import { ZoomIn } from "./ZoomIn";
 
 export function Section({
   id,
@@ -7,6 +9,7 @@ export function Section({
   lead,
   children,
   className = "",
+  fx,
 }: {
   id?: string;
   eyebrow: string;
@@ -14,20 +17,22 @@ export function Section({
   lead?: string;
   children: React.ReactNode;
   className?: string;
+  fx?: React.ComponentProps<typeof Fx>;
 }) {
   return (
-    <section id={id} className={`relative scroll-mt-24 py-24 sm:py-28 ${className}`}>
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <Reveal className="mx-auto mb-14 max-w-2xl text-center">
-          <p className="inline-flex items-center gap-2 rounded-full border border-brand-200/70 bg-brand-50/70 px-3 py-1 text-xs font-bold tracking-wide text-brand-700">
-            <span className="size-1.5 rounded-full bg-brand-500" />
+    <section id={id} className={`relative isolate scroll-mt-24 py-20 sm:py-28 ${className}`}>
+      {fx && <Fx {...fx} />}
+      <ZoomIn className="mx-auto max-w-7xl px-4 sm:px-6">
+        <Reveal className="mx-auto mb-16 max-w-2xl text-center">
+          <p className="glass inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-bold tracking-wide text-[#32536b]">
+            <span className="size-1.5 rounded-full bg-brand-400 shadow-[0_0_10px_2px_rgb(61_174_127/0.5)]" />
             {eyebrow}
           </p>
-          <h2 className="mt-4 text-3xl font-extrabold tracking-[-0.03em] text-ink-900 sm:text-[2.75rem] sm:leading-[1.1]">{title}</h2>
-          {lead && <p className="mt-4 text-lg text-ink-600">{lead}</p>}
+          <h2 className="mt-5 text-3xl font-extrabold tracking-[-0.035em] text-balance text-ink-900 sm:text-5xl sm:leading-[1.05]">{title}</h2>
+          {lead && <p className="mt-5 text-lg text-pretty text-ink-600">{lead}</p>}
         </Reveal>
         {children}
-      </div>
+      </ZoomIn>
     </section>
   );
 }

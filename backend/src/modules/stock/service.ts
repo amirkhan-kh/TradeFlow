@@ -1,5 +1,6 @@
 import { tx } from "../../core/db.js";
 import { HttpError } from "../../core/http.js";
+import { emit, stockPayload } from "../integrations/events.js";
 import * as repo from "./repository.js";
 
 export interface MoveInput {
@@ -28,6 +29,8 @@ export async function move(input: MoveInput, userId: number) {
       await repo.remove(db, input.warehouse_id, input.product_id, input.quantity);
       await repo.add(db, input.to_warehouse_id!, input.product_id, input.quantity);
     }
-    return repo.recordMovement(db, { ...input, user_id: userId });
+    const movement = await repo.recordMovement(db, { ...input, user_id: userId });
+    await emit(db, "stock.moved", () => stockPayload(db, movement.id));
+    return movement;
   });
 }

@@ -3,8 +3,8 @@ import type { PoolClient } from "pg";
 import { config } from "./config.js";
 import { pool, tx } from "./db.js";
 import { HttpError } from "./http.js";
+import { CITY_STREETS, FAMILIES, FIRST_NAMES, LAST_NAMES, LEADS, REGIONS, SHOP_NAMES, SHOP_TYPES, WAREHOUSES } from "./seed-data.js";
 import * as users from "../modules/users/repository.js";
-import * as stock from "../modules/stock/repository.js";
 import * as orders from "../modules/orders/repository.js";
 import { applyStatus } from "../modules/orders/service.js";
 import * as audits from "../modules/audits/repository.js";
@@ -14,70 +14,12 @@ import { changeBalance } from "../modules/clients/repository.js";
 let state = 20261007;
 const rand = () => ((state = (state * 1664525 + 1013904223) % 4294967296) / 4294967296);
 const int = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
-const pick = <T>(arr: T[]) => arr[Math.floor(rand() * arr.length)];
+const pick = <T>(arr: readonly T[]) => arr[Math.floor(rand() * arr.length)];
+const digits = (n: number) => Array.from({ length: n }, (_, i) => (i === 0 ? int(1, 9) : int(0, 9))).join("");
+const phone = () => `+998 ${pick(["90", "91", "93", "94", "95", "97", "99", "33", "88"])} ${int(100, 999)} ${int(10, 99)} ${int(10, 99)}`;
 
-const WAREHOUSES = [
-  ["TSH-01", "Toshkent Markaziy", "Toshkent", "Yunusobod t., Amir Temur ko'chasi 108", 12000, "Jasur Karimov"],
-  ["TSH-02", "Sergeli Logistika Hub", "Toshkent", "Sergeli t., Yangi Sergeli 4", 8000, "Dilshod Rahimov"],
-  ["SMQ-01", "Samarqand Ombori", "Samarqand", "Registon ko'chasi 21", 6000, "Bekzod Aliyev"],
-  ["FRG-01", "Farg'ona vodiysi", "Farg'ona", "Al-Farg'oniy ko'chasi 5", 5000, "Shoxrux Tursunov"],
-  ["BXR-01", "Buxoro Ombori", "Buxoro", "Navoiy shoh ko'chasi 12", 4000, "Akmal Sobirov"],
-] as const;
-
-const PRODUCTS: [string, string, string, number, number, number][] = [
-  // name, category, unit, weight kg, price, min stock
-  ["Coca-Cola 1.5L", "Ichimliklar", "dona", 1.6, 12000, 120],
-  ["Fanta 1L", "Ichimliklar", "dona", 1.1, 9500, 100],
-  ["Hydrolife suv 1.5L", "Ichimliklar", "dona", 1.55, 4000, 200],
-  ["Nestea limon 0.5L", "Ichimliklar", "dona", 0.55, 7000, 80],
-  ["Lipton qora choy 100 paket", "Choy va qahva", "quti", 0.25, 28000, 40],
-  ["Nescafe Gold 190g", "Choy va qahva", "dona", 0.4, 98000, 25],
-  ["Musaffo sut 3.2% 1L", "Sut mahsulotlari", "dona", 1.05, 13000, 150],
-  ["Nestle qatiq 450g", "Sut mahsulotlari", "dona", 0.47, 9000, 90],
-  ["Lactel pishloq 200g", "Sut mahsulotlari", "dona", 0.21, 32000, 30],
-  ["Makfa makaron 400g", "Oziq-ovqat", "dona", 0.41, 11000, 120],
-  ["Guruch Lazer 1kg", "Oziq-ovqat", "dona", 1, 26000, 100],
-  ["Oltin don un 10kg", "Oziq-ovqat", "qop", 10, 85000, 40],
-  ["Kungaboqar yog'i 1L", "Oziq-ovqat", "dona", 0.95, 24000, 120],
-  ["Shakar 1kg", "Oziq-ovqat", "dona", 1, 14000, 150],
-  ["Snickers 50g", "Shirinliklar", "dona", 0.05, 8000, 200],
-  ["Alpen Gold shokolad 85g", "Shirinliklar", "dona", 0.09, 13000, 120],
-  ["Crafers vafli 300g", "Shirinliklar", "dona", 0.3, 17000, 60],
-  ["Yupqa lavash 10 dona", "Non mahsulotlari", "paket", 0.5, 12000, 80],
-  ["Ariel kir yuvish 3kg", "Maishiy kimyo", "dona", 3, 89000, 30],
-  ["Fairy 500ml", "Maishiy kimyo", "dona", 0.55, 19000, 60],
-  ["Domestos 1L", "Maishiy kimyo", "dona", 1.1, 27000, 40],
-  ["Pomidor pastasi 380g", "Konserva", "dona", 0.42, 15000, 80],
-  ["Tuna konserva 185g", "Konserva", "dona", 0.2, 22000, 50],
-  ["Gigiyenik salfetka 100", "Gigiyena", "paket", 0.3, 16000, 60],
-];
-
-const REGIONS: Record<string, { warehouses: string[]; names: string[] }> = {
-  Toshkent: {
-    warehouses: ["TSH-01", "TSH-02"],
-    names: ["Korzinka Yunusobod", "Makro Chilonzor", "Baraka Market", "Havas Sergeli", "Oila Supermarket", "Mega Planet do'kon", "Yangi Hayot minimarket", "Chorsu Savdo", "Olmazor Market", "Bodomzor do'kon", "Uchtepa Savdo", "Family Market", "Next Mart", "Asaka Market"],
-  },
-  Samarqand: {
-    warehouses: ["SMQ-01"],
-    names: ["Registon Market", "Siyob Savdo", "Samarqand Darvoza", "Bulung'ur do'kon", "Urgut Market", "Kattaqo'rg'on Savdo", "Afrosiyob Mart"],
-  },
-  "Farg'ona": {
-    warehouses: ["FRG-01"],
-    names: ["Marg'ilon Bozor", "Qo'qon Savdo", "Farg'ona City Mart", "Andijon Market", "Namangan Plaza", "Rishton do'kon", "Quva Savdo"],
-  },
-  Buxoro: {
-    warehouses: ["BXR-01"],
-    names: ["Labi Hovuz Market", "Kogon Savdo", "Navoiy Mart", "G'ijduvon do'kon", "Buxoro Darvoza", "Vobkent Market"],
-  },
-};
-
-const AGENTS = [
-  ["agent1", "Sardor Yusupov", "Toshkent", 80_000_000],
-  ["agent2", "Madina Qodirova", "Toshkent", 75_000_000],
-  ["agent3", "Otabek Ergashev", "Samarqand", 85_000_000],
-  ["agent4", "Nodira Xolmatova", "Farg'ona", 90_000_000],
-  ["agent5", "Javohir Nematov", "Buxoro", 75_000_000],
-] as const;
+const DAYS = 365;
+const COUNTS = { managers: 6, agents: 80, couriers: 24, auditors: 8, clients: 460, leads: 380 };
 
 const day = (offset: number, hour = int(8, 18)) => {
   const d = new Date();
@@ -86,22 +28,177 @@ const day = (offset: number, hour = int(8, 18)) => {
   return d;
 };
 
-async function seedDemo(db: PoolClient, adminId: number) {
-  const demoHash = await bcrypt.hash("demo123", 10);
-  await users.insert(db, { username: "manager", password_hash: demoHash, full_name: "Aziza Usmonova", role: "manager", phone: "+998 90 100 20 30" });
-  const agentIds: Record<string, number[]> = {};
-  for (const [username, full_name, region, plan] of AGENTS) {
-    const u = await users.insert(db, { username, password_hash: demoHash, full_name, role: "agent", region, monthly_plan: plan, phone: `+998 9${int(0, 9)} ${int(100, 999)} ${int(10, 99)} ${int(10, 99)}` });
-    (agentIds[region] ??= []).push(u.id);
+/** Unique "First Last" names, deterministic order. */
+function people(count: number, used: Set<string>) {
+  const out: string[] = [];
+  while (out.length < count) {
+    const name = `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`;
+    if (used.has(name)) continue;
+    used.add(name);
+    out.push(name);
   }
+  return out;
+}
+
+/** Picks by weight with a prebuilt cumulative table (binary search). */
+function weighted<T>(items: T[], weight: (t: T) => number) {
+  const cum: number[] = [];
+  let sum = 0;
+  for (const it of items) cum.push((sum += weight(it)));
+  return () => {
+    const r = rand() * sum;
+    let lo = 0;
+    let hi = cum.length - 1;
+    while (lo < hi) {
+      const mid = (lo + hi) >> 1;
+      if (cum[mid] < r) lo = mid + 1;
+      else hi = mid;
+    }
+    return items[lo];
+  };
+}
+
+async function seedStaff(db: PoolClient, hash: string) {
+  const used = new Set<string>();
+  const insert = (username: string, full_name: string, role: string, extra: { region?: string; monthly_plan?: number } = {}) =>
+    users.insert(db, { username, password_hash: hash, full_name, role: role as "agent", phone: phone(), ...extra });
+
+  for (const [i, name] of people(COUNTS.managers, used).entries()) await insert(i === 0 ? "manager" : `manager${i + 1}`, name, "manager");
+
+  const regionPick = weighted(REGIONS, (r) => r.weight);
+  const agentsByRegion: Record<string, number[]> = {};
+  const agentNames = people(COUNTS.agents, used);
+  for (const [i, name] of agentNames.entries()) {
+    // first agent of every region is assigned deterministically so no region is left without one
+    const region = i < REGIONS.length ? REGIONS[i].name : regionPick().name;
+    const u = await insert(`agent${i + 1}`, name, "agent", { region, monthly_plan: int(8, 24) * 5_000_000 });
+    (agentsByRegion[region] ??= []).push(u.id);
+  }
+
   const couriers: number[] = [];
-  for (const [username, full_name] of [["courier1", "Ulug'bek Hamidov"], ["courier2", "Rustam Soliyev"], ["courier3", "Farrux Qosimov"]]) {
-    couriers.push((await users.insert(db, { username, password_hash: demoHash, full_name, role: "courier", phone: `+998 93 ${int(100, 999)} ${int(10, 99)} ${int(10, 99)}` })).id);
-  }
+  for (const [i, name] of people(COUNTS.couriers, used).entries()) couriers.push((await insert(`courier${i + 1}`, name, "courier")).id);
   const auditors: number[] = [];
-  for (const [username, full_name] of [["auditor1", "Gulnora Saidova"], ["auditor2", "Bobur Mirzayev"]]) {
-    auditors.push((await users.insert(db, { username, password_hash: demoHash, full_name, role: "auditor" })).id);
+  for (const [i, name] of people(COUNTS.auditors, used).entries()) auditors.push((await insert(`auditor${i + 1}`, name, "auditor")).id);
+  return { agentsByRegion, couriers, auditors };
+}
+
+async function seedProducts(db: PoolClient) {
+  const rows: { sku: string; name: string; category: string; unit: string; weight: number; price: number; min: number; popularity: number; expires: string | null }[] = [];
+  for (const { category, brands, bases } of FAMILIES) {
+    for (const brand of brands) {
+      const factor = 0.85 + rand() * 0.4;
+      for (const [label, unit, weight, base] of bases) {
+        const popularity = 0.15 + rand() ** 2 * 1.85;
+        const perishable = /sut|qatiq|kefir|smetana|tvorog|yogurt|non|lavash|kolbasa|sosiska|filesi|qiyma/.test(label);
+        rows.push({
+          sku: `TF-${1001 + rows.length}`,
+          name: `${brand} ${label}`,
+          category,
+          unit,
+          weight,
+          price: Math.round((base * factor) / 100) * 100,
+          min: Math.max(5, Math.round(10 + popularity * 25)),
+          popularity,
+          expires: perishable && rand() < 0.25 ? day(int(5, 40)).toISOString().slice(0, 10) : null,
+        });
+      }
+    }
   }
+  const { rows: ids } = await db.query<{ id: number; sku: string }>(
+    `INSERT INTO products (sku, name, category, unit, weight_kg, price, cost, min_stock, expires_at, ikpu, package_code, vat_rate)
+     SELECT t.sku, t.name, t.category, t.unit, t.weight, t.price, round(t.price * 0.78), t.min, t.expires, t.ikpu, t.pkg, 12
+     FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::numeric[], $6::numeric[], $7::int[], $8::date[], $9::text[], $10::text[])
+       AS t(sku, name, category, unit, weight, price, min, expires, ikpu, pkg)
+     RETURNING id, sku`,
+    [
+      rows.map((r) => r.sku),
+      rows.map((r) => r.name),
+      rows.map((r) => r.category),
+      rows.map((r) => r.unit),
+      rows.map((r) => r.weight),
+      rows.map((r) => r.price),
+      rows.map((r) => r.min),
+      rows.map((r) => r.expires),
+      rows.map(() => (rand() < 0.7 ? digits(17) : null)),
+      rows.map(() => (rand() < 0.7 ? digits(7) : null)),
+    ],
+  );
+  const bySku = new Map(rows.map((r) => [r.sku, r]));
+  return ids.map(({ id, sku }) => ({ id, price: bySku.get(sku)!.price, popularity: bySku.get(sku)!.popularity }));
+}
+
+async function seedClients(db: PoolClient, wh: Record<string, number>, agentsByRegion: Record<string, number[]>) {
+  const regionPick = weighted(REGIONS, (r) => r.weight);
+  const names = new Set<string>();
+  const list: { name: string; owner: string; phone: string; region: string; address: string; segment: string; agent: number; limit: number; inn: string | null; created: Date }[] = [];
+  while (list.length < COUNTS.clients) {
+    const region = list.length < REGIONS.length ? REGIONS[list.length] : regionPick();
+    const district = pick(region.districts);
+    const name = `${pick(SHOP_NAMES)} ${pick(SHOP_TYPES)} ${district}`;
+    if (names.has(name)) continue;
+    names.add(name);
+    const segment = pick(["A", "A", "B", "B", "B", "C"]);
+    list.push({
+      name,
+      owner: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`,
+      phone: phone(),
+      region: region.name,
+      address: `${district}, ${pick(CITY_STREETS)} ko'chasi ${int(1, 180)}-uy`,
+      segment,
+      agent: pick(agentsByRegion[region.name]),
+      limit: segment === "A" ? 80_000_000 : segment === "B" ? 40_000_000 : 15_000_000,
+      inn: rand() < 0.6 ? digits(9) : null,
+      created: day(-DAYS - int(0, 120), 10),
+    });
+  }
+  const { rows } = await db.query<{ id: number }>(
+    `INSERT INTO clients (name, owner_name, phone, region, address, segment, agent_id, credit_limit, inn, created_at)
+     SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::text[], $7::int[], $8::numeric[], $9::text[], $10::timestamptz[])
+     RETURNING id`,
+    [
+      list.map((c) => c.name),
+      list.map((c) => c.owner),
+      list.map((c) => c.phone),
+      list.map((c) => c.region),
+      list.map((c) => c.address),
+      list.map((c) => c.segment),
+      list.map((c) => c.agent),
+      list.map((c) => c.limit),
+      list.map((c) => c.inn),
+      list.map((c) => c.created),
+    ],
+  );
+  const regionWh = Object.fromEntries(REGIONS.map((r) => [r.name, r.warehouses.map((c) => wh[c])]));
+  return rows.map((r, i) => ({
+    id: r.id,
+    agent: list[i].agent,
+    warehouses: regionWh[list[i].region],
+    weight: list[i].segment === "A" ? 3 : list[i].segment === "B" ? 2 : 1,
+  }));
+}
+
+/** Tops every product up to its target in one statement per warehouse; writes `in` movements. */
+async function restock(db: PoolClient, warehouseId: number, targets: { id: number; target: number }[], skip: number[], at: Date, ref: string, userId: number) {
+  await db.query(
+    `WITH want AS (SELECT * FROM unnest($2::int[], $3::int[]) AS t(product_id, target)),
+     need AS (
+       SELECT w.product_id, w.target - COALESCE(s.quantity, 0) AS qty
+       FROM want w LEFT JOIN stock s ON s.warehouse_id = $1 AND s.product_id = w.product_id
+       WHERE w.target - COALESCE(s.quantity, 0) > w.target * 0.35 AND NOT (w.product_id = ANY($4::int[]))
+     ),
+     up AS (
+       INSERT INTO stock (warehouse_id, product_id, quantity) SELECT $1, product_id, qty FROM need
+       ON CONFLICT (warehouse_id, product_id) DO UPDATE SET quantity = stock.quantity + EXCLUDED.quantity
+     )
+     INSERT INTO stock_movements (type, warehouse_id, product_id, quantity, reference, note, user_id, created_at)
+     SELECT 'in', $1, product_id, qty, $5, 'Yetkazib beruvchidan kirim', $6, $7 FROM need`,
+    [warehouseId, targets.map((t) => t.id), targets.map((t) => t.target), skip, ref, userId, at],
+  );
+}
+
+async function seedDemo(db: PoolClient, adminId: number) {
+  const hash = await bcrypt.hash("demo123", 10);
+  const { agentsByRegion, couriers, auditors } = await seedStaff(db, hash);
 
   const wh: Record<string, number> = {};
   for (const [code, name, city, address, capacity, manager] of WAREHOUSES) {
@@ -111,74 +208,42 @@ async function seedDemo(db: PoolClient, adminId: number) {
     );
     wh[code] = rows[0].id;
   }
+  const products = await seedProducts(db);
+  const priceOf = new Map(products.map((p) => [p.id, p.price]));
+  const popOf = new Map(products.map((p) => [p.id, p.popularity]));
+  const clients = await seedClients(db, wh, agentsByRegion);
 
-  const products: { id: number; price: number; popularity: number }[] = [];
-  for (const [i, [name, category, unit, weight, price, min]] of PRODUCTS.entries()) {
-    const expires = i === 7 || i === 17 ? day(int(10, 30)).toISOString().slice(0, 10) : null;
-    const { rows } = await db.query(
-      `INSERT INTO products (sku, name, category, unit, weight_kg, price, cost, min_stock, expires_at)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
-      [`TF-${String(1001 + i)}`, name, category, unit, weight, price, Math.round(price * 0.78), Math.round(min / 5), expires],
-    );
-    products.push({ id: rows[0].id, price, popularity: 0.4 + rand() * 1.2 });
-  }
+  const targets = Object.fromEntries(
+    Object.entries(wh).map(([code, id]) => {
+      const scale = code === "TSH-01" ? 1.6 : code === "TSH-02" ? 1.2 : 0.8;
+      return [id, products.map((p) => ({ id: p.id, target: Math.round((25 + 110 * p.popularity) * scale) }))];
+    }),
+  );
+  const scarce = products.filter((_, i) => i % 37 === 0).map((p) => p.id);
+  const productPick = weighted(products, (p) => p.popularity);
+  const clientPick = weighted(clients, (c) => c.weight);
+  const vehicles = ["01 A 123 BC", "01 B 777 AA", "30 C 456 DA", "40 D 210 FA", "70 E 905 KA", "50 F 318 HA"];
+  const auditCodes = Object.keys(wh);
 
-  const clients: { id: number; region: string; agent: number; warehouses: number[] }[] = [];
-  for (const [region, { warehouses, names }] of Object.entries(REGIONS)) {
-    for (const name of names) {
-      const agent = pick(agentIds[region]);
-      const segment = pick(["A", "A", "B", "B", "B", "C"]);
-      const limit = segment === "A" ? 60_000_000 : segment === "B" ? 30_000_000 : 12_000_000;
-      const { rows } = await db.query(
-        `INSERT INTO clients (name, owner_name, phone, region, address, segment, agent_id, credit_limit, created_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8, now() - interval '200 days') RETURNING id`,
-        [name, pick(["Alisher", "Kamola", "Rustam", "Dilnoza", "Sherzod", "Malika", "Anvar"]) + " " + pick(["Karimov", "Tosheva", "Nazarov", "Ismoilova", "Rasulov"]), `+998 9${int(0, 9)} ${int(100, 999)} ${int(10, 99)} ${int(10, 99)}`, region, `${region}, ${int(1, 99)}-uy`, segment, agent, limit],
-      );
-      clients.push({ id: rows[0].id, region, agent, warehouses: warehouses.map((c) => wh[c]) });
-    }
-  }
-
-  const START = -185;
-  const restock = async (offset: number, skip: Set<number>) => {
-    for (const w of Object.values(wh)) {
-      for (const p of products) {
-        if (skip.has(p.id)) continue;
-        const { rows } = await db.query(`SELECT quantity FROM stock WHERE warehouse_id=$1 AND product_id=$2`, [w, p.id]);
-        const target = Math.round(140 * p.popularity * (w === wh["TSH-01"] ? 1.6 : 1));
-        const qty = target - (rows[0]?.quantity ?? 0);
-        if (qty <= target * 0.35) continue;
-        await stock.add(db, w, p.id, qty);
-        await stock.recordMovement(db, { type: "in", warehouse_id: w, product_id: p.id, quantity: qty, reference: `KIR-${offset + 1000}`, note: "Yetkazib beruvchidan kirim", user_id: adminId, created_at: day(offset, 7) });
-      }
-    }
-  };
-
-  const scarce = new Set(products.slice(0, 3).map((p) => p.id).concat(products[14].id));
-  const auditPlan = new Map<number, [string, number, boolean]>([
-    [-150, ["TSH-01", 0, true]],
-    [-120, ["SMQ-01", 1, true]],
-    [-90, ["FRG-01", 0, true]],
-    [-60, ["TSH-02", 1, true]],
-    [-25, ["TSH-01", 0, true]],
-    [-12, ["SMQ-01", 1, true]],
-  ]);
-
+  const START = -DAYS;
   for (let offset = START; offset <= 0; offset++) {
-    if ((offset - START) % 6 === 0) await restock(offset, offset > -18 ? scarce : new Set());
+    if ((offset - START) % 7 === 0) {
+      for (const id of Object.values(wh)) await restock(db, id, targets[id], offset > -18 ? scarce : [], day(offset, 7), `KIR-${offset + 2000}`, adminId);
+    }
 
     const growth = 0.55 + 0.45 * ((offset - START) / -START);
     const weekend = day(offset).getDay() === 0;
-    const count = weekend ? int(0, 2) : Math.round(int(5, 9) * growth);
+    const count = weekend ? int(1, 4) : Math.round(int(12, 20) * growth);
 
     for (let k = 0; k < count; k++) {
-      const client = pick(clients);
+      const client = clientPick();
       const created = day(offset);
       const lines = new Map<number, number>();
-      for (let n = int(2, 5); n > 0; n--) {
-        const p = pick(products);
-        lines.set(p.id, (lines.get(p.id) ?? 0) + Math.max(1, Math.round(int(6, 40) * p.popularity)));
+      for (let n = int(2, 6); n > 0; n--) {
+        const p = productPick();
+        lines.set(p.id, (lines.get(p.id) ?? 0) + Math.max(1, Math.round(int(3, 24) * popOf.get(p.id)!)));
       }
-      const items = [...lines].map(([product_id, quantity]) => ({ product_id, quantity, price: products.find((p) => p.id === product_id)!.price }));
+      const items = [...lines].map(([product_id, quantity]) => ({ product_id, quantity, price: priceOf.get(product_id)! }));
       const subtotal = items.reduce((s, i) => s + i.quantity * i.price, 0);
       const discount = pick([0, 0, 0, 2, 3, 5]);
       const order = await orders.insert(
@@ -203,7 +268,7 @@ async function seedDemo(db: PoolClient, adminId: number) {
             await db.query("RELEASE SAVEPOINT o");
             continue;
           }
-          await applyStatus(db, order.id, { status: "shipped", courier_id: pick(couriers), vehicle: pick(["01 A 123 BC", "01 B 777 AA", "30 C 456 DA"]) }, adminId, step(18));
+          await applyStatus(db, order.id, { status: "shipped", courier_id: pick(couriers), vehicle: pick(vehicles) }, adminId, step(18));
           if (age <= 1 && rand() < 0.6) {
             if (rand() < 0.5) await db.query(`UPDATE deliveries SET status='on_route' WHERE order_id=$1`, [order.id]);
             await db.query("RELEASE SAVEPOINT o");
@@ -235,41 +300,51 @@ async function seedDemo(db: PoolClient, adminId: number) {
       }
     }
 
-    const plan = auditPlan.get(offset);
-    if (plan) {
-      const [code, auditorIdx, approve] = plan;
+    // one planned audit every 4 weeks, rotating warehouses; recent ones stay "completed"
+    if ((offset - START) % 28 === 14) {
+      const idx = Math.floor((offset - START) / 28) % auditCodes.length;
       const at = day(offset, 9);
-      const audit = await audits.insert(db, { warehouse_id: wh[code], auditor_id: auditors[auditorIdx], note: "Rejali inventarizatsiya", created_at: at });
+      const audit = await audits.insert(db, { warehouse_id: wh[auditCodes[idx]], auditor_id: auditors[idx % auditors.length], note: "Rejali inventarizatsiya", created_at: at });
       await db.query(
         `UPDATE audit_items SET counted = GREATEST(0, expected + CASE WHEN random() < 0.12 THEN floor(random() * 9)::int - 6 ELSE 0 END) WHERE audit_id=$1`,
         [audit.id],
       );
       await audits.setStatus(db, audit.id, "completed", new Date(at.getTime() + 6 * 3600_000));
-      if (approve && offset < -15) await approveIn(db, audit.id, adminId, new Date(at.getTime() + 26 * 3600_000));
+      if (offset < -15) await approveIn(db, audit.id, adminId, new Date(at.getTime() + 26 * 3600_000));
     }
   }
 
   const live = await audits.insert(db, { warehouse_id: wh["FRG-01"], auditor_id: auditors[0], note: "Choraklik inventarizatsiya" });
   await db.query(
     `UPDATE audit_items SET counted = expected - CASE WHEN random() < 0.2 THEN 2 ELSE 0 END
-     WHERE audit_id=$1 AND id IN (SELECT id FROM audit_items WHERE audit_id=$1 ORDER BY id LIMIT 10)`,
+     WHERE audit_id=$1 AND id IN (SELECT id FROM audit_items WHERE audit_id=$1 ORDER BY id LIMIT 25)`,
     [live.id],
   );
 
-  for (const [name, phone, company, message, status] of [
-    ["Azamat Karimov", "+998 90 123 45 67", "Fresh Distribution", "50 ta agent uchun demo kerak", "new"],
-    ["Lola Rasulova", "+998 91 555 22 11", "Sweet Line MChJ", "Ombor auditi moduli qiziqtiradi", "contacted"],
-    ["Timur Abdullayev", "+998 93 777 88 99", "AquaPro", "Telegram bot integratsiyasi", "new"],
-    ["Nigora Yo'ldosheva", "+998 94 321 00 12", "Mega Foods", "", "won"],
-  ]) {
-    await db.query(`INSERT INTO leads (name, phone, company, message, status) VALUES ($1,$2,$3,$4,$5)`, [name, phone, company, message, status]);
-  }
+  // limits the manager later cut for the biggest debtors, so overlimit views have data
+  await db.query(
+    `UPDATE clients SET credit_limit = GREATEST(1000000, round(balance * 0.8 / 100000) * 100000)
+     WHERE id IN (SELECT id FROM clients WHERE balance > 2000000 ORDER BY balance DESC LIMIT 8)`,
+  );
+
+  const leads = Array.from({ length: COUNTS.leads }, () => {
+    const [company, message] = pick(LEADS);
+    const age = int(0, DAYS);
+    const status = age < 7 ? pick(["new", "new", "contacted"]) : pick(["contacted", "won", "lost", "lost", "won", "new"]);
+    return { name: `${pick(FIRST_NAMES)} ${pick(LAST_NAMES)}`, phone: phone(), company: `${company}${rand() < 0.5 ? ` ${pick(REGIONS).name}` : ""}`, message, status, created: day(-age) };
+  });
+  await db.query(
+    `INSERT INTO leads (name, phone, company, message, status, created_at)
+     SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::timestamptz[])`,
+    [leads.map((l) => l.name), leads.map((l) => l.phone), leads.map((l) => l.company), leads.map((l) => l.message), leads.map((l) => l.status), leads.map((l) => l.created)],
+  );
 }
 
 export async function seed() {
   const { rows } = await pool.query("SELECT COUNT(*) FROM users");
   if (rows[0].count > 0) return;
   console.log("seeding…");
+  const started = Date.now();
   await tx(async (db) => {
     const admin = await users.insert(db, {
       username: config.adminUsername,
@@ -279,5 +354,6 @@ export async function seed() {
     });
     if (config.seedDemo) await seedDemo(db, admin.id);
   });
-  console.log("seed done");
+  await pool.query("ANALYZE");
+  console.log(`seed done in ${Math.round((Date.now() - started) / 1000)}s`);
 }

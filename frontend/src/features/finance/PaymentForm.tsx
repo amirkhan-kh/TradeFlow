@@ -1,17 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { api, type Page } from "@/shared/lib/api";
+import { api } from "@/shared/lib/api";
 import { fmtMoney } from "@/shared/lib/format";
-import { useApi } from "@/shared/lib/useApi";
 import { Button } from "@/shared/ui/Button";
 import { Field, Input, Select, Textarea } from "@/shared/ui/Field";
+import { SearchSelect } from "@/shared/ui/SearchSelect";
 import { Alert } from "@/shared/ui/States";
 
-export const METHODS: Record<string, string> = { cash: "Naqd", card: "Karta", transfer: "Bank o'tkazmasi" };
+const MANUAL: Record<string, string> = { cash: "Naqd", card: "Karta", transfer: "Bank o'tkazmasi" };
+/** Payme and Click arrive only via provider callbacks, never from the manual form. */
+export const METHODS: Record<string, string> = { ...MANUAL, payme: "Payme", click: "Click" };
 
 export function PaymentForm({ clientId, onDone }: { clientId?: number; onDone: () => void }) {
-  const clients = useApi<Page<{ id: number; name: string; balance: number }>>(clientId ? null : "/clients?limit=200&status=debt");
+  const [client, setClient] = useState<{ id: number; name: string; balance: number } | null>(null);
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
 
@@ -32,14 +34,16 @@ export function PaymentForm({ clientId, onDone }: { clientId?: number; onDone: (
     <form onSubmit={onSubmit} className="space-y-4">
       {!clientId && (
         <Field label="Mijoz">
-          <Select name="client_id" required defaultValue="">
-            <option value="">Tanlang…</option>
-            {clients.data?.items.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name} — qarz {fmtMoney(c.balance)}
-              </option>
-            ))}
-          </Select>
+          <SearchSelect
+            path="/clients"
+            params={{ status: "debt" }}
+            name="client_id"
+            required
+            value={client}
+            onChange={setClient}
+            display={(c) => c.name}
+            hint={(c) => `Qarz ${fmtMoney(c.balance)}`}
+          />
         </Field>
       )}
       <div className="grid gap-4 sm:grid-cols-2">
@@ -48,7 +52,7 @@ export function PaymentForm({ clientId, onDone }: { clientId?: number; onDone: (
         </Field>
         <Field label="To'lov turi">
           <Select name="method" defaultValue="cash">
-            {Object.entries(METHODS).map(([k, v]) => (
+            {Object.entries(MANUAL).map(([k, v]) => (
               <option key={k} value={k}>
                 {v}
               </option>

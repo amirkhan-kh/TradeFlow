@@ -40,6 +40,8 @@ services:
       context: ./frontend
       args:
         API_INTERNAL_URL: http://backend:4000
+    environment:
+      DEMO_LOGIN: admin/admin123
     depends_on:
       backend:
         condition: service_healthy

@@ -1,21 +1,26 @@
 import type { Metadata } from "next";
 import { BadgeCheck, Bot, ShieldCheck } from "lucide-react";
+import { LoginBackdrop } from "@/features/auth/LoginBackdrop";
 import { LoginForm } from "@/features/auth/LoginForm";
 import { HeroIllustration } from "@/features/landing/HeroIllustration";
-import { Aurora } from "@/shared/ui/Aurora";
 import { Logo, LogoMark } from "@/shared/ui/Logo";
-import { MotionProvider } from "@/shared/ui/motion";
 
-export const metadata: Metadata = { title: "Tizimga kirish" };
+export const metadata: Metadata = {
+  title: "Tizimga kirish",
+  description: "TradeFlow CRM hisobingizga kiring: buyurtmalar, ombor, audit, yetkazib berish va moliya bitta panelda.",
+  alternates: { canonical: "/login" },
+};
+
+/** "login/password" shown under the form; production shows nothing unless DEMO_LOGIN is set. */
+const DEMO = process.env.DEMO_LOGIN ?? (process.env.NODE_ENV === "production" ? "" : "admin/admin123");
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
+  const [demoUser, demoPass] = DEMO.split("/");
   return (
     <main className="grid min-h-dvh lg:grid-cols-2">
       <section className="relative hidden overflow-hidden bg-gradient-to-br from-brand-800 via-brand-900 to-brand-950 p-12 text-white lg:flex lg:flex-col">
-        <MotionProvider>
-          <Aurora dark interactive={false} />
-        </MotionProvider>
+        <LoginBackdrop />
         <div className="relative">
           <Logo light />
         </div>
@@ -39,7 +44,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       </section>
 
       <section className="flex items-center justify-center p-6">
-        <div className="w-full max-w-md animate-rise">
+        <div className="w-full max-w-md">
           <div className="card p-8 sm:p-10">
             <div className="mb-8 flex flex-col items-center text-center">
               <LogoMark className="size-20" />
@@ -51,9 +56,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             </div>
             <LoginForm next={next} />
           </div>
-          <p className="mt-6 text-center text-xs text-ink-500">
-            Demo: <b className="text-ink-700">admin</b> / <b className="text-ink-700">admin123</b>
-          </p>
+          {demoUser && demoPass && (
+            <p className="mt-6 text-center text-xs text-ink-500">
+              Demo: <b className="text-ink-700">{demoUser}</b> / <b className="text-ink-700">{demoPass}</b>
+            </p>
+          )}
         </div>
       </section>
     </main>

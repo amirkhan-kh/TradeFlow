@@ -3,6 +3,8 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import type { MsgKey } from "@/shared/i18n/messages";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
 import { usePaged } from "@/shared/lib/usePaged";
 import { StatusBadge } from "@/shared/ui/Badge";
@@ -26,7 +28,7 @@ interface Order {
   items_count: number;
 }
 
-const STATUSES = [
+const STATUSES: { value: string; label: MsgKey }[] = [
   { value: "", label: "Barchasi" },
   { value: "new", label: "Yangi" },
   { value: "confirmed", label: "Tasdiqlangan" },
@@ -36,34 +38,35 @@ const STATUSES = [
 ];
 
 export function OrdersList() {
+  const t = useT();
   const list = usePaged<Order, { counts: Record<string, number> }>("/orders");
   const [open, setOpen] = useState(false);
 
   return (
     <div className="animate-rise">
       <PageHeader
-        title="Buyurtmalar"
-        description="Buyurtma → tasdiqlash (qoldiq band qilinadi) → yuklash → yetkazish"
+        title={t("Buyurtmalar")}
+        description={t("Buyurtma → tasdiqlash (qoldiq band qilinadi) → yuklash → yetkazish")}
         actions={
           <Button onClick={() => setOpen(true)}>
-            <Plus className="size-4" /> Yangi buyurtma
+            <Plus className="size-4" /> {t("Yangi buyurtma")}
           </Button>
         }
       />
       <div className="card">
         <div className="flex flex-col gap-3 border-b border-ink-100 p-4 lg:flex-row lg:items-center lg:justify-between">
-          <Chips options={STATUSES} value={list.status} onChange={list.setStatus} counts={list.data?.counts} />
-          <SearchInput value={list.q} onChange={list.setQ} placeholder="Raqam yoki mijoz…" />
+          <Chips options={STATUSES.map((s) => ({ ...s, label: t(s.label) }))} value={list.status} onChange={list.setStatus} counts={list.data?.counts} />
+          <SearchInput value={list.q} onChange={list.setQ} placeholder={t("Raqam yoki mijoz…")} />
         </div>
         {list.error ? (
           <ErrorState message={list.error} onRetry={list.reload} />
         ) : list.loading && !list.data ? (
           <Loading />
         ) : !list.data?.items.length ? (
-          <Empty title="Buyurtma topilmadi" hint="Filtrni o'zgartiring yoki yangi buyurtma yarating" />
+          <Empty title={t("Buyurtma topilmadi")} hint={t("Filtrni o'zgartiring yoki yangi buyurtma yarating")} />
         ) : (
           <>
-            <Table head={["Raqam", "Mijoz", "Agent", "Ombor", "Pozitsiya", "Summa", "Holat", "Sana"]}>
+            <Table head={[t("Raqam"), t("Mijoz"), t("Agent"), t("Ombor"), t("Pozitsiya"), t("Summa"), t("Holat"), t("Sana")]}>
               {list.data.items.map((o) => (
                 <tr key={o.id}>
                   <td>
@@ -94,7 +97,7 @@ export function OrdersList() {
         )}
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Yangi buyurtma" description="Narxlar tovar kartochkasidan olinadi" wide>
+      <Modal open={open} onClose={() => setOpen(false)} title={t("Yangi buyurtma")} description={t("Narxlar tovar kartochkasidan olinadi")} wide>
         <OrderForm
           onDone={() => {
             setOpen(false);

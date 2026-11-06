@@ -1,3 +1,5 @@
+import type { MsgKey } from "@/shared/i18n/messages";
+
 export type Category =
   | "payments"
   | "einvoice"
@@ -64,7 +66,7 @@ export interface Integration {
   provider_info: ProviderInfo;
 }
 
-export const CATEGORIES: Record<Category, string> = {
+export const CATEGORIES: Record<Category, MsgKey> = {
   payments: "To'lov tizimlari",
   einvoice: "E-faktura (Soliq)",
   marketplace: "Marketpleyslar",

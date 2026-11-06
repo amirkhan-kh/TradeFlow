@@ -3,6 +3,9 @@
 import { Check, ChevronLeft, Phone, Store, Truck, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import type { MsgKey } from "@/shared/i18n/messages";
+import { trData } from "@/shared/i18n/translate";
 import { api } from "@/shared/lib/api";
 import { fmtDate, fmtMoney, fmtNum } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -37,9 +40,10 @@ interface OrderFull {
 }
 
 const FLOW = ["new", "confirmed", "shipped", "delivered"] as const;
-const FLOW_LABEL = { new: "Yangi", confirmed: "Tasdiqlandi", shipped: "Yuklandi", delivered: "Yetkazildi" };
+const FLOW_LABEL: Record<(typeof FLOW)[number], MsgKey> = { new: "Yangi", confirmed: "Tasdiqlangan", shipped: "Yuklangan", delivered: "Yetkazildi" };
 
 export function OrderDetail({ id }: { id: string }) {
+  const t = useT();
   const { data: o, error, loading, reload } = useApi<OrderFull>(`/orders/${id}`);
   const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier&status=active");
   const [busy, setBusy] = useState(false);
@@ -70,7 +74,7 @@ export function OrderDetail({ id }: { id: string }) {
     <div className="animate-rise space-y-6">
       <div>
         <Link href="/dashboard/orders" className="inline-flex items-center gap-1 text-sm text-ink-500 hover:text-brand-700">
-          <ChevronLeft className="size-4" /> Buyurtmalar
+          <ChevronLeft className="size-4" /> {t("Buyurtmalar")}
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-extrabold text-ink-900">{o.number}</h1>
@@ -79,22 +83,22 @@ export function OrderDetail({ id }: { id: string }) {
           <div className="ml-auto flex gap-2">
             {o.status === "new" && (
               <Button onClick={() => setStatus("confirmed")} disabled={busy}>
-                <Check className="size-4" /> Tasdiqlash
+                <Check className="size-4" /> {t("Tasdiqlash")}
               </Button>
             )}
             {o.status === "confirmed" && (
               <Button onClick={() => setShipOpen(true)} disabled={busy}>
-                <Truck className="size-4" /> Yuklash
+                <Truck className="size-4" /> {t("Yuklash")}
               </Button>
             )}
             {o.status === "shipped" && (
               <Button onClick={() => setStatus("delivered")} disabled={busy}>
-                <Check className="size-4" /> Yetkazildi
+                <Check className="size-4" /> {t("Yetkazildi")}
               </Button>
             )}
             {(o.status === "new" || o.status === "confirmed") && (
-              <Button variant="secondary" onClick={() => confirm("Buyurtmani bekor qilasizmi?") && setStatus("cancelled")} disabled={busy}>
-                <X className="size-4" /> Bekor qilish
+              <Button variant="secondary" onClick={() => confirm(t("Buyurtmani bekor qilasizmi?")) && setStatus("cancelled")} disabled={busy}>
+                <X className="size-4" /> {t("Bekor qilish")}
               </Button>
             )}
           </div>
@@ -118,7 +122,7 @@ export function OrderDetail({ id }: { id: string }) {
                 </span>
                 <span className={`h-0.5 flex-1 ${i === FLOW.length - 1 ? "invisible" : i < step ? "bg-brand-500" : "bg-ink-200"}`} />
               </div>
-              <span className={`text-xs font-semibold ${i <= step ? "text-brand-700" : "text-ink-400"}`}>{FLOW_LABEL[s]}</span>
+              <span className={`text-xs font-semibold ${i <= step ? "text-brand-700" : "text-ink-400"}`}>{t(FLOW_LABEL[s])}</span>
             </li>
           ))}
         </ol>
@@ -126,14 +130,14 @@ export function OrderDetail({ id }: { id: string }) {
 
       <div className="grid gap-6 lg:grid-cols-3">
         <section className="card lg:col-span-2">
-          <h2 className="border-b border-ink-100 px-5 py-4 font-bold">Tovarlar</h2>
-          <Table head={["Tovar", "SKU", "Miqdor", "Narx", "Summa"]}>
+          <h2 className="border-b border-ink-100 px-5 py-4 font-bold">{t("Tovarlar")}</h2>
+          <Table head={[t("Tovar"), "SKU", t("Miqdor"), t("Narx"), t("Summa")]}>
             {o.items.map((i) => (
               <tr key={i.id}>
                 <td className="font-medium text-ink-900">{i.product_name}</td>
                 <td className="text-ink-500">{i.sku}</td>
                 <td className="tabular-nums">
-                  {fmtNum(i.quantity)} {i.unit}
+                  {fmtNum(i.quantity)} {trData(i.unit)}
                 </td>
                 <td className="tabular-nums">{fmtMoney(i.price)}</td>
                 <td className="font-semibold tabular-nums">{fmtMoney(i.quantity * i.price)}</td>
@@ -142,17 +146,17 @@ export function OrderDetail({ id }: { id: string }) {
           </Table>
           <div className="space-y-1 border-t border-ink-100 px-5 py-4 text-sm">
             <div className="flex justify-between text-ink-600">
-              <span>Oraliq summa</span>
+              <span>{t("Oraliq summa")}</span>
               <span className="tabular-nums">{fmtMoney(o.subtotal)}</span>
             </div>
             {o.discount_pct > 0 && (
               <div className="flex justify-between text-brand-700">
-                <span>Chegirma {o.discount_pct}%</span>
+                <span>{t("Chegirma {n}%", { n: o.discount_pct })}</span>
                 <span className="tabular-nums">−{fmtMoney(o.subtotal - o.total)}</span>
               </div>
             )}
             <div className="flex justify-between text-lg font-extrabold">
-              <span>Jami</span>
+              <span>{t("Jami")}</span>
               <span className="tabular-nums">{fmtMoney(o.total)}</span>
             </div>
           </div>
@@ -161,7 +165,7 @@ export function OrderDetail({ id }: { id: string }) {
         <div className="space-y-6">
           <section className="card p-5">
             <h2 className="mb-3 flex items-center gap-2 font-bold">
-              <Store className="size-4 text-brand-600" /> Mijoz
+              <Store className="size-4 text-brand-600" /> {t("Mijoz")}
             </h2>
             <Link href={`/dashboard/clients/${o.client_id}`} className="font-semibold text-brand-700 hover:underline">
               {o.client_name}
@@ -173,24 +177,24 @@ export function OrderDetail({ id }: { id: string }) {
               </p>
             )}
             <p className="mt-3 rounded-xl bg-ink-50 px-3 py-2 text-sm">
-              Joriy qarz: <b className={o.client_balance > 0 ? "text-red-600" : "text-brand-700"}>{fmtMoney(o.client_balance)}</b>
+              {t("Joriy qarz:")} <b className={o.client_balance > 0 ? "text-red-600" : "text-brand-700"}>{fmtMoney(o.client_balance)}</b>
             </p>
           </section>
           <section className="card space-y-2 p-5 text-sm">
             <h2 className="mb-1 flex items-center gap-2 font-bold">
-              <Truck className="size-4 text-brand-600" /> Logistika
+              <Truck className="size-4 text-brand-600" /> {t("Logistika")}
             </h2>
-            <Row k="Ombor" v={o.warehouse_name} />
-            <Row k="Agent" v={o.agent_name ?? "—"} />
-            <Row k="Kuryer" v={o.courier_name ?? "—"} />
-            <Row k="Mashina" v={o.vehicle ?? "—"} />
-            <Row k="Yetkazish" v={o.delivery_status ? <StatusBadge status={o.delivery_status} /> : "—"} />
-            {o.note && <p className="rounded-xl bg-amber-50 px-3 py-2 text-amber-800">{o.note}</p>}
+            <Row k={t("Ombor")} v={o.warehouse_name} />
+            <Row k={t("Agent")} v={o.agent_name ?? "—"} />
+            <Row k={t("Kuryer")} v={o.courier_name ?? "—"} />
+            <Row k={t("Mashina")} v={o.vehicle ?? "—"} />
+            <Row k={t("Yetkazish")} v={o.delivery_status ? <StatusBadge status={o.delivery_status} /> : "—"} />
+            {o.note && <p className="rounded-xl bg-amber-50 px-3 py-2 text-amber-800">{trData(o.note)}</p>}
           </section>
         </div>
       </div>
 
-      <Modal open={shipOpen} onClose={() => setShipOpen(false)} title="Yuklash va kuryer biriktirish" description="Qoldiq ombordan chiqim qilinadi va mijoz qarziga yoziladi">
+      <Modal open={shipOpen} onClose={() => setShipOpen(false)} title={t("Yuklash va kuryer biriktirish")} description={t("Qoldiq ombordan chiqim qilinadi va mijoz qarziga yoziladi")}>
         <form
           className="space-y-4"
           onSubmit={(e) => {
@@ -199,9 +203,9 @@ export function OrderDetail({ id }: { id: string }) {
             setStatus("shipped", { courier_id: f.get("courier_id") || null, vehicle: f.get("vehicle") || undefined });
           }}
         >
-          <Field label="Kuryer">
+          <Field label={t("Kuryer")}>
             <Select name="courier_id" defaultValue="">
-              <option value="">Keyinroq biriktiriladi</option>
+              <option value="">{t("Keyinroq biriktiriladi")}</option>
               {couriers.data?.items.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.full_name}
@@ -209,12 +213,12 @@ export function OrderDetail({ id }: { id: string }) {
               ))}
             </Select>
           </Field>
-          <Field label="Mashina raqami">
+          <Field label={t("Mashina raqami")}>
             <Input name="vehicle" placeholder="01 A 123 BC" />
           </Field>
           {actionError && <Alert>{actionError}</Alert>}
           <Button type="submit" className="w-full" disabled={busy}>
-            Yuklashni tasdiqlash
+            {t("Yuklashni tasdiqlash")}
           </Button>
         </form>
       </Modal>

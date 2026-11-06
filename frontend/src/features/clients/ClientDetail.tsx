@@ -3,6 +3,7 @@
 import { ChevronLeft, FileText, HandCoins, Link2, MapPin, Phone, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
 import { Button } from "@/shared/ui/Button";
@@ -28,6 +29,7 @@ interface ClientFull {
 }
 
 export function ClientDetail({ id }: { id: string }) {
+  const t = useT();
   const { data: c, error, loading, reload } = useApi<ClientFull>(`/clients/${id}`);
   const [pay, setPay] = useState(false);
   const [link, setLink] = useState(false);
@@ -44,16 +46,16 @@ export function ClientDetail({ id }: { id: string }) {
     <div className="animate-rise space-y-6">
       <div>
         <Link href="/dashboard/clients" className="inline-flex items-center gap-1 text-sm text-ink-500 hover:text-brand-700">
-          <ChevronLeft className="size-4" /> Mijozlar
+          <ChevronLeft className="size-4" /> {t("Mijozlar")}
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-extrabold text-ink-900">{c.name}</h1>
-          <span className="rounded-lg bg-brand-100 px-2 py-0.5 text-xs font-extrabold text-brand-800">{c.segment} segment</span>
+          <span className="rounded-lg bg-brand-100 px-2 py-0.5 text-xs font-extrabold text-brand-800">{t("{s} segment", { s: c.segment })}</span>
           <Button variant="secondary" className="ml-auto" onClick={() => setLink(true)}>
-            <Link2 className="size-4" /> Onlayn to&apos;lov havolasi
+            <Link2 className="size-4" /> {t("Onlayn to'lov havolasi")}
           </Button>
           <Button onClick={() => setPay(true)}>
-            <HandCoins className="size-4" /> To&apos;lov qabul qilish
+            <HandCoins className="size-4" /> {t("To'lov qabul qilish")}
           </Button>
         </div>
       </div>
@@ -73,21 +75,21 @@ export function ClientDetail({ id }: { id: string }) {
             <FileText className="size-4 text-ink-400" /> INN: {c.inn ?? "—"}
           </p>
           <p className="text-ink-500">
-            Agent: <b className="text-ink-800">{c.agent_name ?? "—"}</b>
+            {t("Agent:")} <b className="text-ink-800">{c.agent_name ?? "—"}</b>
           </p>
         </section>
         <section className="card p-5 lg:col-span-2">
           <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <p className="text-sm text-ink-500">Joriy qarz</p>
+              <p className="text-sm text-ink-500">{t("Joriy qarz")}</p>
               <p className={`mt-1 text-2xl font-extrabold tabular-nums ${c.balance > c.credit_limit && c.credit_limit ? "text-red-600" : "text-ink-900"}`}>{fmtMoney(c.balance)}</p>
             </div>
             <div>
-              <p className="text-sm text-ink-500">Kredit limiti</p>
-              <p className="mt-1 text-2xl font-extrabold text-ink-900 tabular-nums">{c.credit_limit ? fmtMoney(c.credit_limit) : "Cheksiz"}</p>
+              <p className="text-sm text-ink-500">{t("Kredit limiti")}</p>
+              <p className="mt-1 text-2xl font-extrabold text-ink-900 tabular-nums">{c.credit_limit ? fmtMoney(c.credit_limit) : t("Cheksiz")}</p>
             </div>
             <div>
-              <p className="text-sm text-ink-500">Limitdan foydalanish</p>
+              <p className="text-sm text-ink-500">{t("Limitdan foydalanish")}</p>
               <p className="mt-1 text-2xl font-extrabold text-ink-900">{c.credit_limit ? `${usage.toFixed(0)}%` : "—"}</p>
             </div>
           </div>
@@ -99,20 +101,20 @@ export function ClientDetail({ id }: { id: string }) {
 
       <section className="card">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-5 py-4">
-          <h2 className="font-bold">Akt sverka (o&apos;zaro hisob-kitob)</h2>
+          <h2 className="font-bold">{t("Akt sverka (o'zaro hisob-kitob)")}</h2>
           <p className="text-sm text-ink-500">
-            Yuklangan: <b className="text-ink-900">{fmtMoney(debit)}</b> · To&apos;langan: <b className="text-brand-700">{fmtMoney(credit)}</b>
+            {t("Yuklangan:")} <b className="text-ink-900">{fmtMoney(debit)}</b> · {t("To'langan:")} <b className="text-brand-700">{fmtMoney(credit)}</b>
           </p>
         </div>
         {c.ledger.length === 0 ? (
-          <Empty title="Operatsiyalar yo'q" />
+          <Empty title={t("Operatsiyalar yo'q")} />
         ) : (
-          <Table head={["Sana", "Operatsiya", "Hujjat", "Debet (yuklandi)", "Kredit (to'landi)"]}>
+          <Table head={[t("Sana"), t("Operatsiya"), t("Hujjat"), t("Debet (yuklandi)"), t("Kredit (to'landi)")]}>
             {c.ledger.map((l, i) => (
               <tr key={i}>
                 <td className="whitespace-nowrap text-ink-500">{fmtDate(l.at, true)}</td>
-                <td className="font-medium">{l.kind === "order" ? "Yuklab berildi" : "To'lov"}</td>
-                <td className="text-ink-600">{l.kind === "payment" ? METHODS[l.ref] : l.ref}</td>
+                <td className="font-medium">{l.kind === "order" ? t("Yuklab berildi") : t("To'lov")}</td>
+                <td className="text-ink-600">{l.kind === "payment" ? (METHODS[l.ref] ? t(METHODS[l.ref]) : l.ref) : l.ref}</td>
                 <td className="font-semibold tabular-nums">{l.debit ? fmtMoney(l.debit) : ""}</td>
                 <td className="font-semibold text-brand-700 tabular-nums">{l.credit ? fmtMoney(l.credit) : ""}</td>
               </tr>
@@ -121,7 +123,7 @@ export function ClientDetail({ id }: { id: string }) {
         )}
       </section>
 
-      <Modal open={pay} onClose={() => setPay(false)} title="To'lov qabul qilish" description={`${c.name} — joriy qarz ${fmtMoney(c.balance)}`}>
+      <Modal open={pay} onClose={() => setPay(false)} title={t("To'lov qabul qilish")} description={t("{name} — joriy qarz {sum}", { name: c.name, sum: fmtMoney(c.balance) })}>
         {pay && (
           <PaymentForm
             clientId={c.id}
@@ -132,7 +134,7 @@ export function ClientDetail({ id }: { id: string }) {
           />
         )}
       </Modal>
-      <Modal open={link} onClose={() => setLink(false)} title="Onlayn to'lov havolasi" description="Payme / Click havolasini mijozga SMS yoki Telegram orqali yuboring">
+      <Modal open={link} onClose={() => setLink(false)} title={t("Onlayn to'lov havolasi")} description={t("Payme / Click havolasini mijozga SMS yoki Telegram orqali yuboring")}>
         {link && <PaymentLinks clientId={c.id} debt={c.balance} />}
       </Modal>
     </div>

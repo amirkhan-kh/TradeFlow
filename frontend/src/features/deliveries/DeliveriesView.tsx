@@ -3,6 +3,7 @@
 import { CircleCheck, Clock, Route, Timer, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -36,6 +37,7 @@ interface Summary {
 }
 
 export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string }) {
+  const t = useT();
   const list = usePaged<Delivery, Summary>("/deliveries", initialStatus);
   const couriers = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=courier&status=active");
   const [error, setError] = useState<string>();
@@ -64,13 +66,13 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
 
   return (
     <div className="animate-rise">
-      <PageHeader title="Yetkazib berish" description="Kuryerlar, marshrut holati va o'z vaqtida yetkazish ko'rsatkichi" />
+      <PageHeader title={t("Yetkazib berish")} description={t("Kuryerlar, marshrut holati va o'z vaqtida yetkazish ko'rsatkichi")} />
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
-        <KpiCard label="Kutilmoqda" value={s?.pending ?? "…"} icon={Clock} tone="navy" />
-        <KpiCard label="Yo'lda" value={s?.on_route ?? "…"} icon={Route} tone="amber" />
-        <KpiCard label="Bugun yetkazildi" value={s?.delivered_today ?? "…"} icon={CircleCheck} />
-        <KpiCard label="Muvaffaqiyatsiz" value={s?.failed ?? "…"} icon={TriangleAlert} tone="red" />
-        <KpiCard label="O'z vaqtida" value={s?.on_time_pct != null ? `${s.on_time_pct}%` : "…"} icon={Timer} />
+        <KpiCard label={t("Kutilmoqda")} value={s?.pending ?? "…"} icon={Clock} tone="navy" />
+        <KpiCard label={t("Yo'lda")} value={s?.on_route ?? "…"} icon={Route} tone="amber" />
+        <KpiCard label={t("Bugun yetkazildi")} value={s?.delivered_today ?? "…"} icon={CircleCheck} />
+        <KpiCard label={t("Muvaffaqiyatsiz")} value={s?.failed ?? "…"} icon={TriangleAlert} tone="red" />
+        <KpiCard label={t("O'z vaqtida")} value={s?.on_time_pct != null ? `${s.on_time_pct}%` : "…"} icon={Timer} />
       </div>
       {error && (
         <div className="mb-4">
@@ -81,26 +83,26 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
         <div className="flex flex-col gap-3 border-b border-ink-100 p-4 lg:flex-row lg:items-center lg:justify-between">
           <Chips
             options={[
-              { value: "", label: "Barchasi" },
-              { value: "pending", label: "Kutilmoqda" },
-              { value: "on_route", label: "Yo'lda" },
-              { value: "delivered", label: "Yetkazildi" },
-              { value: "failed", label: "Muvaffaqiyatsiz" },
+              { value: "", label: t("Barchasi") },
+              { value: "pending", label: t("Kutilmoqda") },
+              { value: "on_route", label: t("Yo'lda") },
+              { value: "delivered", label: t("Yetkazildi") },
+              { value: "failed", label: t("Muvaffaqiyatsiz") },
             ]}
             value={list.status}
             onChange={list.setStatus}
           />
-          <SearchInput value={list.q} onChange={list.setQ} placeholder="Buyurtma, mijoz, hudud…" />
+          <SearchInput value={list.q} onChange={list.setQ} placeholder={t("Buyurtma, mijoz, hudud…")} />
         </div>
         {list.error ? (
           <ErrorState message={list.error} onRetry={list.reload} />
         ) : list.loading && !list.data ? (
           <Loading />
         ) : !list.data?.items.length ? (
-          <Empty title="Yetkazish topilmadi" />
+          <Empty title={t("Yetkazish topilmadi")} />
         ) : (
           <>
-            <Table head={["Buyurtma", "Mijoz / manzil", "Yuk", "Kuryer", "Reja", "Holat", "Amal"]}>
+            <Table head={[t("Buyurtma"), t("Mijoz / manzil"), t("Yuk"), t("Kuryer"), t("Reja"), t("Holat"), t("Amal")]}>
               {list.data.items.map((d) => (
                 <tr key={d.id}>
                   <td>
@@ -114,7 +116,7 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
                     <p className="text-xs text-ink-500">{d.address ?? d.region}</p>
                   </td>
                   <td className="whitespace-nowrap text-ink-600">
-                    <p className="tabular-nums">{Number(d.weight_kg).toFixed(0)} kg</p>
+                    <p className="tabular-nums">{t("{n} kg", { n: Number(d.weight_kg).toFixed(0) })}</p>
                     <p className="text-xs text-ink-400">{fmtMoney(d.total)}</p>
                   </td>
                   <td>
@@ -125,9 +127,9 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
                         value={(d.id in picked ? picked[d.id] : d.courier_id) ?? ""}
                         onChange={(e) => assign(d.id, e.target.value ? Number(e.target.value) : null)}
                         className="input h-8 w-40 py-0 text-xs"
-                        aria-label="Kuryer"
+                        aria-label={t("Kuryer")}
                       >
-                        <option value="">Biriktirilmagan</option>
+                        <option value="">{t("Biriktirilmagan")}</option>
                         {couriers.data?.items.map((c) => (
                           <option key={c.id} value={c.id}>
                             {c.full_name}
@@ -148,17 +150,17 @@ export function DeliveriesView({ initialStatus = "" }: { initialStatus?: string 
                     <div className="flex gap-1.5">
                       {d.status === "pending" && (
                         <Button size="sm" variant="secondary" onClick={() => patch(d.id, { status: "on_route" })}>
-                          Yo&apos;lga chiqdi
+                          {t("Yo'lga chiqdi")}
                         </Button>
                       )}
                       {(d.status === "pending" || d.status === "on_route" || d.status === "failed") && (
                         <Button size="sm" onClick={() => patch(d.id, { status: "delivered" })}>
-                          Yetkazildi
+                          {t("Yetkazildi")}
                         </Button>
                       )}
                       {d.status === "on_route" && (
                         <Button size="sm" variant="ghost" onClick={() => patch(d.id, { status: "failed", note: "Mijoz qabul qilmadi" })}>
-                          Muvaffaqiyatsiz
+                          {t("Muvaffaqiyatsiz")}
                         </Button>
                       )}
                     </div>

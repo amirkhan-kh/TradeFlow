@@ -21,6 +21,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
 import { useApi } from "@/shared/lib/useApi";
 import { Modal } from "@/shared/ui/Modal";
@@ -71,6 +72,7 @@ function HeroStat({ icon: Icon, label, value, tone }: { icon: LucideIcon; label:
 }
 
 export function IntegrationsView() {
+  const t = useT();
   const catalog = useApi<Catalog>("/integrations/providers");
   const list = useApi<{ items: Integration[] }>("/integrations");
   const [connecting, setConnecting] = useState<ProviderInfo | null>(null);
@@ -87,7 +89,7 @@ export function IntegrationsView() {
   const opened = items.find((i) => i.id === openId) ?? null;
 
   const needle = q.trim().toLowerCase();
-  const matches = (p: ProviderInfo) => !needle || [p.name, p.vendors, p.description, CATEGORIES[p.category]].some((s) => s?.toLowerCase().includes(needle));
+  const matches = (p: ProviderInfo) => !needle || [p.name, p.vendors, p.description, t(CATEGORIES[p.category])].some((s) => s?.toLowerCase().includes(needle));
   const shownConnected = items.filter((i) => (filter === "all" || filter === "connected" || i.provider_info.category === filter) && matches(i.provider_info));
   const grouped = (Object.keys(CATEGORIES) as Category[])
     .filter((c) => filter === "all" || filter === c)
@@ -100,9 +102,9 @@ export function IntegrationsView() {
     return out;
   }, [providers, items]);
   const chipOptions: { value: Filter; label: string }[] = [
-    { value: "all", label: "Barchasi" },
-    { value: "connected", label: "Ulangan" },
-    ...(Object.keys(CATEGORIES) as Category[]).filter((c) => counts[c]).map((c) => ({ value: c, label: CATEGORIES[c] })),
+    { value: "all", label: t("Barchasi") },
+    { value: "connected", label: t("Ulangan") },
+    ...(Object.keys(CATEGORIES) as Category[]).filter((c) => counts[c]).map((c) => ({ value: c, label: t(CATEGORIES[c]) })),
   ];
 
   async function action(i: Integration, kind: "test" | "sync") {
@@ -120,7 +122,7 @@ export function IntegrationsView() {
   }
 
   async function remove(i: Integration) {
-    if (!confirm(`“${i.name}” integratsiyasi va uning jurnali o'chirilsinmi?`)) return;
+    if (!confirm(t("“{name}” integratsiyasi va uning jurnali o'chirilsinmi?", { name: i.name }))) return;
     await api(`/integrations/${i.id}`, { method: "DELETE" });
     list.reload();
   }
@@ -136,17 +138,17 @@ export function IntegrationsView() {
         <div className="relative grid gap-8 lg:grid-cols-[1fr_auto] lg:items-center">
           <div>
             <p className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-brand-100 ring-1 ring-white/15">
-              <Plug className="size-3.5" aria-hidden /> {providers.length || "…"} ta platforma
+              <Plug className="size-3.5" aria-hidden /> {t("{n} ta platforma", { n: providers.length || "…" })}
             </p>
-            <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">Integratsiyalar markazi</h1>
+            <h1 className="mt-3 text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{t("Integratsiyalar markazi")}</h1>
             <p className="mt-2 max-w-xl text-sm leading-relaxed text-white/75">
-              To&apos;lovlar, e-faktura, marketpleys, 1C/ERP, CRM va telefoniyani bir joydan ulang — ma&apos;lumot avtomatik almashinadi.
+              {t("To'lovlar, e-faktura, marketpleys, 1C/ERP, CRM va telefoniyani bir joydan ulang — ma'lumot avtomatik almashinadi.")}
             </p>
             <div className="mt-5 grid max-w-xl grid-cols-2 gap-2 sm:grid-cols-4">
-              <HeroStat icon={Plug} label="Ulangan" value={items.length} tone="text-brand-200" />
-              <HeroStat icon={CheckCircle2} label="Faol" value={items.filter((i) => i.active && !i.last_error).length} tone="text-brand-300" />
-              <HeroStat icon={TriangleAlert} label="Xato" value={items.filter((i) => i.last_error || i.failed_jobs).length} tone="text-red-300" />
-              <HeroStat icon={Send} label="Bugun" value={items.reduce((s, i) => s + i.sent_today, 0)} tone="text-sky-300" />
+              <HeroStat icon={Plug} label={t("Ulangan")} value={items.length} tone="text-brand-200" />
+              <HeroStat icon={CheckCircle2} label={t("Faol")} value={items.filter((i) => i.active && !i.last_error).length} tone="text-brand-300" />
+              <HeroStat icon={TriangleAlert} label={t("Xato")} value={items.filter((i) => i.last_error || i.failed_jobs).length} tone="text-red-300" />
+              <HeroStat icon={Send} label={t("Bugun")} value={items.reduce((s, i) => s + i.sent_today, 0)} tone="text-sky-300" />
             </div>
           </div>
           <div className="hidden grid-cols-3 gap-3 lg:grid" aria-hidden>
@@ -161,7 +163,7 @@ export function IntegrationsView() {
 
       <div className="mb-6 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <Chips options={chipOptions} value={filter} onChange={setFilter} counts={counts} />
-        <SearchInput value={q} onChange={setQ} placeholder="Platforma qidirish…" />
+        <SearchInput value={q} onChange={setQ} placeholder={t("Platforma qidirish…")} />
       </div>
 
       {error ? (
@@ -180,7 +182,7 @@ export function IntegrationsView() {
         </div>
       ) : nothingFound ? (
         <div className="card">
-          <Empty title="Hech narsa topilmadi" hint={`“${q}” bo'yicha platforma yo'q — boshqa so'z bilan qidiring`} />
+          <Empty title={t("Hech narsa topilmadi")} hint={t("“{q}” bo'yicha platforma yo'q — boshqa so'z bilan qidiring", { q })} />
         </div>
       ) : (
         <>
@@ -190,13 +192,13 @@ export function IntegrationsView() {
                 <span className="grid size-7 place-items-center rounded-lg bg-brand-100 text-brand-700">
                   <CheckCircle2 className="size-4" aria-hidden />
                 </span>
-                Ulangan <span className="font-semibold text-ink-500">{shownConnected.length}</span>
+                {t("Ulangan")} <span className="font-semibold text-ink-500">{shownConnected.length}</span>
               </h2>
               {!shownConnected.length ? (
                 <div className="card flex flex-col items-center gap-2 p-10 text-center">
                   <SearchX className="size-8 text-ink-300" aria-hidden />
-                  <p className="font-semibold text-ink-800">Hali integratsiya ulanmagan</p>
-                  <p className="text-sm text-ink-500">“Barchasi” bo&apos;limidan platformani tanlab, “Ulash” tugmasini bosing.</p>
+                  <p className="font-semibold text-ink-800">{t("Hali integratsiya ulanmagan")}</p>
+                  <p className="text-sm text-ink-500">{t("“Barchasi” bo'limidan platformani tanlab, “Ulash” tugmasini bosing.")}</p>
                 </div>
               ) : (
                 <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -226,7 +228,7 @@ export function IntegrationsView() {
                     <span className="grid size-7 place-items-center rounded-lg bg-white text-ink-600 shadow-soft ring-1 ring-ink-200/70">
                       <Icon className="size-4" aria-hidden />
                     </span>
-                    {CATEGORIES[g.category]} <span className="font-semibold text-ink-500">{g.providers.length}</span>
+                    {t(CATEGORIES[g.category])} <span className="font-semibold text-ink-500">{g.providers.length}</span>
                   </h2>
                   <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
                     {g.providers.map((p, n) => (
@@ -239,7 +241,7 @@ export function IntegrationsView() {
         </>
       )}
 
-      <Modal open={connecting !== null} onClose={() => setConnecting(null)} title={`${connecting?.name ?? ""} — ulash`} wide>
+      <Modal open={connecting !== null} onClose={() => setConnecting(null)} title={t("{name} — ulash", { name: connecting?.name ?? "" })} wide>
         {connecting && (
           <IntegrationForm
             provider={connecting}
@@ -253,7 +255,7 @@ export function IntegrationsView() {
         )}
       </Modal>
 
-      <Modal open={editing !== null} onClose={() => setEditing(null)} title={`${editing?.name ?? ""} — sozlash`} wide>
+      <Modal open={editing !== null} onClose={() => setEditing(null)} title={t("{name} — sozlash", { name: editing?.name ?? "" })} wide>
         {editing && (
           <IntegrationForm
             provider={editing.provider_info}

@@ -2,6 +2,8 @@
 
 import { Check, Copy, KeyRound, PhoneIncoming, PhoneMissed, PhoneOutgoing, RotateCw } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import { trData } from "@/shared/i18n/translate";
 import { api } from "@/shared/lib/api";
 import { fmtDate } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -34,6 +36,7 @@ interface Call {
 }
 
 function CopyField({ label, value, hint }: { label: string; value: string; hint?: string }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
   return (
     <div>
@@ -50,7 +53,7 @@ function CopyField({ label, value, hint }: { label: string; value: string; hint?
             setTimeout(() => setCopied(false), 1500);
           }}
           className="rounded-lg p-2 text-ink-500 hover:bg-ink-100 hover:text-ink-800"
-          aria-label={`${label} — nusxalash`}
+          aria-label={t("{name} — nusxalash", { name: label })}
         >
           {copied ? <Check className="size-4 text-brand-600" /> : <Copy className="size-4" />}
         </button>
@@ -61,13 +64,14 @@ function CopyField({ label, value, hint }: { label: string; value: string; hint?
 }
 
 export function IntegrationPanel({ integration, eventLabels, onChanged }: { integration: Integration; eventLabels: Record<string, string>; onChanged: () => void }) {
+  const t = useT();
   const p = integration.provider_info;
   const jobs = useApi<{ items: Job[] }>(p.events.length ? `/integrations/${integration.id}/jobs` : null);
   const calls = useApi<{ items: Call[] }>(p.key === "telephony" ? `/integrations/${integration.id}/calls` : null);
   const [busy, setBusy] = useState(false);
 
   async function rotate() {
-    if (!confirm("Eski URL'lar ishlamay qoladi. Yangi token yaratilsinmi?")) return;
+    if (!confirm(t("Eski URL'lar ishlamay qoladi. Yangi token yaratilsinmi?"))) return;
     setBusy(true);
     await api(`/integrations/${integration.id}/token`, { method: "POST" }).finally(() => setBusy(false));
     onChanged();
@@ -83,12 +87,12 @@ export function IntegrationPanel({ integration, eventLabels, onChanged }: { inte
       {p.endpoints.length > 0 && (
         <section className="grid gap-3">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-sm font-bold text-ink-900">Kiruvchi URL&apos;lar</h3>
+            <h3 className="text-sm font-bold text-ink-900">{t("Kiruvchi URL'lar")}</h3>
             <Button size="sm" variant="ghost" onClick={rotate} disabled={busy}>
-              <KeyRound className="size-3.5" /> Tokenni yangilash
+              <KeyRound className="size-3.5" /> {t("Tokenni yangilash")}
             </Button>
           </div>
-          <p className="text-xs text-ink-500">URL ichidagi token — parol. Uni faqat ishonchli tizimga bering.</p>
+          <p className="text-xs text-ink-500">{t("URL ichidagi token — parol. Uni faqat ishonchli tizimga bering.")}</p>
           {p.endpoints.map((e) => (
             <CopyField key={e.path} label={`${e.method} · ${e.label}`} value={inboundUrl(integration.token, e.path)} hint={e.hint} />
           ))}
@@ -98,8 +102,8 @@ export function IntegrationPanel({ integration, eventLabels, onChanged }: { inte
       {p.events.length > 0 && (
         <section>
           <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-sm font-bold text-ink-900">Yuborish jurnali</h3>
-            <Button size="sm" variant="ghost" onClick={jobs.reload} aria-label="Jurnalni yangilash">
+            <h3 className="text-sm font-bold text-ink-900">{t("Yuborish jurnali")}</h3>
+            <Button size="sm" variant="ghost" onClick={jobs.reload} aria-label={t("Jurnalni yangilash")}>
               <RotateCw className="size-3.5" />
             </Button>
           </div>
@@ -108,7 +112,7 @@ export function IntegrationPanel({ integration, eventLabels, onChanged }: { inte
           ) : jobs.loading && !jobs.data ? (
             <Loading />
           ) : !jobs.data?.items.length ? (
-            <Empty title="Hali hodisa yo'q" hint="Tanlangan hodisalar yuz berganda shu yerda ko'rinadi" />
+            <Empty title={t("Hali hodisa yo'q")} hint={t("Tanlangan hodisalar yuz berganda shu yerda ko'rinadi")} />
           ) : (
             <ul className="divide-y divide-ink-100 rounded-xl ring-1 ring-ink-200">
               {jobs.data.items.map((j) => (
@@ -116,14 +120,14 @@ export function IntegrationPanel({ integration, eventLabels, onChanged }: { inte
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-ink-800">{eventLabels[j.event] ?? j.event}</p>
                     <p className="text-xs text-ink-500">
-                      {fmtDate(j.created_at, true)} · urinish: {j.attempts}
+                      {fmtDate(j.created_at, true)} · {t("urinish: {n}", { n: j.attempts })}
                     </p>
                     {j.last_error && <p className="mt-0.5 text-xs break-all text-red-600">{j.last_error}</p>}
                   </div>
                   <StatusBadge status={j.status === "done" ? "sent" : j.status} />
                   {j.status === "failed" && (
                     <Button size="sm" variant="secondary" onClick={() => retry(j.id)}>
-                      Qayta yuborish
+                      {t("Qayta yuborish")}
                     </Button>
                   )}
                 </li>
@@ -135,13 +139,13 @@ export function IntegrationPanel({ integration, eventLabels, onChanged }: { inte
 
       {p.key === "telephony" && (
         <section>
-          <h3 className="mb-2 text-sm font-bold text-ink-900">So&apos;nggi qo&apos;ng&apos;iroqlar</h3>
+          <h3 className="mb-2 text-sm font-bold text-ink-900">{t("So'nggi qo'ng'iroqlar")}</h3>
           {calls.error ? (
             <ErrorState message={calls.error} onRetry={calls.reload} />
           ) : calls.loading && !calls.data ? (
             <Loading />
           ) : !calls.data?.items.length ? (
-            <Empty title="Qo'ng'iroq yo'q" hint="ATS webhook URL'ga so'rov yuborganda shu yerda ko'rinadi" />
+            <Empty title={t("Qo'ng'iroq yo'q")} hint={t("ATS webhook URL'ga so'rov yuborganda shu yerda ko'rinadi")} />
           ) : (
             <ul className="divide-y divide-ink-100 rounded-xl ring-1 ring-ink-200">
               {calls.data.items.map((c) => {
@@ -151,16 +155,16 @@ export function IntegrationPanel({ integration, eventLabels, onChanged }: { inte
                     <Icon className={`size-4 ${c.status === "missed" ? "text-red-500" : "text-brand-600"}`} aria-hidden />
                     <div className="min-w-0 flex-1">
                       <p className="font-medium text-ink-800">
-                        {c.phone} · {c.client_name ?? (c.lead_name ? `Lid: ${c.lead_name}` : "Noma'lum")}
+                        {c.phone} · {c.client_name ?? (c.lead_name ? t("Lid: {name}", { name: trData(c.lead_name) }) : t("Noma'lum"))}
                       </p>
                       <p className="text-xs text-ink-500">
-                        {fmtDate(c.created_at, true)} · {c.duration_sec} s
+                        {fmtDate(c.created_at, true)} · {t("{n} s", { n: c.duration_sec })}
                       </p>
                     </div>
                     <StatusBadge status={c.status} />
                     {c.recording_url && (
                       <a href={c.recording_url} target="_blank" rel="noreferrer" className="text-xs font-semibold text-brand-700 hover:underline">
-                        Yozuv
+                        {t("Yozuv")}
                       </a>
                     )}
                   </li>

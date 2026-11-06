@@ -3,8 +3,9 @@
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
-import { fmtDate, fmtMoney } from "@/shared/lib/format";
+import { currency, fmtDate, fmtMoney } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
 import { usePaged } from "@/shared/lib/usePaged";
 import { Button } from "@/shared/ui/Button";
@@ -29,17 +30,18 @@ interface Client {
 const SEGMENT = { A: "bg-brand-600 text-white", B: "bg-brand-100 text-brand-800", C: "bg-ink-100 text-ink-600" } as Record<string, string>;
 
 export function ClientsList({ initialStatus = "" }: { initialStatus?: string }) {
+  const t = useT();
   const list = usePaged<Client>("/clients", initialStatus);
   const [open, setOpen] = useState(false);
 
   return (
     <div className="animate-rise">
       <PageHeader
-        title="Mijozlar"
-        description="Savdo nuqtalari, segmentlar, kredit limiti va qarzdorlik"
+        title={t("Mijozlar")}
+        description={t("Savdo nuqtalari, segmentlar, kredit limiti va qarzdorlik")}
         actions={
           <Button onClick={() => setOpen(true)}>
-            <Plus className="size-4" /> Mijoz qo&apos;shish
+            <Plus className="size-4" /> {t("Mijoz qo'shish")}
           </Button>
         }
       />
@@ -47,27 +49,27 @@ export function ClientsList({ initialStatus = "" }: { initialStatus?: string }) 
         <div className="flex flex-col gap-3 border-b border-ink-100 p-4 lg:flex-row lg:items-center lg:justify-between">
           <Chips
             options={[
-              { value: "", label: "Barchasi" },
-              { value: "debt", label: "Qarzdorlar" },
-              { value: "overlimit", label: "Limitdan oshgan" },
-              { value: "A", label: "A segment" },
+              { value: "", label: t("Barchasi") },
+              { value: "debt", label: t("Qarzdorlar") },
+              { value: "overlimit", label: t("Limitdan oshgan") },
+              { value: "A", label: t("A segment") },
               { value: "B", label: "B" },
               { value: "C", label: "C" },
             ]}
             value={list.status}
             onChange={list.setStatus}
           />
-          <SearchInput value={list.q} onChange={list.setQ} placeholder="Nomi, telefon, hudud…" />
+          <SearchInput value={list.q} onChange={list.setQ} placeholder={t("Nomi, telefon, hudud…")} />
         </div>
         {list.error ? (
           <ErrorState message={list.error} onRetry={list.reload} />
         ) : list.loading && !list.data ? (
           <Loading />
         ) : !list.data?.items.length ? (
-          <Empty title="Mijoz topilmadi" />
+          <Empty title={t("Mijoz topilmadi")} />
         ) : (
           <>
-            <Table head={["Savdo nuqtasi", "Segment", "Hudud", "Agent", "Qarz / limit", "Oxirgi buyurtma"]}>
+            <Table head={[t("Savdo nuqtasi"), t("Segment"), t("Hudud"), t("Agent"), t("Qarz / limit"), t("Oxirgi buyurtma")]}>
               {list.data.items.map((c) => {
                 const usage = c.credit_limit ? (c.balance / c.credit_limit) * 100 : 0;
                 return (
@@ -104,7 +106,7 @@ export function ClientsList({ initialStatus = "" }: { initialStatus?: string }) 
         )}
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Yangi mijoz" wide>
+      <Modal open={open} onClose={() => setOpen(false)} title={t("Yangi mijoz")} wide>
         {open && (
           <ClientForm
             onDone={() => {
@@ -119,6 +121,7 @@ export function ClientsList({ initialStatus = "" }: { initialStatus?: string }) 
 }
 
 function ClientForm({ onDone }: { onDone: () => void }) {
+  const t = useT();
   const agents = useApi<{ items: { id: number; full_name: string; region: string }[] }>("/users?role=agent&status=active");
   const form = useRef<HTMLFormElement>(null);
   const [error, setError] = useState<string>();
@@ -156,42 +159,42 @@ function ClientForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form ref={form} onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
-      <Field label="INN (STIR)" className="sm:col-span-2">
+      <Field label={t("INN (STIR)")} className="sm:col-span-2">
         <div className="flex gap-2">
-          <Input name="inn" inputMode="numeric" pattern="\d{9}|\d{14}" placeholder="9 yoki 14 ta raqam" />
+          <Input name="inn" inputMode="numeric" pattern="\d{9}|\d{14}" placeholder={t("9 yoki 14 ta raqam")} />
           <Button variant="secondary" onClick={lookup} disabled={looking}>
-            Soliqdan to&apos;ldirish
+            {t("Soliqdan to'ldirish")}
           </Button>
         </div>
       </Field>
-      <Field label="Savdo nuqtasi nomi">
+      <Field label={t("Savdo nuqtasi nomi")}>
         <Input name="name" required />
       </Field>
-      <Field label="Egasi">
+      <Field label={t("Egasi")}>
         <Input name="owner_name" />
       </Field>
-      <Field label="Telefon">
+      <Field label={t("Telefon")}>
         <Input name="phone" type="tel" placeholder="+998 …" />
       </Field>
-      <Field label="Hudud">
-        <Input name="region" required placeholder="Toshkent" />
+      <Field label={t("Hudud")}>
+        <Input name="region" required placeholder={t("Toshkent")} />
       </Field>
-      <Field label="Manzil" className="sm:col-span-2">
+      <Field label={t("Manzil")} className="sm:col-span-2">
         <Input name="address" />
       </Field>
-      <Field label="Segment">
+      <Field label={t("Segment")}>
         <Select name="segment" defaultValue="B">
-          <option value="A">A — yirik</option>
-          <option value="B">B — o&apos;rta</option>
-          <option value="C">C — kichik</option>
+          <option value="A">{t("A — yirik")}</option>
+          <option value="B">{t("B — o'rta")}</option>
+          <option value="C">{t("C — kichik")}</option>
         </Select>
       </Field>
-      <Field label="Kredit limiti, so'm">
+      <Field label={t("Kredit limiti, {cur}", { cur: currency() })}>
         <Input name="credit_limit" type="number" min={0} defaultValue={20000000} />
       </Field>
-      <Field label="Savdo agenti" className="sm:col-span-2">
+      <Field label={t("Savdo agenti")} className="sm:col-span-2">
         <Select name="agent_id" defaultValue="">
-          <option value="">Biriktirilmagan</option>
+          <option value="">{t("Biriktirilmagan")}</option>
           {agents.data?.items.map((a) => (
             <option key={a.id} value={a.id}>
               {a.full_name} — {a.region}
@@ -205,7 +208,7 @@ function ClientForm({ onDone }: { onDone: () => void }) {
         </div>
       )}
       <Button type="submit" className="sm:col-span-2" disabled={saving}>
-        Saqlash
+        {t("Saqlash")}
       </Button>
     </form>
   );

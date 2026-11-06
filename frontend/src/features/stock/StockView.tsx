@@ -2,6 +2,8 @@
 
 import { ArrowDownLeft, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import { trData } from "@/shared/i18n/translate";
 import { api } from "@/shared/lib/api";
 import { fmtDate, fmtNum } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -43,6 +45,7 @@ interface Movement {
 type MoveType = "in" | "out" | "transfer";
 
 export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?: string; initialLow?: boolean }) {
+  const t = useT();
   const [tab, setTab] = useState<"stock" | "moves">("stock");
   // `undefined` = untouched, so the `?warehouse_id=` deep link stays in effect until the user picks.
   const [picked, setPicked] = useState<WarehouseOption | null>();
@@ -58,18 +61,18 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
   return (
     <div className="animate-rise">
       <PageHeader
-        title="Qoldiq va harakat"
-        description="Bo'sh qoldiq = jami − buyurtmalar uchun band qilingan"
+        title={t("Qoldiq va harakat")}
+        description={t("Bo'sh qoldiq = jami − buyurtmalar uchun band qilingan")}
         actions={
           <>
             <Button variant="secondary" onClick={() => setMove("in")}>
-              <ArrowDownLeft className="size-4 text-brand-600" /> Kirim
+              <ArrowDownLeft className="size-4 text-brand-600" /> {t("Kirim")}
             </Button>
             <Button variant="secondary" onClick={() => setMove("out")}>
-              <ArrowUpRight className="size-4 text-amber-600" /> Chiqim
+              <ArrowUpRight className="size-4 text-amber-600" /> {t("Chiqim")}
             </Button>
             <Button onClick={() => setMove("transfer")}>
-              <ArrowLeftRight className="size-4" /> Ko&apos;chirish
+              <ArrowLeftRight className="size-4" /> {t("Ko'chirish")}
             </Button>
           </>
         }
@@ -78,22 +81,22 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
         <div className="flex flex-col gap-3 border-b border-ink-100 p-4 lg:flex-row lg:items-center">
           <Chips
             options={[
-              { value: "stock", label: "Qoldiqlar" },
-              { value: "moves", label: "Harakatlar tarixi" },
+              { value: "stock", label: t("Qoldiqlar") },
+              { value: "moves", label: t("Harakatlar tarixi") },
             ]}
             value={tab}
             onChange={setTab}
           />
           <div className="lg:w-56">
-            <WarehouseSelect aria-label="Ombor" placeholder="Barcha omborlar" value={warehouse} onChange={setPicked} />
+            <WarehouseSelect aria-label={t("Ombor")} placeholder={t("Barcha omborlar")} value={warehouse} onChange={setPicked} />
           </div>
           {tab === "stock" && (
             <>
               <label className="flex items-center gap-2 text-sm font-medium text-ink-700">
-                <input type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} className="size-4 accent-brand-600" /> Faqat kam qoldiq
+                <input type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} className="size-4 accent-brand-600" /> {t("Faqat kam qoldiq")}
               </label>
               <div className="lg:ml-auto">
-                <SearchInput value={stock.q} onChange={stock.setQ} placeholder="Tovar yoki SKU…" />
+                <SearchInput value={stock.q} onChange={stock.setQ} placeholder={t("Tovar yoki SKU…")} />
               </div>
             </>
           )}
@@ -101,11 +104,11 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
             <div className="lg:ml-auto">
               <Chips
                 options={[
-                  { value: "", label: "Barchasi" },
-                  { value: "in", label: "Kirim" },
-                  { value: "out", label: "Chiqim" },
-                  { value: "transfer", label: "Ko'chirish" },
-                  { value: "adjust", label: "Tuzatish" },
+                  { value: "", label: t("Barchasi") },
+                  { value: "in", label: t("Kirim") },
+                  { value: "out", label: t("Chiqim") },
+                  { value: "transfer", label: t("Ko'chirish") },
+                  { value: "adjust", label: t("Tuzatish") },
                 ]}
                 value={moves.status}
                 onChange={moves.setStatus}
@@ -120,10 +123,10 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
           ) : stock.loading && !stock.data ? (
             <Loading />
           ) : !stock.data?.items.length ? (
-            <Empty title="Qoldiq topilmadi" />
+            <Empty title={t("Qoldiq topilmadi")} />
           ) : (
             <>
-              <Table head={["Tovar", "Ombor", "Jami", "Band", "Bo'sh", "Minimum", "Holat"]}>
+              <Table head={[t("Tovar"), t("Ombor"), t("Jami qoldiq"), t("Band"), t("Bo'sh"), t("Minimum"), t("Holat")]}>
                 {stock.data.items.map((s) => {
                   const ratio = s.min_stock ? s.available / (s.min_stock * 3) : 1;
                   return (
@@ -131,7 +134,7 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
                       <td>
                         <p className="font-semibold text-ink-900">{s.product_name}</p>
                         <p className="text-xs text-ink-400">
-                          {s.sku} · {s.category}
+                          {s.sku} · {trData(s.category)}
                         </p>
                       </td>
                       <td className="text-ink-600">{s.warehouse_name}</td>
@@ -159,10 +162,10 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
         ) : moves.loading && !moves.data ? (
           <Loading />
         ) : !moves.data?.items.length ? (
-          <Empty title="Harakat yo'q" />
+          <Empty title={t("Harakat yo'q")} />
         ) : (
           <>
-            <Table head={["Sana", "Turi", "Tovar", "Ombor", "Miqdor", "Hujjat", "Xodim"]}>
+            <Table head={[t("Sana"), t("Turi"), t("Tovar"), t("Ombor"), t("Miqdor"), t("Hujjat"), t("Xodim")]}>
               {moves.data.items.map((m) => (
                 <tr key={m.id}>
                   <td className="whitespace-nowrap text-ink-500">{fmtDate(m.created_at, true)}</td>
@@ -178,7 +181,7 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
                     {m.type === "out" ? "−" : m.quantity > 0 ? "+" : ""}
                     {fmtNum(m.quantity)}
                   </td>
-                  <td className="text-ink-500">{m.reference ?? m.note ?? "—"}</td>
+                  <td className="text-ink-500">{m.reference ?? (trData(m.note) || "—")}</td>
                   <td className="text-ink-500">{m.user_name ?? "—"}</td>
                 </tr>
               ))}
@@ -188,7 +191,7 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
         )}
       </div>
 
-      <Modal open={move !== null} onClose={() => setMove(null)} title={move === "in" ? "Kirim qilish" : move === "out" ? "Chiqim qilish" : "Omborlararo ko'chirish"}>
+      <Modal open={move !== null} onClose={() => setMove(null)} title={move === "in" ? t("Kirim qilish") : move === "out" ? t("Chiqim qilish") : t("Omborlararo ko'chirish")}>
         {move && (
           <MoveForm
             type={move}
@@ -205,6 +208,7 @@ export function StockView({ initialWarehouse, initialLow }: { initialWarehouse?:
 }
 
 function MoveForm({ type, onDone }: { type: MoveType; onDone: () => void }) {
+  const t = useT();
   const [from, setFrom] = useState<WarehouseOption | null>(null);
   const [to, setTo] = useState<WarehouseOption | null>(null);
   const [product, setProduct] = useState<{ id: number; name: string; sku: string } | null>(null);
@@ -228,27 +232,27 @@ function MoveForm({ type, onDone }: { type: MoveType; onDone: () => void }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className={`grid gap-4 ${type === "transfer" ? "sm:grid-cols-2" : ""}`}>
-        <Field label={type === "transfer" ? "Qaysi ombordan" : "Ombor"}>
+        <Field label={type === "transfer" ? t("Qaysi ombordan") : t("Ombor")}>
           <WarehouseSelect params={{ active: "true" }} name="warehouse_id" required value={from} onChange={setFrom} />
         </Field>
         {type === "transfer" && (
-          <Field label="Qaysi omborga">
+          <Field label={t("Qaysi omborga")}>
             <WarehouseSelect params={{ active: "true" }} name="to_warehouse_id" required value={to} onChange={setTo} />
           </Field>
         )}
       </div>
-      <Field label="Tovar">
+      <Field label={t("Tovar")}>
         <SearchSelect path="/products" name="product_id" required value={product} onChange={setProduct} display={(p) => `${p.name} (${p.sku})`} />
       </Field>
-      <Field label="Miqdor">
+      <Field label={t("Miqdor")}>
         <Input name="quantity" type="number" min={1} required />
       </Field>
-      <Field label="Izoh">
-        <Textarea name="note" placeholder={type === "in" ? "Yetkazib beruvchi, nakladnoy raqami…" : ""} />
+      <Field label={t("Izoh")}>
+        <Textarea name="note" placeholder={type === "in" ? t("Yetkazib beruvchi, nakladnoy raqami…") : ""} />
       </Field>
       {error && <Alert>{error}</Alert>}
       <Button type="submit" className="w-full" disabled={saving}>
-        Tasdiqlash
+        {t("Tasdiqlash")}
       </Button>
     </form>
   );

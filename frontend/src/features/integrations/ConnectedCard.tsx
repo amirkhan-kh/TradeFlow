@@ -1,4 +1,6 @@
 import { AlertTriangle, Clock3, FlaskConical, Pencil, RefreshCw, Send, Settings2, Trash2 } from "lucide-react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import type { MsgKey } from "@/shared/i18n/messages";
 import { fmtDate } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/Button";
 import { brandOf, ProviderLogo } from "./ProviderLogo";
@@ -7,7 +9,8 @@ import type { Integration } from "./types";
 export type ActionResult = { id: number; ok: boolean; message: string };
 
 function Status({ i }: { i: Integration }) {
-  const [label, dot, cls] = !i.active
+  const t = useT();
+  const [label, dot, cls]: [MsgKey, string, string] = !i.active
     ? ["O'chirilgan", "bg-ink-400", "bg-ink-100 text-ink-600"]
     : i.last_error
       ? ["Xato", "bg-red-500", "bg-red-50 text-red-700"]
@@ -18,7 +21,7 @@ function Status({ i }: { i: Integration }) {
         {i.active && !i.last_error && <span className={`absolute inline-flex size-full animate-ping rounded-full opacity-60 motion-reduce:hidden ${dot}`} />}
         <span className={`relative inline-flex size-2 rounded-full ${dot}`} />
       </span>
-      {label}
+      {t(label)}
     </span>
   );
 }
@@ -51,6 +54,7 @@ export function ConnectedCard({
   onEdit: () => void;
   onRemove: () => void;
 }) {
+  const t = useT();
   const color = brandOf(i.provider).color;
   return (
     <article className="card relative flex animate-rise flex-col overflow-hidden">
@@ -65,13 +69,13 @@ export function ConnectedCard({
       </div>
 
       <div className="grid grid-cols-3 gap-2 px-5">
-        <Metric icon={Send} label="Bugun" value={i.sent_today} tone="text-brand-700" />
-        <Metric icon={Clock3} label="Navbatda" value={i.pending_jobs} tone="text-amber-600" />
-        <Metric icon={AlertTriangle} label="Xato" value={i.failed_jobs} tone="text-red-600" />
+        <Metric icon={Send} label={t("Bugun")} value={i.sent_today} tone="text-brand-700" />
+        <Metric icon={Clock3} label={t("Navbatda")} value={i.pending_jobs} tone="text-amber-600" />
+        <Metric icon={AlertTriangle} label={t("Xato")} value={i.failed_jobs} tone="text-red-600" />
       </div>
 
       <div className="flex-1 space-y-2 px-5 pt-3 text-xs">
-        <p className="text-ink-500">{i.last_sync_at ? `Oxirgi almashinuv: ${fmtDate(i.last_sync_at, true)}` : "Hali almashinuv bo'lmagan"}</p>
+        <p className="text-ink-500">{i.last_sync_at ? t("Oxirgi almashinuv: {date}", { date: fmtDate(i.last_sync_at, true) }) : t("Hali almashinuv bo'lmagan")}</p>
         {i.last_error && <p className="line-clamp-2 rounded-lg bg-red-50 px-2.5 py-1.5 break-all text-red-700">{i.last_error}</p>}
         {result && (
           <p role="status" className={`animate-rise rounded-lg px-2.5 py-1.5 font-medium ${result.ok ? "bg-brand-50 text-brand-800" : "bg-red-50 text-red-700"}`}>
@@ -82,21 +86,21 @@ export function ConnectedCard({
 
       <div className="mt-4 flex flex-wrap items-center gap-1.5 border-t border-ink-100 bg-ink-50/50 px-4 py-3">
         <Button size="sm" variant="secondary" onClick={() => onAction("test")} disabled={busy}>
-          <FlaskConical className="size-3.5" /> Tekshirish
+          <FlaskConical className="size-3.5" /> {t("Tekshirish")}
         </Button>
         {i.provider_info.can_sync && (
           <Button size="sm" variant="secondary" onClick={() => onAction("sync")} disabled={busy || !i.active}>
-            <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} /> Sinxronlash
+            <RefreshCw className={`size-3.5 ${busy ? "animate-spin" : ""}`} /> {t("Sinxronlash")}
           </Button>
         )}
         <Button size="sm" variant="secondary" onClick={onOpen}>
-          <Settings2 className="size-3.5" /> Batafsil
+          <Settings2 className="size-3.5" /> {t("Batafsil")}
         </Button>
         <span className="ml-auto flex">
-          <Button size="sm" variant="ghost" onClick={onEdit} aria-label={`${i.name} — tahrirlash`}>
+          <Button size="sm" variant="ghost" onClick={onEdit} aria-label={t("{name} — tahrirlash", { name: i.name })}>
             <Pencil className="size-3.5" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={onRemove} aria-label={`${i.name} — o'chirish`}>
+          <Button size="sm" variant="ghost" onClick={onRemove} aria-label={t("{name} — o'chirish", { name: i.name })}>
             <Trash2 className="size-3.5 text-red-600" />
           </Button>
         </span>

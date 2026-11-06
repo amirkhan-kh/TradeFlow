@@ -1,3 +1,5 @@
+import { phrase, type Lang } from "../../core/i18n.js";
+import { INSIGHTS, type InsightKey } from "./messages.js";
 import * as repo from "./repository.js";
 
 type Severity = "high" | "medium" | "low";
@@ -32,7 +34,8 @@ function forecast(values: number[]): number {
   return Math.max(0, yMean + (num / den) * (n - xMean));
 }
 
-export async function run() {
+export async function run(lang: Lang) {
+  const t = (key: InsightKey, vars?: Record<string, string | number>) => phrase(INSIGHTS, lang, key, vars);
   const [cover, expiring, overlimit, collection, stale, variance, dormant, pace, monthly, late] = await Promise.all([
     repo.stockCover(),
     repo.expiring(),
@@ -53,17 +56,20 @@ export async function run() {
     .slice(0, 5)
     .map((c) => ({
       severity: c.left < 4 ? "high" : "medium",
-      title: c.left < 1 ? `${c.name} — zaxira 1 kunga ham yetmaydi` : `${c.name} — ${Math.floor(c.left)} kunlik zaxira`,
-      detail: `${c.warehouse_name}: ${c.available} dona qoldi, kuniga ~${c.daily.toFixed(1)} sotiladi. Tavsiya: ${fmt(
-        Math.max(0, c.daily * 21 - c.available),
-      )} dona buyurtma bering.`,
+      title: c.left < 1 ? t("{name} — zaxira 1 kunga ham yetmaydi", { name: c.name }) : t("{name} — {n} kunlik zaxira", { name: c.name, n: Math.floor(c.left) }),
+      detail: t("{warehouse}: {qty} dona qoldi, kuniga ~{daily} sotiladi. Tavsiya: {order} dona buyurtma bering.", {
+        warehouse: c.warehouse_name,
+        qty: c.available,
+        daily: c.daily.toFixed(1),
+        order: fmt(Math.max(0, c.daily * 21 - c.available)),
+      }),
       href: "/dashboard/stock?low=true",
     }));
   for (const e of expiring) {
     stock.push({
       severity: "medium",
-      title: `${e.name}: muddati ${days(e.expires_at) >= 0 ? "o'tgan" : `${-days(e.expires_at)} kunda tugaydi`}`,
-      detail: `${e.units} dona omborda. Aksiya yoki qaytarishni rejalashtiring.`,
+      title: days(e.expires_at) >= 0 ? t("{name}: muddati o'tgan", { name: e.name }) : t("{name}: muddati {n} kunda tugaydi", { name: e.name, n: -days(e.expires_at) }),
+      detail: t("{n} dona omborda. Aksiya yoki qaytarishni rejalashtiring.", { n: e.units }),
       href: "/dashboard/products",
     });
   }
@@ -71,28 +77,28 @@ export async function run() {
   const rate = collection.sold > 0 ? (collection.collected / collection.sold) * 100 : 100;
   const finance: Finding[] = overlimit.map((c) => ({
     severity: "high",
-    title: `${c.name} kredit limitidan oshdi`,
-    detail: `Qarz ${fmt(c.balance)} so'm, limit ${fmt(c.credit_limit)} so'm. Yangi yuklashni to'xtating va undiruvchi yuboring.`,
+    title: t("{name} kredit limitidan oshdi", { name: c.name }),
+    detail: t("Qarz {debt} so'm, limit {limit} so'm. Yangi yuklashni to'xtating va undiruvchi yuboring.", { debt: fmt(c.balance), limit: fmt(c.credit_limit) }),
     href: `/dashboard/clients?status=overlimit`,
   }));
   finance.push({
     severity: rate < 70 ? "high" : rate < 90 ? "medium" : "low",
-    title: `30 kunlik undirish darajasi: ${rate.toFixed(0)}%`,
-    detail: `Sotildi ${fmt(collection.sold)} so'm, undirildi ${fmt(collection.collected)} so'm.`,
+    title: t("30 kunlik undirish darajasi: {rate}%", { rate: rate.toFixed(0) }),
+    detail: t("Sotildi {sold} so'm, undirildi {collected} so'm.", { sold: fmt(collection.sold), collected: fmt(collection.collected) }),
     href: "/dashboard/finance",
   });
 
   const audit: Finding[] = [
     ...stale.map((w) => ({
       severity: (w.last_audit ? "medium" : "high") as Severity,
-      title: `${w.name}: audit kerak`,
-      detail: w.last_audit ? `Oxirgi audit ${days(w.last_audit)} kun oldin o'tkazilgan.` : "Bu omborda hali audit o'tkazilmagan.",
+      title: t("{name}: audit kerak", { name: w.name }),
+      detail: w.last_audit ? t("Oxirgi audit {n} kun oldin o'tkazilgan.", { n: days(w.last_audit) }) : t("Bu omborda hali audit o'tkazilmagan."),
       href: "/dashboard/audits",
     })),
     ...variance.map((v) => ({
       severity: (Math.abs(v.variance) > 1_000_000 ? "high" : "medium") as Severity,
-      title: `${v.number} (${v.warehouse_name}) farq: ${fmt(v.variance)} so'm`,
-      detail: v.variance < 0 ? "Kamomad aniqlangan — mas'ul shaxs bilan tushuntirish xati oling." : "Ortiqcha tovar — kirim hujjatlarini tekshiring.",
+      title: t("{number} ({warehouse}) farq: {sum} so'm", { number: v.number, warehouse: v.warehouse_name, sum: fmt(v.variance) }),
+      detail: v.variance < 0 ? t("Kamomad aniqlangan — mas'ul shaxs bilan tushuntirish xati oling.") : t("Ortiqcha tovar — kirim hujjatlarini tekshiring."),
       href: `/dashboard/audits/${v.id}`,
     })),
   ];
@@ -105,22 +111,28 @@ export async function run() {
       .filter((a) => a.revenue / a.plan < expectedShare * 0.85)
       .map((a) => ({
         severity: "medium" as Severity,
-        title: `${a.full_name} rejadan ortda`,
-        detail: `Reja ${fmt(a.plan)} so'm, bajarildi ${((a.revenue / a.plan) * 100).toFixed(0)}% (kutilgan ${(expectedShare * 100).toFixed(0)}%).`,
+        title: t("{name} rejadan ortda", { name: a.full_name }),
+        detail: t("Reja {plan} so'm, bajarildi {done}% (kutilgan {expected}%).", {
+          plan: fmt(a.plan),
+          done: ((a.revenue / a.plan) * 100).toFixed(0),
+          expected: (expectedShare * 100).toFixed(0),
+        }),
         href: "/dashboard/agents",
       })),
     ...dormant.map((c) => ({
       severity: "low" as Severity,
-      title: `${c.name} ${days(c.last_order)} kundan beri buyurtma bermadi`,
-      detail: `${c.agent_name ?? "Agent biriktirilmagan"} — tashrif rejalashtiring yoki aksiya taklif qiling.`,
+      title: t("{name} {n} kundan beri buyurtma bermadi", { name: c.name, n: days(c.last_order) }),
+      detail: c.agent_name
+        ? t("{agent} — tashrif rejalashtiring yoki aksiya taklif qiling.", { agent: c.agent_name })
+        : t("Agent biriktirilmagan — tashrif rejalashtiring yoki aksiya taklif qiling."),
       href: "/dashboard/clients",
     })),
   ];
   const next = forecast(monthly.map((m) => m.revenue));
   sales.unshift({
     severity: "low",
-    title: `Keyingi oy prognozi: ${fmt(next)} so'm`,
-    detail: "So'nggi 6 oylik sotuv trendi asosida hisoblandi.",
+    title: t("Keyingi oy prognozi: {sum} so'm", { sum: fmt(next) }),
+    detail: t("So'nggi 6 oylik sotuv trendi asosida hisoblandi."),
     href: "/dashboard",
   });
 
@@ -128,26 +140,26 @@ export async function run() {
   if (late[0].count > 0) {
     logistics.push({
       severity: "high",
-      title: `${late[0].count} ta yetkazish kechikmoqda`,
-      detail: "Rejalashtirilgan sanadan o'tib ketgan. Kuryerlarni qayta taqsimlang.",
+      title: t("{n} ta yetkazish kechikmoqda", { n: late[0].count }),
+      detail: t("Rejalashtirilgan sanadan o'tib ketgan. Kuryerlarni qayta taqsimlang."),
       href: "/dashboard/deliveries?status=pending",
     });
   }
   if (late[0].failed > 0) {
     logistics.push({
       severity: "medium",
-      title: `${late[0].failed} ta yetkazish muvaffaqiyatsiz`,
-      detail: "Sabablarni aniqlang va qayta yetkazishni rejalashtiring.",
+      title: t("{n} ta yetkazish muvaffaqiyatsiz", { n: late[0].failed }),
+      detail: t("Sabablarni aniqlang va qayta yetkazishni rejalashtiring."),
       href: "/dashboard/deliveries?status=failed",
     });
   }
 
   const agents: Agent[] = [
-    { key: "stock", name: "Ombor agenti", role: "Zaxira, tugash prognozi va yaroqlilik muddati", findings: stock },
-    { key: "finance", name: "Moliya agenti", role: "Debitorlik, kredit limiti va undirish", findings: finance },
-    { key: "audit", name: "Audit agenti", role: "Inventarizatsiya jadvali va kamomadlar", findings: audit },
-    { key: "sales", name: "Sotuv agenti", role: "Reja bajarilishi, faol bo'lmagan mijozlar, prognoz", findings: sales },
-    { key: "logistics", name: "Logistika agenti", role: "Yetkazish muddatlari va kuryerlar", findings: logistics },
+    { key: "stock", name: t("Ombor agenti"), role: t("Zaxira, tugash prognozi va yaroqlilik muddati"), findings: stock },
+    { key: "finance", name: t("Moliya agenti"), role: t("Debitorlik, kredit limiti va undirish"), findings: finance },
+    { key: "audit", name: t("Audit agenti"), role: t("Inventarizatsiya jadvali va kamomadlar"), findings: audit },
+    { key: "sales", name: t("Sotuv agenti"), role: t("Reja bajarilishi, faol bo'lmagan mijozlar, prognoz"), findings: sales },
+    { key: "logistics", name: t("Logistika agenti"), role: t("Yetkazish muddatlari va kuryerlar"), findings: logistics },
   ];
   return { generated_at: new Date().toISOString(), forecast_next_month: next, agents };
 }

@@ -2,6 +2,8 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import { trData } from "@/shared/i18n/translate";
 import { api } from "@/shared/lib/api";
 import { fmtMoney } from "@/shared/lib/format";
 import { Button } from "@/shared/ui/Button";
@@ -27,6 +29,7 @@ interface ProductOption extends Option {
 }
 
 export function OrderForm({ onDone }: { onDone: () => void }) {
+  const t = useT();
   const [warehouse, setWarehouse] = useState<WarehouseOption | null>(null);
   const [client, setClient] = useState<ClientOption | null>(null);
   const [lines, setLines] = useState<{ product: ProductOption | null; quantity: number }[]>([{ product: null, quantity: 1 }]);
@@ -67,23 +70,23 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Mijoz (savdo nuqtasi)">
+        <Field label={t("Mijoz (savdo nuqtasi)")}>
           <SearchSelect<ClientOption>
             path="/clients"
             required
             value={client}
             onChange={setClient}
             display={(c) => `${c.name} — ${c.region}`}
-            hint={(c) => `Qarz ${fmtMoney(c.balance)} · limit ${c.credit_limit ? fmtMoney(c.credit_limit) : "cheksiz"}`}
+            hint={(c) => t("Qarz {debt} · limit {limit}", { debt: fmtMoney(c.balance), limit: c.credit_limit ? fmtMoney(c.credit_limit) : t("cheksiz") })}
           />
         </Field>
-        <Field label="Ombor">
+        <Field label={t("Ombor")}>
           <WarehouseSelect params={{ active: "true" }} name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
         </Field>
       </div>
 
       <div>
-        <p className="label">Tovarlar</p>
+        <p className="label">{t("Tovarlar")}</p>
         <div className="space-y-2">
           {lines.map((l, i) => {
             const p = l.product;
@@ -93,19 +96,19 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
                   path="/products"
                   params={{ active: "true" }}
                   required
-                  aria-label="Tovar"
-                  placeholder="Tovar qidiring…"
+                  aria-label={t("Tovar")}
+                  placeholder={t("Tovar qidiring…")}
                   value={p}
                   onChange={(product) => update(i, { product })}
                   display={(o) => o.name}
-                  hint={(o) => `${o.sku} · ${fmtMoney(o.price)} · bo'sh ${o.stock - o.reserved} ${o.unit}`}
+                  hint={(o) => `${o.sku} · ${fmtMoney(o.price)} · ${t("bo'sh {n}", { n: `${o.stock - o.reserved} ${trData(o.unit)}` })}`}
                 />
-                <Input type="number" min={1} required value={l.quantity} onChange={(e) => update(i, { quantity: Number(e.target.value) })} aria-label="Miqdor" title={p?.unit} />
+                <Input type="number" min={1} required value={l.quantity} onChange={(e) => update(i, { quantity: Number(e.target.value) })} aria-label={t("Miqdor")} title={trData(p?.unit)} />
                 <button
                   type="button"
                   onClick={() => setLines((ls) => (ls.length > 1 ? ls.filter((_, j) => j !== i) : ls))}
                   className="grid place-items-center rounded-xl text-ink-400 hover:bg-red-50 hover:text-red-600"
-                  aria-label="Qatorni o'chirish"
+                  aria-label={t("Qatorni o'chirish")}
                 >
                   <Trash2 className="size-4" />
                 </button>
@@ -114,32 +117,32 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
           })}
         </div>
         <Button variant="ghost" size="sm" className="mt-2" onClick={() => setLines((ls) => [...ls, { product: null, quantity: 1 }])}>
-          <Plus className="size-4" /> Qator qo&apos;shish
+          <Plus className="size-4" /> {t("Qator qo'shish")}
         </Button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Chegirma, %">
+        <Field label={t("Chegirma, %")}>
           <Input type="number" min={0} max={50} step="0.5" value={discount} onChange={(e) => setDiscount(Number(e.target.value))} />
         </Field>
-        <Field label="Izoh">
+        <Field label={t("Izoh")}>
           <Textarea name="note" className="min-h-10" rows={1} />
         </Field>
       </div>
 
       <div className="rounded-2xl bg-brand-50 p-4 text-sm">
         <div className="flex justify-between text-ink-600">
-          <span>Oraliq summa</span>
+          <span>{t("Oraliq summa")}</span>
           <span className="tabular-nums">{fmtMoney(subtotal)}</span>
         </div>
         <div className="mt-1 flex justify-between text-base font-bold text-ink-900">
-          <span>Jami</span>
+          <span>{t("Jami")}</span>
           <span className="tabular-nums">{fmtMoney(total)}</span>
         </div>
         {client && (
           <p className={`mt-2 text-xs ${overLimit ? "font-semibold text-red-600" : "text-ink-500"}`}>
-            Mijoz qarzi: {fmtMoney(client.balance)} / limit {client.credit_limit ? fmtMoney(client.credit_limit) : "cheksiz"}
-            {overLimit && " — kredit limiti oshadi!"}
+            {t("Mijoz qarzi: {debt} / limit {limit}", { debt: fmtMoney(client.balance), limit: client.credit_limit ? fmtMoney(client.credit_limit) : t("cheksiz") })}
+            {overLimit && ` — ${t("kredit limiti oshadi!")}`}
           </p>
         )}
       </div>
@@ -147,7 +150,7 @@ export function OrderForm({ onDone }: { onDone: () => void }) {
       {error && <Alert>{error}</Alert>}
       <div className="flex justify-end gap-2">
         <Button type="submit" disabled={saving}>
-          {saving ? "Saqlanmoqda…" : "Buyurtma yaratish"}
+          {saving ? t("Saqlanmoqda…") : t("Buyurtma yaratish")}
         </Button>
       </div>
     </form>

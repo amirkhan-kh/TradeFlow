@@ -3,6 +3,7 @@
 import { MapPin, Pencil, Plus, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
 import { fmtCompact, fmtDate, fmtNum } from "@/shared/lib/format";
 import { usePaged } from "@/shared/lib/usePaged";
@@ -30,19 +31,20 @@ interface Warehouse {
 }
 
 export function WarehousesView() {
+  const t = useT();
   const list = usePaged<Warehouse>("/warehouses");
   const [editing, setEditing] = useState<Partial<Warehouse> | null>(null);
 
   return (
     <div className="animate-rise">
       <PageHeader
-        title="Omborlar"
-        description="Har bir ombor bo'yicha qoldiq, sig'im va audit holati"
+        title={t("Omborlar")}
+        description={t("Har bir ombor bo'yicha qoldiq, sig'im va audit holati")}
         actions={
           <>
-            <SearchInput value={list.q} onChange={list.setQ} placeholder="Nomi, shahar yoki kod…" />
+            <SearchInput value={list.q} onChange={list.setQ} placeholder={t("Nomi, shahar yoki kod…")} />
             <Button onClick={() => setEditing({ active: true })}>
-              <Plus className="size-4" /> Ombor qo&apos;shish
+              <Plus className="size-4" /> {t("Ombor qo'shish")}
             </Button>
           </>
         }
@@ -56,7 +58,7 @@ export function WarehousesView() {
           ))}
         </div>
       ) : !list.data?.items.length ? (
-        <Empty title="Ombor topilmadi" />
+        <Empty title={t("Ombor topilmadi")} />
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {list.data.items.map((w) => {
@@ -73,16 +75,16 @@ export function WarehousesView() {
                       {w.address && `, ${w.address}`}
                     </p>
                   </div>
-                  <button onClick={() => setEditing(w)} className="rounded-lg p-2 text-ink-400 opacity-0 transition group-hover:opacity-100 hover:bg-ink-100 hover:text-ink-700 focus:opacity-100" aria-label="Tahrirlash">
+                  <button onClick={() => setEditing(w)} className="rounded-lg p-2 text-ink-400 opacity-0 transition group-hover:opacity-100 hover:bg-ink-100 hover:text-ink-700 focus:opacity-100" aria-label={t("Tahrirlash")}>
                     <Pencil className="size-4" />
                   </button>
                 </div>
 
                 <dl className="mt-5 grid grid-cols-3 gap-3 text-center">
                   {[
-                    ["Qoldiq", fmtNum(w.units)],
+                    [t("Qoldiq"), fmtNum(w.units)],
                     ["SKU", fmtNum(w.skus)],
-                    ["Qiymat", fmtCompact(w.stock_value)],
+                    [t("Qiymat"), fmtCompact(w.stock_value)],
                   ].map(([k, v]) => (
                     <div key={k} className="rounded-xl bg-ink-50 py-2.5">
                       <dt className="text-[11px] text-ink-500">{k}</dt>
@@ -93,7 +95,7 @@ export function WarehousesView() {
 
                 <div className="mt-4">
                   <div className="flex justify-between text-xs text-ink-500">
-                    <span>Bandlik</span>
+                    <span>{t("Bandlik")}</span>
                     <span className="font-semibold text-ink-700">{fill.toFixed(0)}%</span>
                   </div>
                   <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-ink-100">
@@ -111,11 +113,11 @@ export function WarehousesView() {
                       <StatusBadge status={w.last_audit_status} />
                     </span>
                   ) : (
-                    <span className="text-xs font-semibold text-red-600">Audit o&apos;tkazilmagan</span>
+                    <span className="text-xs font-semibold text-red-600">{t("Audit o'tkazilmagan")}</span>
                   )}
                 </div>
                 <Link href={`/dashboard/stock?warehouse_id=${w.id}`} className="mt-3 block text-center text-xs font-semibold text-brand-700 hover:underline">
-                  Qoldiqlarni ko&apos;rish →
+                  {t("Qoldiqlarni ko'rish →")}
                 </Link>
               </article>
             );
@@ -123,7 +125,7 @@ export function WarehousesView() {
         </div>
       )}
 
-      <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing?.id ? "Omborni tahrirlash" : "Yangi ombor"}>
+      <Modal open={editing !== null} onClose={() => setEditing(null)} title={editing?.id ? t("Omborni tahrirlash") : t("Yangi ombor")}>
         {editing && (
           <WarehouseForm
             initial={editing}
@@ -139,6 +141,7 @@ export function WarehousesView() {
 }
 
 function WarehouseForm({ initial, onDone }: { initial: Partial<Warehouse>; onDone: () => void }) {
+  const t = useT();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
 
@@ -160,26 +163,26 @@ function WarehouseForm({ initial, onDone }: { initial: Partial<Warehouse>; onDon
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
-      <Field label="Kod">
+      <Field label={t("Kod")}>
         <Input name="code" required defaultValue={initial.code} placeholder="TSH-03" />
       </Field>
-      <Field label="Nomi">
+      <Field label={t("Nomi")}>
         <Input name="name" required defaultValue={initial.name} />
       </Field>
-      <Field label="Shahar">
+      <Field label={t("Shahar")}>
         <Input name="city" required defaultValue={initial.city} />
       </Field>
-      <Field label="Sig'im (dona)">
+      <Field label={t("Sig'im (dona)")}>
         <Input name="capacity" type="number" min={0} defaultValue={initial.capacity ?? 0} />
       </Field>
-      <Field label="Manzil" className="sm:col-span-2">
+      <Field label={t("Manzil")} className="sm:col-span-2">
         <Input name="address" defaultValue={initial.address ?? ""} />
       </Field>
-      <Field label="Mas'ul shaxs">
+      <Field label={t("Mas'ul shaxs")}>
         <Input name="manager_name" defaultValue={initial.manager_name ?? ""} />
       </Field>
       <label className="flex items-center gap-2 self-end pb-2 text-sm font-medium text-ink-700">
-        <input type="checkbox" name="active" defaultChecked={initial.active ?? true} className="size-4 accent-brand-600" /> Faol
+        <input type="checkbox" name="active" defaultChecked={initial.active ?? true} className="size-4 accent-brand-600" /> {t("Faol")}
       </label>
       {error && (
         <div className="sm:col-span-2">
@@ -187,7 +190,7 @@ function WarehouseForm({ initial, onDone }: { initial: Partial<Warehouse>; onDon
         </div>
       )}
       <Button type="submit" className="sm:col-span-2" disabled={saving}>
-        Saqlash
+        {t("Saqlash")}
       </Button>
     </form>
   );

@@ -1,4 +1,6 @@
 import { ArrowDownToLine, ArrowUpFromLine, CheckCircle2, Plus, RefreshCw } from "lucide-react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import type { MsgKey } from "@/shared/i18n/messages";
 import { brandOf, ProviderLogo } from "./ProviderLogo";
 import type { ProviderInfo } from "./types";
 
@@ -7,10 +9,11 @@ function capabilities(p: ProviderInfo) {
     p.endpoints.length > 0 && { icon: ArrowDownToLine, label: "Qabul qiladi" },
     p.events.length > 0 && { icon: ArrowUpFromLine, label: "Yuboradi" },
     p.can_sync && { icon: RefreshCw, label: "Sinxron" },
-  ].filter(Boolean) as { icon: typeof Plus; label: string }[];
+  ].filter(Boolean) as { icon: typeof Plus; label: MsgKey }[];
 }
 
 export function CatalogCard({ provider: p, connected, onConnect, index }: { provider: ProviderInfo; connected: number; onConnect: () => void; index: number }) {
+  const t = useT();
   const color = brandOf(p.key).color;
   return (
     <article
@@ -25,7 +28,8 @@ export function CatalogCard({ provider: p, connected, onConnect, index }: { prov
         </div>
         {connected > 0 && (
           <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold text-brand-700 ring-1 ring-brand-200">
-            <CheckCircle2 className="size-3.5" /> Ulangan{connected > 1 ? ` × ${connected}` : ""}
+            <CheckCircle2 className="size-3.5" /> {t("Ulangan")}
+            {connected > 1 ? ` × ${connected}` : ""}
           </span>
         )}
       </div>
@@ -35,7 +39,7 @@ export function CatalogCard({ provider: p, connected, onConnect, index }: { prov
       <div className="mt-4 flex flex-wrap gap-1.5">
         {capabilities(p).map((c) => (
           <span key={c.label} className="inline-flex items-center gap-1 rounded-lg bg-ink-50 px-2 py-1 text-[11px] font-semibold text-ink-600 ring-1 ring-ink-200/70">
-            <c.icon className="size-3" aria-hidden /> {c.label}
+            <c.icon className="size-3" aria-hidden /> {t(c.label)}
           </span>
         ))}
       </div>
@@ -45,9 +49,9 @@ export function CatalogCard({ provider: p, connected, onConnect, index }: { prov
         className={`mt-4 inline-flex h-10 items-center justify-center gap-2 rounded-xl text-sm font-semibold transition active:scale-[0.98] ${
           connected ? "border border-ink-200 bg-white text-ink-800 hover:border-brand-300 hover:bg-brand-50" : "bg-ink-900 text-white hover:bg-brand-700"
         }`}
-        aria-label={`${p.name} — ${connected ? "yana ulash" : "ulash"}`}
+        aria-label={connected ? t("{name} — yana ulash", { name: p.name }) : t("{name} — ulash", { name: p.name })}
       >
-        <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" /> {connected ? "Yana ulash" : "Ulash"}
+        <Plus className="size-4 transition-transform duration-200 group-hover:rotate-90" /> {connected ? t("Yana ulash") : t("Ulash")}
       </button>
     </article>
   );

@@ -2,7 +2,9 @@
 
 import { Check, Copy, KeyRound, ShieldCheck } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
+import { currency } from "@/shared/lib/format";
 import { ROLE_KEYS, ROLES, type Role } from "@/shared/lib/roles";
 import { Button } from "@/shared/ui/Button";
 import { Field, Input } from "@/shared/ui/Field";
@@ -25,23 +27,24 @@ export function suggestLogin(name: string) {
 }
 
 export function Credentials({ login, password, onDone }: { login: string; password: string; onDone: () => void }) {
+  const t = useT();
   const [copied, setCopied] = useState(false);
-  const text = `TradeFlow\nManzil: ${window.location.origin}/login\nLogin: ${login}\nParol: ${password}`;
+  const text = `TradeFlow\n${t("Manzil")}: ${window.location.origin}/login\n${t("Login")}: ${login}\n${t("Parol")}: ${password}`;
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-3 rounded-2xl bg-brand-50 p-4 ring-1 ring-brand-200">
         <span className="grid size-10 place-items-center rounded-xl bg-brand-600 text-white">
           <ShieldCheck className="size-5" aria-hidden />
         </span>
-        <p className="text-sm text-brand-900">Kirish ma&apos;lumotlari tayyor. Parol faqat hozir ko&apos;rinadi — xodimga xavfsiz kanal orqali yuboring.</p>
+        <p className="text-sm text-brand-900">{t("Kirish ma'lumotlari tayyor. Parol faqat hozir ko'rinadi — xodimga xavfsiz kanal orqali yuboring.")}</p>
       </div>
       <dl className="grid gap-2 rounded-2xl bg-ink-900 p-5 font-mono text-sm text-white">
         <div className="flex justify-between gap-4">
-          <dt className="text-white/60">Login</dt>
+          <dt className="text-white/60">{t("Login")}</dt>
           <dd className="font-semibold">{login}</dd>
         </div>
         <div className="flex justify-between gap-4">
-          <dt className="text-white/60">Parol</dt>
+          <dt className="text-white/60">{t("Parol")}</dt>
           <dd className="font-semibold">{password}</dd>
         </div>
       </dl>
@@ -53,18 +56,21 @@ export function Credentials({ login, password, onDone }: { login: string; passwo
             setCopied(true);
           }}
         >
-          {copied ? <Check className="size-4 text-brand-600" /> : <Copy className="size-4" />} {copied ? "Nusxalandi" : "Hammasini nusxalash"}
+          {copied ? <Check className="size-4 text-brand-600" /> : <Copy className="size-4" />} {copied ? t("Nusxalandi") : t("Hammasini nusxalash")}
         </Button>
-        <Button onClick={onDone}>Tayyor</Button>
+        <Button onClick={onDone}>{t("Tayyor")}</Button>
       </div>
     </div>
   );
 }
 
 function RolePicker({ value, onChange, disabled }: { value: Role; onChange: (r: Role) => void; disabled?: boolean }) {
+  const t = useT();
   return (
     <fieldset disabled={disabled} className="sm:col-span-2">
-      <legend className="label">Rol {disabled && "— o'z rolingizni o'zgartira olmaysiz"}</legend>
+      <legend className="label">
+        {t("Rol")} {disabled && `— ${t("o'z rolingizni o'zgartira olmaysiz")}`}
+      </legend>
       <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
         {ROLE_KEYS.map((r) => (
           <label
@@ -77,10 +83,10 @@ function RolePicker({ value, onChange, disabled }: { value: Role; onChange: (r: 
             <input type="radio" name="role" value={r} checked={value === r} onChange={() => onChange(r)} className="sr-only" />
             <span className="flex items-center gap-2 text-sm font-bold text-ink-900">
               <span className="size-2.5 rounded-full" style={{ background: ROLES[r].color }} aria-hidden />
-              {ROLES[r].label}
+              {t(ROLES[r].label)}
               {value === r && <Check className="ml-auto size-4" style={{ color: ROLES[r].color }} aria-hidden />}
             </span>
-            <span className="mt-1 text-xs leading-snug text-ink-500">{ROLES[r].description}</span>
+            <span className="mt-1 text-xs leading-snug text-ink-500">{t(ROLES[r].description)}</span>
           </label>
         ))}
       </div>
@@ -89,6 +95,7 @@ function RolePicker({ value, onChange, disabled }: { value: Role; onChange: (r: 
 }
 
 export function StaffForm({ initial, isSelf, onDone }: { initial?: Staff; isSelf?: boolean; onDone: () => void }) {
+  const t = useT();
   const [role, setRole] = useState<Role>(initial?.role ?? "agent");
   const [username, setUsername] = useState("");
   const [touched, setTouched] = useState(false);
@@ -122,25 +129,25 @@ export function StaffForm({ initial, isSelf, onDone }: { initial?: Staff; isSelf
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
-      <Field label="To'liq ism" className="sm:col-span-2">
+      <Field label={t("To'liq ism")} className="sm:col-span-2">
         <Input
           name="full_name"
           required
           minLength={2}
           maxLength={80}
           defaultValue={initial?.full_name}
-          placeholder="Masalan: Aziza Usmonova"
+          placeholder={t("Masalan: Aziza Usmonova")}
           onChange={(e) => !initial && !touched && setUsername(suggestLogin(e.target.value))}
         />
       </Field>
       {!initial && (
         <>
-          <Field label="Login">
+          <Field label={t("Login")}>
             <Input
               name="username"
               required
               pattern="[a-z0-9._\-]{3,40}"
-              title="3–40 ta kichik lotin harf, raqam, . _ -"
+              title={t("3–40 ta kichik lotin harf, raqam, . _ -")}
               value={username}
               onChange={(e) => {
                 setTouched(true);
@@ -150,23 +157,23 @@ export function StaffForm({ initial, isSelf, onDone }: { initial?: Staff; isSelf
               className="font-mono"
             />
           </Field>
-          <Field label="Parol">
+          <Field label={t("Parol")}>
             <PasswordInput name="password" value={password} onChange={setPassword} generator />
           </Field>
         </>
       )}
       <RolePicker value={role} onChange={setRole} disabled={isSelf} />
-      <Field label="Telefon">
+      <Field label={t("Telefon")}>
         <Input name="phone" type="tel" placeholder="+998 …" defaultValue={initial?.phone ?? ""} />
       </Field>
-      <Field label="Email">
-        <Input name="email" type="email" placeholder="ism@kompaniya.uz" defaultValue={initial?.email ?? ""} />
+      <Field label={t("Email")}>
+        <Input name="email" type="email" placeholder={t("ism@kompaniya.uz")} defaultValue={initial?.email ?? ""} />
       </Field>
-      <Field label="Hudud">
-        <Input name="region" placeholder="Toshkent" defaultValue={initial?.region ?? ""} />
+      <Field label={t("Hudud")}>
+        <Input name="region" placeholder={t("Toshkent")} defaultValue={initial?.region ?? ""} />
       </Field>
       {role === "agent" && (
-        <Field label="Oylik savdo rejasi, so'm">
+        <Field label={t("Oylik savdo rejasi, {cur}", { cur: currency() })}>
           <Input name="monthly_plan" type="number" min={0} step={1000000} defaultValue={initial?.monthly_plan ?? 50000000} />
         </Field>
       )}
@@ -176,13 +183,14 @@ export function StaffForm({ initial, isSelf, onDone }: { initial?: Staff; isSelf
         </div>
       )}
       <Button type="submit" className="sm:col-span-2" disabled={saving}>
-        {initial ? "Saqlash" : "Xodim kabinetini yaratish"}
+        {initial ? t("Saqlash") : t("Xodim kabinetini yaratish")}
       </Button>
     </form>
   );
 }
 
 export function ResetPassword({ user, onDone }: { user: Staff; onDone: () => void }) {
+  const t = useT();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
@@ -206,13 +214,13 @@ export function ResetPassword({ user, onDone }: { user: Staff; onDone: () => voi
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
-      <p className="text-sm text-ink-600">Yangi parol o&apos;rnatilgach, xodimning barcha qurilmalardagi sessiyalari yopiladi.</p>
-      <Field label="Yangi parol">
+      <p className="text-sm text-ink-600">{t("Yangi parol o'rnatilgach, xodimning barcha qurilmalardagi sessiyalari yopiladi.")}</p>
+      <Field label={t("Yangi parol")}>
         <PasswordInput name="password" value={password} onChange={setPassword} generator />
       </Field>
       {error && <Alert>{error}</Alert>}
       <Button type="submit" disabled={saving}>
-        <KeyRound className="size-4" /> Parolni tiklash
+        <KeyRound className="size-4" /> {t("Parolni tiklash")}
       </Button>
     </form>
   );

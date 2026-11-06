@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
 import { fmtDate, fmtMoney } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -34,17 +35,18 @@ export interface AuditSummary {
 }
 
 export function AuditsList() {
+  const t = useT();
   const list = usePaged<AuditSummary>("/audits");
   const [open, setOpen] = useState(false);
 
   return (
     <div className="animate-rise">
       <PageHeader
-        title="Audit"
-        description="Inventarizatsiya: tizimdagi qoldiq va haqiqiy sanoq farqi. Tasdiqlangach qoldiq avtomatik tuzatiladi."
+        title={t("Audit")}
+        description={t("Inventarizatsiya: tizimdagi qoldiq va haqiqiy sanoq farqi. Tasdiqlangach qoldiq avtomatik tuzatiladi.")}
         actions={
           <Button onClick={() => setOpen(true)}>
-            <Plus className="size-4" /> Audit boshlash
+            <Plus className="size-4" /> {t("Audit boshlash")}
           </Button>
         }
       />
@@ -52,25 +54,25 @@ export function AuditsList() {
         <div className="flex flex-col gap-3 border-b border-ink-100 p-4 lg:flex-row lg:items-center lg:justify-between">
           <Chips
             options={[
-              { value: "", label: "Barchasi" },
-              { value: "in_progress", label: "Tekshirilmoqda" },
-              { value: "completed", label: "Tasdiq kutmoqda" },
-              { value: "approved", label: "Tasdiqlandi" },
+              { value: "", label: t("Barchasi") },
+              { value: "in_progress", label: t("Tekshirilmoqda") },
+              { value: "completed", label: t("Tasdiq kutmoqda") },
+              { value: "approved", label: t("Tasdiqlandi") },
             ]}
             value={list.status}
             onChange={list.setStatus}
           />
-          <SearchInput value={list.q} onChange={list.setQ} placeholder="Raqam yoki ombor…" />
+          <SearchInput value={list.q} onChange={list.setQ} placeholder={t("Raqam yoki ombor…")} />
         </div>
         {list.error ? (
           <ErrorState message={list.error} onRetry={list.reload} />
         ) : list.loading && !list.data ? (
           <Loading />
         ) : !list.data?.items.length ? (
-          <Empty title="Audit topilmadi" />
+          <Empty title={t("Audit topilmadi")} />
         ) : (
           <>
-            <Table head={["Raqam", "Ombor nomi", "Auditor", "Jarayon", "Farqlar", "Farq summasi", "Holat", "Sana"]}>
+            <Table head={[t("Raqam"), t("Ombor nomi"), t("Auditor"), t("Jarayon"), t("Farqlar"), t("Farq summasi"), t("Holat"), t("Sana")]}>
               {list.data.items.map((a) => {
                 const pct = a.items_count ? (a.counted_count / a.items_count) * 100 : 0;
                 return (
@@ -112,7 +114,7 @@ export function AuditsList() {
         )}
       </div>
 
-      <Modal open={open} onClose={() => setOpen(false)} title="Yangi audit" description="Ombordagi joriy qoldiq auditga “kutilgan” miqdor sifatida yoziladi">
+      <Modal open={open} onClose={() => setOpen(false)} title={t("Yangi audit")} description={t("Ombordagi joriy qoldiq auditga “kutilgan” miqdor sifatida yoziladi")}>
         {open && <NewAudit />}
       </Modal>
     </div>
@@ -120,6 +122,7 @@ export function AuditsList() {
 }
 
 function NewAudit() {
+  const t = useT();
   const router = useRouter();
   const [warehouse, setWarehouse] = useState<WarehouseOption | null>(null);
   const auditors = useApi<{ items: { id: number; full_name: string }[] }>("/users?role=auditor&status=active");
@@ -141,12 +144,12 @@ function NewAudit() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-4">
-      <Field label="Ombor">
+      <Field label={t("Ombor")}>
         <WarehouseSelect params={{ active: "true" }} name="warehouse_id" required value={warehouse} onChange={setWarehouse} />
       </Field>
-      <Field label="Auditor">
+      <Field label={t("Auditor")}>
         <Select name="auditor_id" defaultValue="">
-          <option value="">Men o&apos;zim</option>
+          <option value="">{t("Men o'zim")}</option>
           {auditors.data?.items.map((u) => (
             <option key={u.id} value={u.id}>
               {u.full_name}
@@ -154,12 +157,12 @@ function NewAudit() {
           ))}
         </Select>
       </Field>
-      <Field label="Izoh">
-        <Textarea name="note" placeholder="Rejali / kutilmagan tekshiruv, sabab…" />
+      <Field label={t("Izoh")}>
+        <Textarea name="note" placeholder={t("Rejali / kutilmagan tekshiruv, sabab…")} />
       </Field>
       {error && <Alert>{error}</Alert>}
       <Button type="submit" className="w-full" disabled={saving}>
-        Auditni boshlash
+        {t("Auditni boshlash")}
       </Button>
     </form>
   );

@@ -2,6 +2,7 @@
 
 import { CalendarDays, Check, CheckCircle2, Clock, KeyRound, LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api, ME_CHANGED } from "@/shared/lib/api";
 import { fmtDate } from "@/shared/lib/format";
 import { initials, PERMISSIONS, ROLES, type Role } from "@/shared/lib/roles";
@@ -35,6 +36,7 @@ function Saved({ show, children }: { show: boolean; children: React.ReactNode })
 }
 
 function ProfileForm({ me, onSaved }: { me: Me; onSaved: () => void }) {
+  const t = useT();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -58,14 +60,14 @@ function ProfileForm({ me, onSaved }: { me: Me; onSaved: () => void }) {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4 sm:grid-cols-2">
-      <Field label="To'liq ism" className="sm:col-span-2">
+      <Field label={t("To'liq ism")} className="sm:col-span-2">
         <Input name="full_name" required minLength={2} maxLength={80} defaultValue={me.full_name} />
       </Field>
-      <Field label="Telefon">
+      <Field label={t("Telefon")}>
         <Input name="phone" type="tel" placeholder="+998 …" defaultValue={me.phone ?? ""} />
       </Field>
-      <Field label="Email">
-        <Input name="email" type="email" placeholder="ism@kompaniya.uz" defaultValue={me.email ?? ""} />
+      <Field label={t("Email")}>
+        <Input name="email" type="email" placeholder={t("ism@kompaniya.uz")} defaultValue={me.email ?? ""} />
       </Field>
       {error && (
         <div className="sm:col-span-2">
@@ -74,15 +76,16 @@ function ProfileForm({ me, onSaved }: { me: Me; onSaved: () => void }) {
       )}
       <div className="flex items-center gap-3 sm:col-span-2">
         <Button type="submit" disabled={saving}>
-          <Check className="size-4" /> Saqlash
+          <Check className="size-4" /> {t("Saqlash")}
         </Button>
-        <Saved show={saved}>Saqlandi</Saved>
+        <Saved show={saved}>{t("Saqlandi")}</Saved>
       </div>
     </form>
   );
 }
 
 function PasswordForm({ onSaved }: { onSaved: () => void }) {
+  const t = useT();
   const [current, setCurrent] = useState("");
   const [next, setNext] = useState("");
   const [repeat, setRepeat] = useState("");
@@ -113,25 +116,25 @@ function PasswordForm({ onSaved }: { onSaved: () => void }) {
 
   return (
     <form onSubmit={onSubmit} className="grid gap-4">
-      <Field label="Joriy parol">
+      <Field label={t("Joriy parol")}>
         <PasswordInput name="current_password" value={current} onChange={setCurrent} autoComplete="current-password" showStrength={false} />
       </Field>
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Yangi parol">
+        <Field label={t("Yangi parol")}>
           <PasswordInput name="new_password" value={next} onChange={setNext} generator />
         </Field>
-        <Field label="Yangi parolni takrorlang">
+        <Field label={t("Yangi parolni takrorlang")}>
           <PasswordInput name="repeat_password" value={repeat} onChange={setRepeat} showStrength={false} />
-          {mismatch && <span className="mt-1 block text-xs text-red-600">Parollar mos emas</span>}
+          {mismatch && <span className="mt-1 block text-xs text-red-600">{t("Parollar mos emas")}</span>}
         </Field>
       </div>
-      <p className="text-xs text-ink-500">Kamida 8 belgi, harf va raqam. Parol o&apos;zgarganda boshqa qurilmalardagi sessiyalar yopiladi.</p>
+      <p className="text-xs text-ink-500">{t("Kamida 8 belgi, harf va raqam. Parol o'zgarganda boshqa qurilmalardagi sessiyalar yopiladi.")}</p>
       {error && <Alert>{error}</Alert>}
       <div className="flex items-center gap-3">
         <Button type="submit" disabled={saving || mismatch}>
-          <KeyRound className="size-4" /> Parolni o&apos;zgartirish
+          <KeyRound className="size-4" /> {t("Parolni o'zgartirish")}
         </Button>
-        <Saved show={saved}>Parol yangilandi</Saved>
+        <Saved show={saved}>{t("Parol yangilandi")}</Saved>
       </div>
     </form>
   );
@@ -150,6 +153,7 @@ function Fact({ icon: Icon, label, value }: { icon: typeof Clock; label: string;
 }
 
 export function ProfileView() {
+  const t = useT();
   const me = useApi<{ user: Me }>("/auth/me");
   const activity = useApi<{ items: ActivityItem[] }>("/auth/me/activity");
 
@@ -176,7 +180,7 @@ export function ProfileView() {
           </span>
           <div className="min-w-0 flex-1">
             <p className="inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-brand-100 ring-1 ring-white/15">
-              <ShieldCheck className="size-3.5" aria-hidden /> {role.label}
+              <ShieldCheck className="size-3.5" aria-hidden /> {t(role.label)}
             </p>
             <h1 className="mt-2 truncate text-2xl font-extrabold tracking-tight text-white sm:text-3xl">{u.full_name}</h1>
             <p className="mt-1 text-sm text-white/70">
@@ -186,9 +190,9 @@ export function ProfileView() {
           </div>
         </div>
         <div className="relative mt-6 grid gap-2 sm:grid-cols-3">
-          <Fact icon={Clock} label="Oxirgi kirish" value={u.last_login_at ? fmtDate(u.last_login_at, true) : "—"} />
-          <Fact icon={LockKeyhole} label="Parol o'zgargan" value={u.password_changed_at ? fmtDate(u.password_changed_at) : "Hech qachon"} />
-          <Fact icon={CalendarDays} label="Jamoada" value={`${fmtDate(u.created_at)} dan`} />
+          <Fact icon={Clock} label={t("Oxirgi kirish")} value={u.last_login_at ? fmtDate(u.last_login_at, true) : "—"} />
+          <Fact icon={LockKeyhole} label={t("Parol o'zgargan")} value={u.password_changed_at ? fmtDate(u.password_changed_at) : t("Hech qachon")} />
+          <Fact icon={CalendarDays} label={t("Jamoada")} value={t("{date} dan", { date: fmtDate(u.created_at) })} />
         </div>
       </header>
 
@@ -196,16 +200,16 @@ export function ProfileView() {
         <div className="space-y-6 lg:col-span-2">
           <section className="card p-6" aria-labelledby="personal">
             <h2 id="personal" className="mb-1 flex items-center gap-2 font-bold text-ink-900">
-              <UserRound className="size-4 text-brand-600" aria-hidden /> Shaxsiy ma&apos;lumotlar
+              <UserRound className="size-4 text-brand-600" aria-hidden /> {t("Shaxsiy ma'lumotlar")}
             </h2>
-            <p className="mb-5 text-sm text-ink-500">Ism, telefon va email hamkasblaringizga ko&apos;rinadi.</p>
+            <p className="mb-5 text-sm text-ink-500">{t("Ism, telefon va email hamkasblaringizga ko'rinadi.")}</p>
             <ProfileForm me={u} onSaved={refresh} />
           </section>
           <section className="card p-6" aria-labelledby="security">
             <h2 id="security" className="mb-1 flex items-center gap-2 font-bold text-ink-900">
-              <LockKeyhole className="size-4 text-brand-600" aria-hidden /> Xavfsizlik
+              <LockKeyhole className="size-4 text-brand-600" aria-hidden /> {t("Xavfsizlik")}
             </h2>
-            <p className="mb-5 text-sm text-ink-500">Parolni muntazam yangilang va uni hech kimga bermang.</p>
+            <p className="mb-5 text-sm text-ink-500">{t("Parolni muntazam yangilang va uni hech kimga bermang.")}</p>
             <PasswordForm onSaved={refresh} />
           </section>
         </div>
@@ -213,7 +217,7 @@ export function ProfileView() {
         <div className="space-y-6">
           <section className="card p-6" aria-labelledby="contacts">
             <h2 id="contacts" className="mb-4 font-bold text-ink-900">
-              Aloqa
+              {t("Aloqa")}
             </h2>
             <ul className="space-y-3 text-sm text-ink-700">
               <li className="flex items-center gap-2">
@@ -226,20 +230,20 @@ export function ProfileView() {
           </section>
           <section className="card p-6" aria-labelledby="rights">
             <h2 id="rights" className="font-bold text-ink-900">
-              Mening huquqlarim
+              {t("Mening huquqlarim")}
             </h2>
-            <p className="mb-4 text-sm text-ink-500">{role.description}</p>
+            <p className="mb-4 text-sm text-ink-500">{t(role.description)}</p>
             <ul className="space-y-2">
               {allowed.map((label) => (
                 <li key={label} className="flex items-start gap-2 text-sm text-ink-700">
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-600" aria-hidden /> {label}
+                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-brand-600" aria-hidden /> {t(label)}
                 </li>
               ))}
             </ul>
           </section>
           <section className="card p-6" aria-labelledby="my-activity">
             <h2 id="my-activity" className="mb-3 font-bold text-ink-900">
-              So&apos;nggi faoliyat
+              {t("So'nggi faoliyat")}
             </h2>
             {activity.error ? <ErrorState message={activity.error} onRetry={activity.reload} /> : !activity.data ? <Loading /> : <ActivityFeed items={activity.data.items.slice(0, 10)} />}
           </section>

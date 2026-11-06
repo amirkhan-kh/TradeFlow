@@ -29,3 +29,6 @@ export function translateIn(dict: Messages, lang: Lang, key: string, vars?: Vars
 export const translate = (lang: Lang, key: string, vars?: Vars) => translateIn(messages, lang, key, vars);
 
 export const tr: T = (key, vars) => translate(activeLang(), key, vars);
+
+/** Text stored by the system (units, generated notes): known phrases are translated, user-typed text stays as it is. */
+export const trData = (text: string | null | undefined) => (text ? translate(activeLang(), text) : "");

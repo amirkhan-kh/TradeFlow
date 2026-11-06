@@ -3,6 +3,7 @@
 import { CalendarCheck, HandCoins, Plus, TriangleAlert, Wallet } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { fmtCompact, fmtDate, fmtMoney } from "@/shared/lib/format";
 import { usePaged } from "@/shared/lib/usePaged";
 import { Badge } from "@/shared/ui/Badge";
@@ -29,6 +30,7 @@ interface Summary {
 const TONE = { cash: "green", card: "blue", transfer: "violet", payme: "blue", click: "blue" } as const;
 
 export function FinanceView() {
+  const t = useT();
   const list = usePaged<Payment, Summary>("/payments");
   const [open, setOpen] = useState(false);
   const s = list.data?.summary;
@@ -36,44 +38,44 @@ export function FinanceView() {
   return (
     <div className="animate-rise">
       <PageHeader
-        title="Moliya"
-        description="To'lovlar, kassa va debitorlik nazorati"
+        title={t("Moliya")}
+        description={t("To'lovlar, kassa va debitorlik nazorati")}
         actions={
           <Button onClick={() => setOpen(true)}>
-            <Plus className="size-4" /> To&apos;lov qabul qilish
+            <Plus className="size-4" /> {t("To'lov qabul qilish")}
           </Button>
         }
       />
       <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard label="Bugun undirildi" value={s ? fmtCompact(s.today_total) : "…"} icon={CalendarCheck} />
-        <KpiCard label="Shu oy undirildi" value={s ? fmtCompact(s.month_total) : "…"} icon={Wallet} tone="navy" />
-        <KpiCard label="Umumiy debitorlik" value={s ? fmtCompact(s.receivables) : "…"} icon={HandCoins} tone="amber" />
+        <KpiCard label={t("Bugun undirildi")} value={s ? fmtCompact(s.today_total) : "…"} icon={CalendarCheck} />
+        <KpiCard label={t("Shu oy undirildi")} value={s ? fmtCompact(s.month_total) : "…"} icon={Wallet} tone="navy" />
+        <KpiCard label={t("Umumiy debitorlik")} value={s ? fmtCompact(s.receivables) : "…"} icon={HandCoins} tone="amber" />
         <KpiCard
-          label="Limitdan oshganlar"
+          label={t("Limitdan oshganlar")}
           value={s?.overlimit ?? "…"}
           icon={TriangleAlert}
           tone="red"
           hint={
             <Link href="/dashboard/clients?status=overlimit" className="font-semibold text-brand-700 hover:underline">
-              ro&apos;yxat →
+              {t("ro'yxat →")}
             </Link>
           }
         />
       </div>
       <div className="card">
         <div className="flex flex-col gap-3 border-b border-ink-100 p-4 lg:flex-row lg:items-center lg:justify-between">
-          <Chips options={[{ value: "", label: "Barchasi" }, ...Object.entries(METHODS).map(([value, label]) => ({ value, label }))]} value={list.status} onChange={list.setStatus} />
-          <SearchInput value={list.q} onChange={list.setQ} placeholder="Mijoz bo'yicha…" />
+          <Chips options={[{ value: "", label: t("Barchasi") }, ...Object.entries(METHODS).map(([value, label]) => ({ value, label: t(label) }))]} value={list.status} onChange={list.setStatus} />
+          <SearchInput value={list.q} onChange={list.setQ} placeholder={t("Mijoz bo'yicha…")} />
         </div>
         {list.error ? (
           <ErrorState message={list.error} onRetry={list.reload} />
         ) : list.loading && !list.data ? (
           <Loading />
         ) : !list.data?.items.length ? (
-          <Empty title="To'lov topilmadi" />
+          <Empty title={t("To'lov topilmadi")} />
         ) : (
           <>
-            <Table head={["Sana", "Mijoz", "Buyurtma", "Turi", "Summa", "Qabul qildi"]}>
+            <Table head={[t("Sana"), t("Mijoz"), t("Buyurtma"), t("Turi"), t("Summa"), t("Qabul qildi")]}>
               {list.data.items.map((p) => (
                 <tr key={p.id}>
                   <td className="whitespace-nowrap text-ink-500">{fmtDate(p.created_at, true)}</td>
@@ -84,7 +86,7 @@ export function FinanceView() {
                   </td>
                   <td className="text-ink-600">{p.order_number ?? "—"}</td>
                   <td>
-                    <Badge tone={TONE[p.method as keyof typeof TONE]}>{METHODS[p.method]}</Badge>
+                    <Badge tone={TONE[p.method as keyof typeof TONE]}>{METHODS[p.method] ? t(METHODS[p.method]) : p.method}</Badge>
                   </td>
                   <td className="font-bold text-brand-700 tabular-nums">+{fmtMoney(p.amount)}</td>
                   <td className="text-ink-500">{p.user_name ?? "—"}</td>
@@ -95,7 +97,7 @@ export function FinanceView() {
           </>
         )}
       </div>
-      <Modal open={open} onClose={() => setOpen(false)} title="To'lov qabul qilish">
+      <Modal open={open} onClose={() => setOpen(false)} title={t("To'lov qabul qilish")}>
         {open && (
           <PaymentForm
             onDone={() => {

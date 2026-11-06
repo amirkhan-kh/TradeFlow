@@ -3,6 +3,8 @@
 import { BadgeCheck, Boxes, ChevronLeft, ClipboardCheck, HandCoins, Save, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
+import { trData } from "@/shared/i18n/translate";
 import { api } from "@/shared/lib/api";
 import { fmtDate, fmtMoney, fmtNum } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
@@ -17,6 +19,7 @@ interface AuditFull extends AuditSummary {
 }
 
 export function AuditDetail({ id }: { id: string }) {
+  const t = useT();
   const { data: a, error, loading, reload } = useApi<AuditFull>(`/audits/${id}`);
   const [counts, setCounts] = useState<Record<number, string>>({});
   const [q, setQ] = useState("");
@@ -62,7 +65,7 @@ export function AuditDetail({ id }: { id: string }) {
     <div className="animate-rise space-y-6">
       <div>
         <Link href="/dashboard/audits" className="inline-flex items-center gap-1 text-sm text-ink-500 hover:text-brand-700">
-          <ChevronLeft className="size-4" /> Auditlar
+          <ChevronLeft className="size-4" /> {t("Auditlar")}
         </Link>
         <div className="mt-2 flex flex-wrap items-center gap-3">
           <h1 className="text-2xl font-extrabold text-ink-900">
@@ -73,44 +76,45 @@ export function AuditDetail({ id }: { id: string }) {
             {editable && (
               <>
                 <Button variant="secondary" disabled={busy} onClick={() => setCounts(Object.fromEntries(a.items.map((i) => [i.product_id, counts[i.product_id] || String(i.expected)])))}>
-                  Bo&apos;shlarni kutilgan bilan to&apos;ldirish
+                  {t("Bo'shlarni kutilgan bilan to'ldirish")}
                 </Button>
-                <Button variant="secondary" disabled={busy} onClick={() => run(save, "Sanoq saqlandi")}>
-                  <Save className="size-4" /> Saqlash
+                <Button variant="secondary" disabled={busy} onClick={() => run(save, t("Sanoq saqlandi"))}>
+                  <Save className="size-4" /> {t("Saqlash")}
                 </Button>
-                <Button disabled={busy} onClick={() => run(async () => { await save(); await api(`/audits/${id}/complete`, { method: "POST" }); }, "Audit yakunlandi va tasdiqqa yuborildi")}>
-                  <ClipboardCheck className="size-4" /> Yakunlash
+                <Button disabled={busy} onClick={() => run(async () => { await save(); await api(`/audits/${id}/complete`, { method: "POST" }); }, t("Audit yakunlandi va tasdiqqa yuborildi"))}>
+                  <ClipboardCheck className="size-4" /> {t("Yakunlash")}
                 </Button>
               </>
             )}
             {a.status === "completed" && (
-              <Button disabled={busy} onClick={() => confirm("Tasdiqlansa, ombor qoldig'i sanoq natijasiga tenglashtiriladi. Davom etasizmi?") && run(() => api(`/audits/${id}/approve`, { method: "POST" }), "Audit tasdiqlandi, qoldiqlar tuzatildi")}>
-                <BadgeCheck className="size-4" /> Tasdiqlash
+              <Button disabled={busy} onClick={() => confirm(t("Tasdiqlansa, ombor qoldig'i sanoq natijasiga tenglashtiriladi. Davom etasizmi?")) && run(() => api(`/audits/${id}/approve`, { method: "POST" }), t("Audit tasdiqlandi, qoldiqlar tuzatildi"))}>
+                <BadgeCheck className="size-4" /> {t("Tasdiqlash")}
               </Button>
             )}
           </div>
         </div>
         <p className="mt-1 text-sm text-ink-500">
-          {a.city} · Auditor: {a.auditor_name ?? "—"} · Boshlangan: {fmtDate(a.created_at, true)}
-          {a.approved_at && ` · Tasdiqlangan: ${fmtDate(a.approved_at, true)}`}
+          {a.city} · {t("Auditor:")} {a.auditor_name ?? "—"} · {t("Boshlangan:")} {fmtDate(a.created_at, true)}
+          {a.approved_at && ` · ${t("Tasdiqlangan:")} ${fmtDate(a.approved_at, true)}`}
+          {a.note && ` · ${trData(a.note)}`}
         </p>
       </div>
 
       {msg && (msg.ok ? <p className="rounded-xl bg-brand-50 px-4 py-2.5 text-sm font-medium text-brand-800 ring-1 ring-brand-200">✓ {msg.text}</p> : <Alert>{msg.text}</Alert>)}
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <KpiCard label="Sanalgan" value={`${counted} / ${a.items.length}`} icon={Boxes} hint="pozitsiya" />
-        <KpiCard label="Farqli pozitsiya" value={mismatches} icon={TriangleAlert} tone={mismatches ? "amber" : "brand"} />
-        <KpiCard label="Farq summasi" value={fmtMoney(variance)} icon={HandCoins} tone={variance < 0 ? "red" : "brand"} hint="tannarx bo'yicha" />
-        <KpiCard label="Holat" value={<StatusBadge status={a.status} />} icon={ClipboardCheck} tone="navy" />
+        <KpiCard label={t("Sanalgan")} value={`${counted} / ${a.items.length}`} icon={Boxes} hint={t("pozitsiya")} />
+        <KpiCard label={t("Farqli pozitsiya")} value={mismatches} icon={TriangleAlert} tone={mismatches ? "amber" : "brand"} />
+        <KpiCard label={t("Farq summasi")} value={fmtMoney(variance)} icon={HandCoins} tone={variance < 0 ? "red" : "brand"} hint={t("tannarx bo'yicha")} />
+        <KpiCard label={t("Holat")} value={<StatusBadge status={a.status} />} icon={ClipboardCheck} tone="navy" />
       </div>
 
       <section className="card">
         <div className="flex items-center justify-between gap-3 border-b border-ink-100 p-4">
-          <h2 className="font-bold">Sanoq varag&apos;i</h2>
-          <SearchInput value={q} onChange={setQ} placeholder="Tovar qidirish…" />
+          <h2 className="font-bold">{t("Sanoq varag'i")}</h2>
+          <SearchInput value={q} onChange={setQ} placeholder={t("Tovar qidiring…")} />
         </div>
-        <Table head={["Tovar", "Kutilgan", "Sanalgan", "Farq", "Farq summasi"]}>
+        <Table head={[t("Tovar"), t("Kutilgan"), t("Sanalgan"), t("Farq"), t("Farq summasi")]}>
           {rows.map((i) => {
             const d = diffOf(i);
             return (
@@ -120,7 +124,7 @@ export function AuditDetail({ id }: { id: string }) {
                   <p className="text-xs text-ink-400">{i.sku}</p>
                 </td>
                 <td className="tabular-nums">
-                  {fmtNum(i.expected)} {i.unit}
+                  {fmtNum(i.expected)} {trData(i.unit)}
                 </td>
                 <td className="w-36">
                   {editable ? (
@@ -130,7 +134,7 @@ export function AuditDetail({ id }: { id: string }) {
                       value={counts[i.product_id] ?? ""}
                       onChange={(e) => setCounts((c) => ({ ...c, [i.product_id]: e.target.value }))}
                       className="input h-9 w-28 tabular-nums"
-                      aria-label={`${i.product_name} sanog'i`}
+                      aria-label={t("{name} sanog'i", { name: i.product_name })}
                     />
                   ) : (
                     <span className="tabular-nums">{i.counted ?? "—"}</span>

@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { MESSAGES } from "./messages.js";
+import { MESSAGES, type Entry } from "./messages.js";
 import { toCyrillic } from "./translit.js";
 
 export const LANGS = ["uz", "uz-Cyrl", "ru", "en", "ky"] as const;
@@ -55,14 +55,23 @@ function lookup(text: string): { key: string; vars?: Vars } | undefined {
 
 const fill = (s: string, vars?: Vars) => (vars ? s.replace(/\{(\w+)\}/g, (m, k: string) => vars[k] ?? m) : s);
 
+/**
+ * Builds text the API generates (not errors): the template is translated first, then `vars` are filled in unchanged,
+ * so names and numbers inside never get transliterated.
+ */
+export function phrase(dict: Record<string, Entry>, lang: Lang, key: string, vars?: Record<string, string | number>): string {
+  const template = lang === "uz" ? key : lang === "uz-Cyrl" ? (dict[key]?.cy ?? toCyrillic(key)) : (dict[key]?.[lang] ?? key);
+  return vars ? template.replace(/\{(\w+)\}/g, (m, k: string) => (vars[k] !== undefined ? String(vars[k]) : m)) : template;
+}
+
 /** Translates Uzbek (Latin) source text. Unknown text is returned as-is (transliterated for `uz-Cyrl`). */
 export function translate(lang: Lang, text: string): string {
   if (lang === "uz") return text;
   const hit = lookup(text);
-  if (lang === "uz-Cyrl") {
-    const cy = hit && MESSAGES[hit.key].cy;
-    return cy ? fill(cy, hit.vars) : toCyrillic(text);
-  }
+  if (lang === "uz-Cyrl") return hit ? fill(MESSAGES[hit.key].cy ?? toCyrillic(hit.key), hit.vars) : toCyrillic(text);
   if (!hit) return text;
   return fill(MESSAGES[hit.key][lang], hit.vars);
 }
+
+/** Like `translate`, but text with no dictionary entry (e.g. a remote system's error) stays exactly as received. */
+export const translateKnown = (lang: Lang, text: string) => (lookup(text) ? translate(lang, text) : text);

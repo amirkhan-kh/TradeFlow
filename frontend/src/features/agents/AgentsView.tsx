@@ -1,7 +1,8 @@
 "use client";
 
 import { MapPin, Phone, Store, TrendingDown, TrendingUp } from "lucide-react";
-import { fmtCompact, fmtMoney, pctChange } from "@/shared/lib/format";
+import { useT } from "@/shared/i18n/I18nProvider";
+import { currency, fmtCompact, fmtMoney, pctChange } from "@/shared/lib/format";
 import { useApi } from "@/shared/lib/useApi";
 import { PageHeader, Table } from "@/shared/ui/Page";
 import { ErrorState, Skeleton } from "@/shared/ui/States";
@@ -30,6 +31,7 @@ interface Courier {
 }
 
 export function AgentsView() {
+  const t = useT();
   const { data, error, loading, reload } = useApi<{ agents: Agent[]; couriers: Courier[] }>("/agents");
   if (error) return <ErrorState message={error} onRetry={reload} />;
 
@@ -38,7 +40,7 @@ export function AgentsView() {
 
   return (
     <div className="animate-rise space-y-6">
-      <PageHeader title="Savdo jamoasi" description={`Oylik reja bajarilishi. Bugungi kutilgan sur'at: ${expected.toFixed(0)}%`} />
+      <PageHeader title={t("Savdo jamoasi")} description={t("Oylik reja bajarilishi. Bugungi kutilgan sur'at: {n}%", { n: expected.toFixed(0) })} />
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         {loading && !data
@@ -69,43 +71,43 @@ export function AgentsView() {
 
                   <div className="mt-5 flex items-end justify-between">
                     <div>
-                      <p className="text-xs text-ink-500">Shu oy sotuv</p>
+                      <p className="text-xs text-ink-500">{t("Shu oy sotuv")}</p>
                       <p className="text-xl font-extrabold text-ink-900 tabular-nums">{fmtCompact(a.revenue_month)}</p>
                     </div>
                     {trend !== null && (
                       <span className={`flex items-center gap-1 text-xs font-bold ${trend >= 0 ? "text-brand-700" : "text-red-600"}`}>
                         {trend >= 0 ? <TrendingUp className="size-3.5" /> : <TrendingDown className="size-3.5" />}
-                        {Math.abs(trend).toFixed(0)}% o&apos;tgan oyga
+                        {t("{n}% o'tgan oyga", { n: Math.abs(trend).toFixed(0) })}
                       </span>
                     )}
                   </div>
 
                   <div className="mt-3">
                     <div className="flex justify-between text-xs">
-                      <span className="text-ink-500">Reja: {fmtCompact(a.monthly_plan)}</span>
+                      <span className="text-ink-500">{t("Reja: {sum}", { sum: fmtCompact(a.monthly_plan) })}</span>
                       <span className={`font-bold ${behind ? "text-amber-700" : "text-brand-700"}`}>{pct.toFixed(0)}%</span>
                     </div>
                     <div className="relative mt-1.5 h-2.5 overflow-hidden rounded-full bg-ink-100">
                       <div className={`h-full rounded-full ${behind ? "bg-amber-400" : "bg-gradient-to-r from-brand-500 to-brand-400"}`} style={{ width: `${Math.min(100, pct)}%` }} />
-                      <span className="absolute inset-y-0 w-0.5 bg-ink-700/50" style={{ left: `${expected}%` }} title="Kutilgan sur'at" />
+                      <span className="absolute inset-y-0 w-0.5 bg-ink-700/50" style={{ left: `${expected}%` }} title={t("Kutilgan sur'at")} />
                     </div>
                   </div>
 
                   <dl className="mt-4 grid grid-cols-3 gap-2 border-t border-ink-100 pt-4 text-center">
                     <div>
-                      <dt className="text-[11px] text-ink-500">Buyurtma</dt>
+                      <dt className="text-[11px] text-ink-500">{t("Buyurtma")}</dt>
                       <dd className="font-bold text-ink-900">{a.orders_month}</dd>
                     </div>
                     <div>
                       <dt className="flex items-center justify-center gap-1 text-[11px] text-ink-500">
-                        <Store className="size-3" /> Faol
+                        <Store className="size-3" /> {t("Faol")}
                       </dt>
                       <dd className="font-bold text-ink-900">
                         {a.active_clients}/{a.clients}
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-[11px] text-ink-500">Mijoz qarzi</dt>
+                      <dt className="text-[11px] text-ink-500">{t("Mijoz qarzi")}</dt>
                       <dd className="font-bold text-amber-700">{fmtCompact(a.clients_debt)}</dd>
                     </div>
                   </dl>
@@ -115,8 +117,8 @@ export function AgentsView() {
       </div>
 
       <section className="card">
-        <h2 className="border-b border-ink-100 px-5 py-4 font-bold">Kuryerlar</h2>
-        <Table head={["Kuryer", "Telefon", "Shu oy yetkazdi", "Faol", "Muvaffaqiyatsiz", "Samaradorlik"]}>
+        <h2 className="border-b border-ink-100 px-5 py-4 font-bold">{t("Kuryerlar")}</h2>
+        <Table head={[t("Kuryer"), t("Telefon"), t("Shu oy yetkazdi"), t("Faol"), t("Muvaffaqiyatsiz"), t("Samaradorlik")]}>
           {data?.couriers.map((c) => {
             const rate = c.delivered_month + c.failed ? (c.delivered_month / (c.delivered_month + c.failed)) * 100 : 100;
             return (
@@ -138,7 +140,7 @@ export function AgentsView() {
             );
           })}
         </Table>
-        <p className="px-5 py-3 text-xs text-ink-400">Rejalar summasi so&apos;mda: {data && fmtMoney(data.agents.reduce((s, a) => s + a.monthly_plan, 0))}</p>
+        <p className="px-5 py-3 text-xs text-ink-400">{t("Rejalar summasi, {cur}:", { cur: currency() })} {data && fmtMoney(data.agents.reduce((s, a) => s + a.monthly_plan, 0))}</p>
       </section>
       
     </div>

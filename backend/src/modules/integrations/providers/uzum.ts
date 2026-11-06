@@ -42,7 +42,7 @@ export const uzumMarket: Provider = {
   async test({ config }) {
     const shops = await call<{ name?: string; shopTitle?: string }[] | { payload?: { name?: string }[] }>(config, "/v1/shops");
     const list = Array.isArray(shops) ? shops : (shops.payload ?? []);
-    return `Do'konlar: ${list.map((s) => ("shopTitle" in s && s.shopTitle) || s.name).join(", ") || "topilmadi"}`;
+    return list.length ? `Do'konlar: ${list.map((s) => ("shopTitle" in s && s.shopTitle) || s.name).join(", ")}` : "Do'konlar topilmadi";
   },
   async sync({ config }) {
     const res = await call<{ payload?: { skuAmountList?: SkuAmount[] } }>(config, "/v2/fbs/sku/stocks");

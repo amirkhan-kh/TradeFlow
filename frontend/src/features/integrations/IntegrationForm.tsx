@@ -2,6 +2,7 @@
 
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
+import { useT } from "@/shared/i18n/I18nProvider";
 import { api } from "@/shared/lib/api";
 import { Button } from "@/shared/ui/Button";
 import { Field, Input, Select } from "@/shared/ui/Field";
@@ -20,6 +21,7 @@ export function IntegrationForm({
   initial?: Integration;
   onDone: () => void;
 }) {
+  const t = useT();
   const [error, setError] = useState<string>();
   const [saving, setSaving] = useState(false);
 
@@ -56,12 +58,12 @@ export function IntegrationForm({
           <p className="mt-0.5 leading-relaxed text-ink-700">{provider.description}</p>
           {provider.docs && (
             <a href={provider.docs} target="_blank" rel="noreferrer" className="mt-1.5 inline-flex items-center gap-1 text-xs font-semibold text-brand-700 hover:underline">
-              Qo&apos;llanma <ExternalLink className="size-3" />
+              {t("Qo'llanma")} <ExternalLink className="size-3" />
             </a>
           )}
         </div>
       </div>
-      <Field label="Nomi">
+      <Field label={t("Nomi")}>
         <Input name="name" required minLength={2} maxLength={80} defaultValue={initial?.name ?? provider.name} />
       </Field>
       {provider.fields.map((f) => (
@@ -80,7 +82,7 @@ export function IntegrationForm({
               type={f.type === "password" ? "password" : f.type === "number" ? "number" : f.type === "url" ? "url" : "text"}
               required={f.required && !(f.type === "password" && initial?.config[f.key])}
               defaultValue={f.type === "password" ? "" : (initial?.config[f.key] ?? "")}
-              placeholder={f.type === "password" && initial?.config[f.key] ? "O'zgartirmaslik uchun bo'sh qoldiring" : f.placeholder}
+              placeholder={f.type === "password" && initial?.config[f.key] ? t("O'zgartirmaslik uchun bo'sh qoldiring") : f.placeholder}
               autoComplete={f.type === "password" ? "new-password" : "off"}
               min={f.type === "number" ? 1 : undefined}
             />
@@ -90,7 +92,7 @@ export function IntegrationForm({
       ))}
       {provider.events.length > 0 && (
         <fieldset>
-          <legend className="label">Qaysi hodisalar yuborilsin</legend>
+          <legend className="label">{t("Qaysi hodisalar yuborilsin")}</legend>
           <div className="grid gap-2 sm:grid-cols-2">
             {provider.events.map((ev) => (
               <label key={ev} className="flex items-center gap-2 rounded-xl border border-ink-200 px-3 py-2 text-sm text-ink-700">
@@ -108,11 +110,11 @@ export function IntegrationForm({
         </fieldset>
       )}
       <label className="flex items-center gap-2 text-sm font-medium text-ink-700">
-        <input type="checkbox" name="active" defaultChecked={initial?.active ?? true} className="size-4 accent-brand-600" /> Faol
+        <input type="checkbox" name="active" defaultChecked={initial?.active ?? true} className="size-4 accent-brand-600" /> {t("Faol")}
       </label>
       {error && <Alert>{error}</Alert>}
       <Button type="submit" disabled={saving}>
-        {initial ? "Saqlash" : "Ulash"}
+        {initial ? t("Saqlash") : t("Ulash")}
       </Button>
     </form>
   );

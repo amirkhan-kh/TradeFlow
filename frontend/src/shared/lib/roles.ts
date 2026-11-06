@@ -1,6 +1,9 @@
+import type { MsgKey } from "@/shared/i18n/messages";
+
 export type Role = "admin" | "manager" | "agent" | "courier" | "auditor";
 
-export const ROLES: Record<Role, { label: string; description: string; color: string }> = {
+/** Labels and descriptions are i18n keys: render them through `t()`. */
+export const ROLES: Record<Role, { label: MsgKey; description: MsgKey; color: string }> = {
   admin: { label: "Administrator", description: "Hamma narsa: xodimlar, rollar, integratsiyalar, jurnal", color: "#137852" },
   manager: { label: "Menejer", description: "Savdo, ombor, moliya va yetkazishni boshqaradi", color: "#2563eb" },
   agent: { label: "Savdo agenti", description: "Mijoz qo'shadi, buyurtma va to'lov qabul qiladi", color: "#7c3aed" },
@@ -10,7 +13,7 @@ export const ROLES: Record<Role, { label: string; description: string; color: st
 export const ROLE_KEYS = Object.keys(ROLES) as Role[];
 
 /** Mirrors backend `allow(...)` guards; admin always passes. */
-export const PERMISSIONS: { area: string; items: [string, Role[]][] }[] = [
+export const PERMISSIONS: { area: MsgKey; items: [MsgKey, Role[]][] }[] = [
   {
     area: "Savdo",
     items: [
@@ -46,7 +49,7 @@ export const PERMISSIONS: { area: string; items: [string, Role[]][] }[] = [
   },
 ];
 
-export const ACTIONS: Record<string, { label: string; tone: "green" | "red" | "amber" | "blue" | "violet" | "gray" }> = {
+export const ACTIONS: Record<string, { label: MsgKey; tone: "green" | "red" | "amber" | "blue" | "violet" | "gray" }> = {
   "auth.login": { label: "Tizimga kirdi", tone: "green" },
   "auth.login_failed": { label: "Noto'g'ri parol", tone: "amber" },
   "auth.locked": { label: "Kirish vaqtincha bloklandi", tone: "red" },

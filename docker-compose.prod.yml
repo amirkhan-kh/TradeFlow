@@ -39,8 +39,8 @@ services:
       interval: 10s
       timeout: 3s
       retries: 6
-      # first boot runs migrations + optional demo seed (~1 min)
-      start_period: 240s
+      # first boot runs migrations + optional demo seed (a year of history, several minutes on 1 vCPU)
+      start_period: 900s
 
   caddy:
     image: caddy:2-alpine

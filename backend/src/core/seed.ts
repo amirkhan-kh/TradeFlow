@@ -3,7 +3,7 @@ import type { PoolClient } from "pg";
 import { config } from "./config.js";
 import { pool, tx } from "./db.js";
 import { HttpError } from "./http.js";
-import { CITY_STREETS, FAMILIES, FEMALE, FIRST_NAMES, LAST_NAMES, LEADS, REGIONS, SHOP_NAMES, SHOP_TYPES, WAREHOUSES } from "./seed-data.js";
+import { BRANCHES, CITY_STREETS, FAMILIES, FEMALE, FIRST_NAMES, LAST_NAMES, LEADS, REGIONS, SHOP_NAMES, SHOP_TYPES, WAREHOUSES } from "./seed-data.js";
 import * as users from "../modules/users/repository.js";
 import * as orders from "../modules/orders/repository.js";
 import { applyStatus } from "../modules/orders/service.js";
@@ -19,8 +19,8 @@ const digits = (n: number) => Array.from({ length: n }, (_, i) => (i === 0 ? int
 const phone = () => `+998 ${pick(["90", "91", "93", "94", "95", "97", "99", "33", "88"])} ${int(100, 999)} ${int(10, 99)} ${int(10, 99)}`;
 
 const DAYS = 365;
-/** 402 staff + admin; ~8 outlets per agent. */
-const COUNTS = { managers: 14, agents: 220, couriers: 120, auditors: 48, clients: 1800, leads: 600 };
+/** 502 staff + admin; ~6 outlets per agent. */
+const COUNTS = { managers: 14, agents: 320, couriers: 120, auditors: 48, clients: 1800, leads: 600 };
 /** Order volume and stock targets scale together, so the history stays mostly fulfilled. */
 const VOLUME = 2.5;
 
@@ -142,7 +142,7 @@ async function seedProducts(db: PoolClient) {
 async function seedClients(db: PoolClient, wh: Record<string, number>, agentsByRegion: Record<string, number[]>) {
   const regionPick = weighted(REGIONS, (r) => r.weight);
   const names = new Set<string>();
-  const list: { name: string; owner: string; phone: string; region: string; address: string; segment: string; agent: number; limit: number; inn: string | null; created: Date }[] = [];
+  const list: { name: string; owner: string; phone: string; region: string; district: string; address: string; segment: string; agent: number; limit: number; inn: string | null; created: Date }[] = [];
   while (list.length < COUNTS.clients) {
     const region = list.length < REGIONS.length ? REGIONS[list.length] : regionPick();
     const district = pick(region.districts);
@@ -155,6 +155,7 @@ async function seedClients(db: PoolClient, wh: Record<string, number>, agentsByR
       owner: fullName(),
       phone: phone(),
       region: region.name,
+      district,
       address: `${district}, ${pick(CITY_STREETS)} ko'chasi ${int(1, 180)}-uy`,
       segment,
       agent: pick(agentsByRegion[region.name]),
@@ -181,10 +182,11 @@ async function seedClients(db: PoolClient, wh: Record<string, number>, agentsByR
     ],
   );
   const regionWh = Object.fromEntries(REGIONS.map((r) => [r.name, r.warehouses.map((c) => wh[c])]));
+  const branchWh = Object.fromEntries(BRANCHES.map(([code, , district]) => [district, wh[code]]));
   return rows.map((r, i) => ({
     id: r.id,
     agent: list[i].agent,
-    warehouses: regionWh[list[i].region],
+    warehouses: branchWh[list[i].district] ? [...regionWh[list[i].region], branchWh[list[i].district]] : regionWh[list[i].region],
     weight: list[i].segment === "A" ? 3 : list[i].segment === "B" ? 2 : 1,
   }));
 }
@@ -220,6 +222,14 @@ async function seedDemo(db: PoolClient, adminId: number) {
     );
     wh[code] = rows[0].id;
   }
+  for (const [code, , district, city] of BRANCHES) {
+    const { rows } = await db.query(
+      `INSERT INTO warehouses (code, name, city, address, capacity, manager_name) VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`,
+      [code, `${district} filiali`, city, `${district}, ${pick(CITY_STREETS)} ko'chasi ${int(1, 120)}`, int(60, 75) * 1000, fullName()],
+    );
+    wh[code] = rows[0].id;
+  }
+  const branchCodes = new Set<string>(BRANCHES.map(([code]) => code));
   const products = await seedProducts(db);
   const priceOf = new Map(products.map((p) => [p.id, p.price]));
   const popOf = new Map(products.map((p) => [p.id, p.popularity]));
@@ -227,7 +237,7 @@ async function seedDemo(db: PoolClient, adminId: number) {
 
   const targets = Object.fromEntries(
     Object.entries(wh).map(([code, id]) => {
-      const scale = code === "TSH-01" ? 1.6 : code === "TSH-02" ? 1.2 : 0.8;
+      const scale = code === "TSH-01" ? 1.6 : code === "TSH-02" ? 1.2 : branchCodes.has(code) ? 0.3 : 0.8;
       return [id, products.map((p) => ({ id: p.id, target: Math.round((25 + 110 * p.popularity) * scale * VOLUME) }))];
     }),
   );
@@ -312,17 +322,17 @@ async function seedDemo(db: PoolClient, adminId: number) {
       }
     }
 
-    // one planned audit every week, rotating warehouses and auditors; recent ones stay "completed"
-    if ((offset - START) % 7 === 3) {
-      const week = Math.floor((offset - START) / 7);
+    // one planned audit every day, rotating warehouses and auditors; the last few stay "completed" awaiting approval
+    if (offset < 0) {
+      const n = offset - START;
       const at = day(offset, 9);
-      const audit = await audits.insert(db, { warehouse_id: wh[auditCodes[week % auditCodes.length]], auditor_id: auditors[week % auditors.length], note: "Rejali inventarizatsiya", created_at: at });
+      const audit = await audits.insert(db, { warehouse_id: wh[auditCodes[n % auditCodes.length]], auditor_id: auditors[n % auditors.length], note: "Rejali inventarizatsiya", created_at: at });
       await db.query(
         `UPDATE audit_items SET counted = GREATEST(0, expected + CASE WHEN random() < 0.12 THEN floor(random() * 9)::int - 6 ELSE 0 END) WHERE audit_id=$1`,
         [audit.id],
       );
       await audits.setStatus(db, audit.id, "completed", new Date(at.getTime() + 6 * 3600_000));
-      if (offset < -15) await approveIn(db, audit.id, adminId, new Date(at.getTime() + 26 * 3600_000));
+      if (offset < -4) await approveIn(db, audit.id, adminId, new Date(at.getTime() + 26 * 3600_000));
     }
   }
 
@@ -349,6 +359,35 @@ async function seedDemo(db: PoolClient, adminId: number) {
     `INSERT INTO leads (name, phone, company, message, status, created_at)
      SELECT * FROM unnest($1::text[], $2::text[], $3::text[], $4::text[], $5::text[], $6::timestamptz[])`,
     [leads.map((l) => l.name), leads.map((l) => l.phone), leads.map((l) => l.company), leads.map((l) => l.message), leads.map((l) => l.status), leads.map((l) => l.created)],
+  );
+
+  // staff were hired before the seeded history starts; the activity log gets their hiring and recent logins
+  await db.query(
+    `UPDATE users SET created_at = now() - interval '1 day' * ($1 + floor(random() * 400)) WHERE role <> 'admin'`,
+    [DAYS + 120],
+  );
+  await db.query(`UPDATE users SET password_changed_at = created_at WHERE role <> 'admin'`);
+  await db.query(
+    `INSERT INTO activity_log (actor_id, action, target_user_id, details, ip, created_at)
+     SELECT $1, 'user.created', id, jsonb_build_object('role', role, 'username', username), '10.10.0.' || (2 + id % 200), created_at
+     FROM users WHERE role <> 'admin'`,
+    [adminId],
+  );
+  await db.query(
+    `WITH logins AS (
+       SELECT u.id, u.role, now() - random() * interval '30 days' AS at
+       FROM users u CROSS JOIN LATERAL generate_series(1, 1 + floor(random() * 10)::int + 0 * u.id)
+       WHERE u.role <> 'admin' AND u.active
+     ), logged AS (
+       INSERT INTO activity_log (actor_id, action, details, ip, created_at)
+       SELECT id, 'auth.login',
+              jsonb_build_object('agent', CASE WHEN role IN ('agent', 'courier')
+                THEN 'Mozilla/5.0 (Linux; Android 13; SM-A346E) AppleWebKit/537.36 Chrome/128.0 Mobile Safari/537.36'
+                ELSE 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/128.0 Safari/537.36' END),
+              '84.54.' || floor(random() * 255)::int || '.' || floor(1 + random() * 254)::int, at
+       FROM logins
+     )
+     UPDATE users u SET last_login_at = l.at FROM (SELECT id, max(at) AS at FROM logins GROUP BY id) l WHERE u.id = l.id`,
   );
 }
 

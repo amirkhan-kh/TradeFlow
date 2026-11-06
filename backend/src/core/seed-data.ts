@@ -12,6 +12,43 @@ export const WAREHOUSES = [
   ["QSH-01", "Qarshi Ombori", "Qarshi", "Mustaqillik shoh ko'chasi 77", 150000, "Sanjar Hamroyev"],
 ] as const;
 
+/** District branch warehouses: smaller, serve the outlets of their own district next to the regional hub. */
+export const BRANCHES = [
+  // code, region, district, city
+  ["TSH-03", "Toshkent", "Chilonzor", "Toshkent"],
+  ["TSH-04", "Toshkent", "Mirzo Ulug'bek", "Toshkent"],
+  ["TSH-05", "Toshkent", "Yakkasaroy", "Toshkent"],
+  ["TSH-06", "Toshkent", "Olmazor", "Toshkent"],
+  ["TSH-07", "Toshkent", "Uchtepa", "Toshkent"],
+  ["TSH-08", "Toshkent", "Yashnobod", "Toshkent"],
+  ["TSV-01", "Toshkent viloyati", "Chirchiq", "Chirchiq"],
+  ["TSV-02", "Toshkent viloyati", "Olmaliq", "Olmaliq"],
+  ["TSV-03", "Toshkent viloyati", "Angren", "Angren"],
+  ["TSV-04", "Toshkent viloyati", "Nurafshon", "Nurafshon"],
+  ["TSV-05", "Toshkent viloyati", "Yangiyo'l", "Yangiyo'l"],
+  ["TSV-06", "Toshkent viloyati", "Bekobod", "Bekobod"],
+  ["SMQ-02", "Samarqand", "Urgut", "Urgut"],
+  ["SMQ-03", "Samarqand", "Kattaqo'rg'on", "Kattaqo'rg'on"],
+  ["SMQ-04", "Samarqand", "Bulung'ur", "Bulung'ur"],
+  ["SMQ-05", "Samarqand", "Ishtixon", "Ishtixon"],
+  ["FRG-02", "Farg'ona", "Marg'ilon", "Marg'ilon"],
+  ["FRG-03", "Farg'ona", "Qo'qon", "Qo'qon"],
+  ["FRG-04", "Farg'ona", "Quva", "Quva"],
+  ["FRG-05", "Farg'ona", "Rishton", "Rishton"],
+  ["AND-02", "Andijon", "Asaka", "Asaka"],
+  ["AND-03", "Andijon", "Xonobod", "Xonobod"],
+  ["AND-04", "Andijon", "Shahrixon", "Shahrixon"],
+  ["NMG-02", "Namangan", "Chust", "Chust"],
+  ["NMG-03", "Namangan", "Pop", "Pop"],
+  ["NMG-04", "Namangan", "Kosonsoy", "Kosonsoy"],
+  ["BXR-02", "Buxoro", "Kogon", "Kogon"],
+  ["BXR-03", "Buxoro", "G'ijduvon", "G'ijduvon"],
+  ["BXR-04", "Buxoro", "Vobkent", "Vobkent"],
+  ["QSH-02", "Qashqadaryo", "Shahrisabz", "Shahrisabz"],
+  ["QSH-03", "Qashqadaryo", "Kitob", "Kitob"],
+  ["QSH-04", "Qashqadaryo", "G'uzor", "G'uzor"],
+] as const;
+
 /** Region → serving warehouses, districts, share of clients (weights). */
 export const REGIONS: { name: string; warehouses: string[]; districts: string[]; weight: number }[] = [
   { name: "Toshkent", warehouses: ["TSH-01", "TSH-02"], weight: 30, districts: ["Yunusobod", "Chilonzor", "Sergeli", "Mirzo Ulug'bek", "Yakkasaroy", "Shayxontohur", "Olmazor", "Uchtepa", "Yashnobod", "Mirobod", "Bektemir", "Yangihayot"] },

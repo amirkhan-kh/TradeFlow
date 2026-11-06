@@ -12,7 +12,7 @@ The same `backend/Dockerfile` also runs on Render / Railway / Fly with a managed
 
 1. DNS: `A api.<domain>` → server IP. Open ports 80 and 443 only.
 2. `cp .env.example .env`, fill every value (`openssl rand -hex 32` for secrets).
-   `SEED_DEMO=true` fills the first boot with demo data (≈40 s); use it only for a demo instance.
+   `SEED_DEMO=true` fills the first boot with demo data (a year of history, several minutes); use it only for a demo instance. The seed runs only on an empty database (no rows in `users`).
 3. `docker compose -f docker-compose.prod.yml up -d --build` → wait for `backend` healthy → `curl https://api.<domain>/health`.
 
 ### Vercel (frontend)
